@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ResponseGrid - MITRE ATT&amp;CK Mapping</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lucide/0.263.0/lucide.min.js"></script>
+    <link rel="stylesheet" href="css/shared.css">
+    <style>
+        .matrix-toolbar {
+            display: flex;
+            gap: 1rem;
+            justify-content: space-between;
+            align-items: end;
+            flex-wrap: wrap;
+            margin-bottom: 1.5rem;
+        }
+
+        .matrix-toolbar .filters {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            flex: 1;
+        }
+
+        .matrix-wrapper {
+            overflow-x: auto;
+            padding-bottom: 0.5rem;
+        }
+
+        .matrix-grid {
+            display: grid;
+            grid-template-columns: repeat(14, minmax(150px, 1fr));
+            gap: 8px;
+            min-width: 2250px;
+            margin-bottom: 1rem;
+        }
+
+        .matrix-col-header {
+            font-size: 0.78rem;
+            font-weight: 700;
+            color: var(--text-main);
+            text-align: center;
+            padding: 10px 8px;
+            background: var(--sidebar-bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            position: sticky;
+            top: 0;
+            z-index: 1;
+        }
+
+        .matrix-cell {
+            font-size: 0.75rem;
+            padding: 10px 8px;
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: 0.2s;
+            line-height: 1.35;
+            min-height: 78px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .matrix-cell:hover {
+            border-color: var(--accent-blue);
+            transform: translateY(-1px);
+        }
+
+        .matrix-cell.covered {
+            background: rgba(59, 130, 246, 0.15);
+            border-color: var(--accent-blue);
+            color: #bfdbfe;
+            font-weight: 600;
+        }
+
+        .matrix-cell.critical {
+            background: rgba(239, 68, 68, 0.14);
+            border-color: var(--accent-red);
+            color: #fecaca;
+            font-weight: 600;
+        }
+
+        .matrix-cell.trained {
+            background: rgba(34, 197, 94, 0.14);
+            border-color: var(--accent-green);
+            color: #bbf7d0;
+            font-weight: 600;
+        }
+
+        .matrix-cell.planned {
+            background: rgba(245, 158, 11, 0.12);
+            border-color: var(--accent-yellow);
+            color: #fde68a;
+            font-weight: 600;
+        }
+
+        .matrix-cell.empty {
+            color: var(--text-dim);
+            cursor: default;
+            background: rgba(15, 23, 42, 0.45);
+        }
+
+        .matrix-cell.empty:hover {
+            border-color: var(--border);
+            transform: none;
+        }
+
+        .legend {
+            display: flex;
+            gap: 1rem 1.5rem;
+            margin-bottom: 1.25rem;
+            font-size: 0.82rem;
+            flex-wrap: wrap;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .legend-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 3px;
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: 1.3fr 1fr;
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+        }
+
+        .technique-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 0.75rem;
+        }
+
+        .technique-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: #334155;
+            color: var(--text-main);
+            padding: 6px 10px;
+            border-radius: 999px;
+            font-size: 0.78rem;
+            border: 1px solid var(--border);
+            cursor: pointer;
+        }
+
+        .technique-chip:hover {
+            border-color: var(--accent-blue);
+        }
+
+        .scenario-tags {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-top: 0.75rem;
+        }
+
+        .scenario-tag {
+            font-size: 0.75rem;
+            padding: 5px 10px;
+            border-radius: 999px;
+            border: 1px solid var(--border);
+            color: var(--text-main);
+            background: rgba(51, 65, 85, 0.4);
+        }
+
+        .detail-meta {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin: 0.75rem 0 1rem;
+        }
+
+        .detail-meta span {
+            font-size: 0.75rem;
+            padding: 5px 10px;
+            border-radius: 999px;
+            border: 1px solid var(--border);
+            color: var(--text-main);
+            background: rgba(51, 65, 85, 0.35);
+        }
+
+        .muted-note {
+            color: var(--text-dim);
+            font-size: 0.85rem;
+        }
+
+        @media (max-width: 1100px) {
+            .summary-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<nav aria-label="Primary navigation">
+    <a href="dashboard.html" class="logo"><i data-lucide="shield-alert"></i> ResponseGrid</a>
+    <a href="dashboard.html" class="nav-item"><i data-lucide="layout-dashboard"></i> Dashboard</a>
+    <a href="active-lab.html" class="nav-item"><i data-lucide="terminal"></i> Active Lab</a>
+    <a href="reports.html" class="nav-item"><i data-lucide="file-text"></i> Reports</a>
+    <a href="team.html" class="nav-item"><i data-lucide="users"></i> Team</a>
+    <a href="mitre.html" class="nav-item"><i data-lucide="shield"></i> MITRE ATT&amp;CK</a>
+    <div class="nav-bottom">
+        <a href="settings.html" class="nav-item"><i data-lucide="settings"></i> Settings</a>
+    </div>
+</nav>
+
+<main>
+    <header>
+        <div>
+            <div class="status-badge blue">Threat Coverage</div>
+            <h1>MITRE ATT&amp;CK Coverage</h1>
+            <p class="subtitle">Enterprise matrix-aligned technique mapping across current simulations and planned roadmap modules.</p>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <a href="https://attack.mitre.org/matrices/enterprise/" target="_blank" rel="noopener noreferrer" class="btn btn-secondary" style="text-decoration:none;display:inline-flex;align-items:center;gap:6px;">
+                <i data-lucide="external-link" style="width:14px;"></i> Enterprise Matrix
+            </a>
+            <a href="reports.html" class="btn" style="text-decoration:none;display:inline-flex;align-items:center;gap:6px;">
+                <i data-lucide="bar-chart-3" style="width:14px;"></i> View Reports
+            </a>
+        </div>
+    </header>
+
+    <div class="legend">
+        <div class="legend-item">
+            <div class="legend-dot" style="background:rgba(59,130,246,0.35);border:1px solid var(--accent-blue);"></div>
+            <span>Covered</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-dot" style="background:rgba(239,68,68,0.35);border:1px solid var(--accent-red);"></div>
+            <span>Critical in current scenarios</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-dot" style="background:rgba(34,197,94,0.35);border:1px solid var(--accent-green);"></div>
+            <span>Hands-on practiced</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-dot" style="background:rgba(245,158,11,0.35);border:1px solid var(--accent-yellow);"></div>
+            <span>Planned coverage</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-dot" style="background:var(--card-bg);border:1px solid var(--border);"></div>
+            <span>Not yet mapped</span>
+        </div>
+    </div>
+
+    <section class="card" style="margin-bottom:1.5rem;">
+        <div class="matrix-toolbar">
+            <div class="filters">
+                <div style="min-width:220px;flex:1;">
+                    <label class="form-label" for="scenario-filter">Scenario Filter</label>
+                    <select id="scenario-filter" class="form-input" style="margin-bottom:0;">
+                        <option value="all" selected>All Scenarios</option>
+                        <option value="scenario-a">Scenario A — Ransomware Containment</option>
+                        <option value="scenario-b">Scenario B — Compromised System</option>
+                        <option value="planned">Planned Scenarios Only</option>
+                    </select>
+                </div>
+                <div style="min-width:220px;flex:1;">
+                    <label class="form-label" for="coverage-filter">Coverage Filter</label>
+                    <select id="coverage-filter" class="form-input" style="margin-bottom:0;">
+                        <option value="all" selected>Show All</option>
+                        <option value="critical">Critical Only</option>
+                        <option value="covered">Covered Only</option>
+                        <option value="planned">Planned Only</option>
+                    </select>
+                </div>
+            </div>
+            <div class="muted-note" id="matrix-summary">Showing official tactic layout with scenario technique mappings.</div>
+        </div>
+
+        <div class="matrix-wrapper">
+            <div class="matrix-grid" id="matrix-grid">
+                <div class="matrix-col-header">Reconnaissance</div>
+                <div class="matrix-col-header">Resource Development</div>
+                <div class="matrix-col-header">Initial Access</div>
+                <div class="matrix-col-header">Execution</div>
+                <div class="matrix-col-header">Persistence</div>
+                <div class="matrix-col-header">Privilege Escalation</div>
+                <div class="matrix-col-header">Defense Evasion</div>
+                <div class="matrix-col-header">Credential Access</div>
+                <div class="matrix-col-header">Discovery</div>
+                <div class="matrix-col-header">Lateral Movement</div>
+                <div class="matrix-col-header">Collection</div>
+                <div class="matrix-col-header">Command and Control</div>
+                <div class="matrix-col-header">Exfiltration</div>
+                <div class="matrix-col-header">Impact</div>
+
+                <div class="matrix-cell planned technique-cell"
+                     data-technique-id="T1598"
+                     data-status="planned"
+                     data-scenarios="planned">
+                    T1598<br>Phishing for Information
+                </div>
+
+                <div class="matrix-cell empty">Not Yet Mapped</div>
+
+                <div class="matrix-cell critical technique-cell"
+                     data-technique-id="T1566"
+                     data-status="critical"
+                     data-scenarios="scenario-b,planned">
+                    T1566<br>Phishing
+                </div>
+
+                <div class="matrix-cell covered technique-cell"
+                     data-technique-id="T1059"
+                     data-status="covered"
+                     data-scenarios="scenario-a,scenario-b">
+                    T1059<br>Command &amp; Scripting
+                </div>
+
+                <div class="matrix-cell covered technique-cell"
+                     data-technique-id="T1053"
+                     data-status="covered"
+                     data-scenarios="scenario-b">
+                    T1053<br>Scheduled Task/Job
+                </div>
+
+                <div class="matrix-cell empty">Not Yet Mapped</div>
+
+                <div class="matrix-cell empty">Not Yet Mapped</div>
+
+                <div class="matrix-cell critical technique-cell"
+                     data-technique-id="T1003.001"
+                     data-status="critical"
+                     data-scenarios="scenario-b">
+                    T1003.001<br>LSASS Memory
+                </div>
+
+                <div class="matrix-cell covered technique-cell"
+                     data-technique-id="T1082"
+                     data-status="covered"
+                     data-scenarios="scenario-a,scenario-b">
+                    T1082<br>System Information Discovery
+                </div>
+
+                <div class="matrix-cell covered technique-cell"
+                     data-technique-id="T1021"
+                     data-status="covered"
+                     data-scenarios="scenario-a,scenario-b">
+                    T1021<br>Remote Services
+                </div>
+
+                <div class="matrix-cell empty">Not Yet Mapped</div>
+
+                <div class="matrix-cell critical technique-cell"
+                     data-technique-id="T1071"
+                     data-status="critical"
+                     data-scenarios="scenario-a,scenario-b">
+                    T1071<br>Application Layer Protocol
+                </div>
+
+                <div class="matrix-cell planned technique-cell"
+                     data-technique-id="T1041"
+                     data-status="planned"
+                     data-scenarios="planned">
+                    T1041<br>Exfiltration Over C2 Channel
+                </div>
+
+                <div class="matrix-cell critical technique-cell"
+                     data-technique-id="T1486"
+                     data-status="critical"
+                     data-scenarios="scenario-a">
+                    T1486<br>Data Encrypted for Impact
+                </div>
+
+                <div class="matrix-cell empty">Not Yet Mapped</div>
+
+                <div class="matrix-cell empty">Not Yet Mapped</div>
+
+                <div class="matrix-cell covered technique-cell"
+                     data-technique-id="T1566.001"
+                     data-status="covered"
+                     data-scenarios="scenario-b">
+                    T1566.001<br>Spearphishing Attachment
+                </div>
+
+                <div class="matrix-cell covered technique-cell"
+                     data-technique-id="T1204"
+                     data-status="covered"
+                     data-scenarios="scenario-b">
+                    T1204<br>User Execution
+                </div>
+
+                <div class="matrix-cell empty">Not Yet Mapped</div>
+
+                <div class="matrix-cell empty">Not Yet Mapped</div>
+
+                <div class="matrix-cell empty">Not Yet Mapped</div>
+
+                <div class="matrix-cell covered technique-cell"
+                     data-technique-id="T1110"
+                     data-status="covered"
+                     data-scenarios="scenario-a">
+                    T1110<br>Brute Force
+                </div>
+
+                <div class="matrix-cell covered technique-cell"
+                     data-technique-id="T1016"
+                     data-status="covered"
+                     data-scenarios="scenario-a,scenario-b">
+                    T1016<br>System Network Configuration Discovery
+                </div>
+
+                <div class="matrix-cell trained technique-cell"
+                     data-technique-id="T1021.004"
+                     data-status="trained"
+                     data-scenarios="scenario-a">
+                    T1021.004<br>SSH
+                </div>
+
+                <div class="matrix-cell empty">Not Yet Mapped</div>
+
+                <div class="matrix-cell covered technique-cell"
+                     data-technique-id="T1071.004"
+                     data-status="covered"
+                     data-scenarios="scenario-b">
+                    T1071.004<br>DNS
+                </div>
+
+                <div class="matrix-cell empty">Not Yet Mapped</div>
+
+                <div class="matrix-cell covered technique-cell"
+                     data-technique-id="T1489"
+                     data-status="covered"
+                     data-scenarios="scenario-a">
+                    T1489<br>Service Stop
+                </div>
+
+                <div class="matrix-cell empty">Not Yet Mapped</div>
+
+                <div class="matrix-cell empty">Not Yet Mapped</div>
+
+                <div class="matrix-cell planned technique-cell"
+                     data-technique-id="T1566.004"
+                     data-status="planned"
+                     data-scenarios="planned">
+                    T1566.004<br>Spearphishing Voice
+                </div>
+
+                <div class="matrix-cell covered technique-cell"
+                     data-technique-id="T1059.001"
+                     data-status="covered"
+                     data-scenarios="scenario-b">
+                    T1059.001<br>PowerShell
+                </div>
+
+                <div class="matrix-cell covered technique-cell"
+                     data-technique-id="T1053.005"
+                     data-status="covered"
+                     data-scenarios="scenario-b">
+                    T1053.005<br>Scheduled Task
+                </div>
+
+                <div class="matrix-cell empty">Not Yet Mapped</div>
+
+                <div class="matrix-cell empty">Not Yet Mapped</div>
+
+                <div class="matrix-cell empty">Not Yet Mapped</div>
+
+                <div class="matrix-cell covered technique-cell"
+                     data-technique-id="T1046"
+                     data-status="covered"
+                     data-scenarios="scenario-a,scenario-b">
+                    T1046<br>Network Service Discovery
+                </div>
+
+                <div class="matrix-cell trained technique-cell"
+                     data-technique-id="T1021.001"
+                     data-status="trained"
+                     data-scenarios="scenario-b">
+                    T1021.001<br>RDP
+                </div>
+
+                <div class="matrix-cell empty">Not Yet Mapped</div>
+
+                <div class="matrix-cell covered technique-cell"
+                     data-technique-id="T1071.001"
+                     data-status="covered"
+                     data-scenarios="scenario-a">
+                    T1071.001<br>Web Protocols
+                </div>
+
+                <div class="matrix-cell empty">Not Yet Mapped</div>
+
+                <div class="matrix-cell planned technique-cell"
+                     data-technique-id="T1498"
+                     data-status="planned"
+                     data-scenarios="planned">
+                    T1498<br>Network Denial of Service
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="summary-grid">
+        <div class="card">
+            <div class="card-title"><i data-lucide="file-search"></i> Technique Details</div>
+            <div id="technique-detail-panel">
+                <h3 style="margin-bottom:0.65rem;">Select a mapped technique</h3>
+                <p class="muted-note">Click any highlighted ATT&amp;CK cell to view the mapped tactic, scenario alignment, and recommended training coverage.</p>
+            </div>
+        </div>
+
+        <div class="stack">
+            <div class="card">
+                <div class="card-title"><i data-lucide="layers-3"></i> Scenario Alignment</div>
+                <div>
+                    <div style="font-weight:600;font-size:0.9rem;">Scenario A — Ransomware Containment</div>
+                    <div class="scenario-tags">
+                        <span class="scenario-tag">T1110</span>
+                        <span class="scenario-tag">T1021.004</span>
+                        <span class="scenario-tag">T1071.001</span>
+                        <span class="scenario-tag">T1486</span>
+                        <span class="scenario-tag">T1489</span>
+                    </div>
+                </div>
+                <div style="margin-top:1rem;">
+                    <div style="font-weight:600;font-size:0.9rem;">Scenario B — Compromised System</div>
+                    <div class="scenario-tags">
+                        <span class="scenario-tag">T1566</span>
+                        <span class="scenario-tag">T1566.001</span>
+                        <span class="scenario-tag">T1003.001</span>
+                        <span class="scenario-tag">T1053.005</span>
+                        <span class="scenario-tag">T1071.004</span>
+                    </div>
+                </div>
+                <div style="margin-top:1rem;">
+                    <div style="font-weight:600;font-size:0.9rem;">Planned Scenarios</div>
+                    <div class="scenario-tags">
+                        <span class="scenario-tag">T1566.004</span>
+                        <span class="scenario-tag">T1498</span>
+                        <span class="scenario-tag">T1598</span>
+                        <span class="scenario-tag">T1041</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title"><i data-lucide="clipboard-check"></i> Coverage Notes</div>
+                <ul class="list-clean" style="font-size:0.9rem;">
+                    <li>Tactic headers follow the official ATT&amp;CK Enterprise matrix order.</li>
+                    <li>Techniques are mapped to current project scenarios and future roadmap items.</li>
+                    <li>You can extend this page later by linking each technique to deeper scenario-specific evidence views.</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+</main>
+
+<script src="js/shared.js"></script>
+<script src="js/pages/mitre.js"></script>
+</body>
+</html>

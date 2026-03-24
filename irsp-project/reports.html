@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ResponseGrid - Reports &amp; Analytics</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lucide/0.263.0/lucide.min.js"></script>
+    <link rel="stylesheet" href="css/shared.css">
+</head>
+<body>
+
+<nav aria-label="Primary navigation">
+    <a href="dashboard.html" class="logo"><i data-lucide="shield-alert"></i> ResponseGrid</a>
+    <a href="dashboard.html" class="nav-item"><i data-lucide="layout-dashboard"></i> Dashboard</a>
+    <a href="active-lab.html" class="nav-item"><i data-lucide="terminal"></i> Active Lab</a>
+    <a href="reports.html" class="nav-item"><i data-lucide="file-text"></i> Reports</a>
+    <a href="team.html" class="nav-item"><i data-lucide="users"></i> Team</a>
+    <a href="mitre.html" class="nav-item"><i data-lucide="shield"></i> MITRE ATT&amp;CK</a>
+    <div class="nav-bottom">
+        <a href="settings.html" class="nav-item"><i data-lucide="settings"></i> Settings</a>
+    </div>
+</nav>
+
+<main>
+    <header>
+        <div>
+            <div class="status-badge blue">Post-Exercise Analytics</div>
+            <h1>Reports &amp; Analytics</h1>
+            <p class="subtitle">Review simulation history, benchmark team performance, surface coaching signals, and export decision-ready incident response training summaries.</p>
+        </div>
+        <div>
+            <button class="btn btn-secondary" id="refresh-metrics-btn" type="button">
+                <i data-lucide="refresh-cw"></i> Refresh Metrics
+            </button>
+            <button class="btn" id="export-report-btn" type="button">
+                <i data-lucide="download"></i> Export PDF
+            </button>
+        </div>
+    </header>
+
+    <section class="metric-strip section-space" style="grid-template-columns:repeat(3, minmax(0, 1fr));">
+        <div class="metric-tile">
+            <div class="label">Completed Runs</div>
+            <div class="value" id="stat-sims" style="color:var(--accent-green);">12</div>
+            <div class="subtext">Visible records in the current filtered reporting set</div>
+        </div>
+        <div class="metric-tile">
+            <div class="label">Average Response Time</div>
+            <div class="value" id="stat-response" style="color:var(--accent-blue);">18:42</div>
+            <div class="subtext">Mean completion duration across the active selection</div>
+        </div>
+        <div class="metric-tile">
+            <div class="label">Average Score</div>
+            <div class="value" id="stat-score" style="color:var(--accent-yellow);">78%</div>
+            <div class="subtext">Composite scoring benchmark for recent IR performance</div>
+        </div>
+    </section>
+
+    <section class="card console-bar section-space">
+        <div style="display:grid;grid-template-columns:minmax(0,1.4fr) repeat(2, minmax(180px, 1fr));gap:0.75rem;align-items:center;">
+            <div class="console-search">
+                <i data-lucide="search"></i>
+                <input id="history-search" type="text" placeholder='Search by scenario, trainee, or team...' aria-label="Search report records">
+            </div>
+            <select id="scenario-filter" class="form-input" style="margin-bottom:0;">
+                <option value="all" selected>All Scenarios</option>
+                <option value="A">Scenario A – Ransomware</option>
+                <option value="B">Scenario B – Compromised Host</option>
+            </select>
+            <select id="status-filter" class="form-input" style="margin-bottom:0;">
+                <option value="all" selected>All Statuses</option>
+                <option value="passed">Passed</option>
+                <option value="needs improvement">Needs Improvement</option>
+                <option value="failed">Failed</option>
+            </select>
+        </div>
+        <div class="console-actions">
+            <span id="filter-summary" class="surface-note">Showing 5 results</span>
+            <button class="btn btn-secondary" id="clear-filters-btn" type="button">Clear Filters</button>
+        </div>
+    </section>
+
+    <section>
+        <div class="tabs" role="tablist" aria-label="Reports sections">
+            <div class="tab active" data-tab="tab-history" role="tab" aria-selected="true">Simulation History</div>
+            <div class="tab" data-tab="tab-feedback" role="tab" aria-selected="false">Guided Feedback</div>
+            <div class="tab" data-tab="tab-comparison" role="tab" aria-selected="false">Industry Comparison</div>
+        </div>
+
+        <div class="tab-content active" id="tab-history">
+            <div class="card">
+                <div class="toolbar" style="margin-bottom:1rem;">
+                    <div class="card-title" style="margin-bottom:0;"><i data-lucide="history"></i> Simulation History</div>
+                    <div class="surface-note">Select a row to inspect outcome quality, gaps, and follow-up coaching.</div>
+                </div>
+
+                <div class="table-wrap">
+                    <table class="dense-table">
+                        <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Scenario</th>
+                            <th>Trainee / Team</th>
+                            <th>Duration</th>
+                            <th>Score</th>
+                            <th>Status</th>
+                        </tr>
+                        </thead>
+                        <tbody id="history-table-body">
+                        <tr class="report-row" tabindex="0" data-report-id="r1" data-scenario="A" data-status="Passed" data-date="2026-03-17" data-team="Blue Team Alpha" data-duration="22:15" data-score="85" data-title="Scenario A – Ransomware">
+                            <td>2026-03-17</td>
+                            <td>A – Ransomware</td>
+                            <td>Blue Team Alpha</td>
+                            <td>22:15</td>
+                            <td>85%</td>
+                            <td><span class="status-badge green">Passed</span></td>
+                        </tr>
+                        <tr class="report-row" tabindex="0" data-report-id="r2" data-scenario="B" data-status="Passed" data-date="2026-03-15" data-team="Analyst_1" data-duration="28:40" data-score="72" data-title="Scenario B – Compromised Host">
+                            <td>2026-03-15</td>
+                            <td>B – Compromised Host</td>
+                            <td>Analyst_1</td>
+                            <td>28:40</td>
+                            <td>72%</td>
+                            <td><span class="status-badge green">Passed</span></td>
+                        </tr>
+                        <tr class="report-row" tabindex="0" data-report-id="r3" data-scenario="A" data-status="Needs Improvement" data-date="2026-03-12" data-team="Red Team Beta" data-duration="38:05" data-score="61" data-title="Scenario A – Ransomware">
+                            <td>2026-03-12</td>
+                            <td>A – Ransomware</td>
+                            <td>Red Team Beta</td>
+                            <td>38:05</td>
+                            <td>61%</td>
+                            <td><span class="status-badge yellow">Needs Improvement</span></td>
+                        </tr>
+                        <tr class="report-row" tabindex="0" data-report-id="r4" data-scenario="B" data-status="Passed" data-date="2026-03-10" data-team="Blue Team Alpha" data-duration="19:30" data-score="91" data-title="Scenario B – Compromised Host">
+                            <td>2026-03-10</td>
+                            <td>B – Compromised Host</td>
+                            <td>Blue Team Alpha</td>
+                            <td>19:30</td>
+                            <td>91%</td>
+                            <td><span class="status-badge green">Passed</span></td>
+                        </tr>
+                        <tr class="report-row" tabindex="0" data-report-id="r5" data-scenario="A" data-status="Failed" data-date="2026-03-08" data-team="Analyst_2" data-duration="44:10" data-score="55" data-title="Scenario A – Ransomware">
+                            <td>2026-03-08</td>
+                            <td>A – Ransomware</td>
+                            <td>Analyst_2</td>
+                            <td>44:10</td>
+                            <td>55%</td>
+                            <td><span class="status-badge red">Failed</span></td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="grid-2-1" style="margin-top:1.25rem;">
+                <div class="card">
+                    <div class="card-title"><i data-lucide="file-search"></i> Selected Report</div>
+                    <div id="report-detail-panel">
+                        <h3 style="margin-bottom:0.75rem;">Select a simulation result</h3>
+                        <p class="surface-note" style="font-size:0.9rem;">Choose a row from the simulation history table to view score context, strengths, and follow-up actions.</p>
+                    </div>
+                </div>
+
+                <div class="stack">
+                    <div class="card">
+                        <div class="card-title"><i data-lucide="trending-up"></i> Performance Snapshot</div>
+                        <div style="margin-bottom:1rem;">
+                            <div class="toolbar" style="margin-bottom:0.35rem;">
+                                <span>Containment Readiness</span>
+                                <span id="snapshot-containment">82%</span>
+                            </div>
+                            <div class="progress-bar"><div class="progress-fill" id="containment-bar" style="width:82%;"></div></div>
+                        </div>
+                        <div style="margin-bottom:1rem;">
+                            <div class="toolbar" style="margin-bottom:0.35rem;">
+                                <span>Investigation Accuracy</span>
+                                <span id="snapshot-investigation">76%</span>
+                            </div>
+                            <div class="progress-bar"><div class="progress-fill" id="investigation-bar" style="width:76%;"></div></div>
+                        </div>
+                        <div>
+                            <div class="toolbar" style="margin-bottom:0.35rem;">
+                                <span>Communication Quality</span>
+                                <span id="snapshot-comms">88%</span>
+                            </div>
+                            <div class="progress-bar"><div class="progress-fill" id="comms-bar" style="width:88%;"></div></div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-title"><i data-lucide="bookmark"></i> Quick Actions</div>
+                        <div class="action-stack">
+                            <a href="active-lab.html" class="btn">Start New Simulation</a>
+                            <a href="mitre.html" class="btn btn-secondary">Review MITRE Coverage</a>
+                            <button class="btn btn-secondary" type="button" id="copy-summary-btn">Copy Summary</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="tab-content" id="tab-feedback">
+            <div class="card section-space">
+                <div class="card-title"><i data-lucide="message-circle"></i> Latest Feedback – Scenario A (Mar 17)</div>
+
+                <div class="alert-item success">
+                    <div class="alert-info">
+                        <h4>Strength: Rapid identification</h4>
+                        <p>Entry point was identified within three minutes, well ahead of the internal benchmark pace.</p>
+                    </div>
+                </div>
+
+                <div class="alert-item success">
+                    <div class="alert-info">
+                        <h4>Strength: Team communication</h4>
+                        <p>Incident channel usage remained consistent during containment and supported synchronized decision-making.</p>
+                    </div>
+                </div>
+
+                <div class="alert-item warning">
+                    <div class="alert-info">
+                        <h4>Improvement: Delayed C2 block</h4>
+                        <p>C2 traffic was blocked later than ideal. Earlier disruption would have reduced scenario impact.</p>
+                    </div>
+                </div>
+
+                <div class="alert-item">
+                    <div class="alert-info">
+                        <h4>Gap: Missing forensic snapshot</h4>
+                        <p>Memory or disk snapshot capture did not happen before eradication. Evidence preservation needs to move earlier.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid-2">
+                <div class="card">
+                    <div class="card-title"><i data-lucide="book-open"></i> Recommended Next Steps</div>
+                    <ul class="list-clean" style="font-size:0.92rem;">
+                        <li>Review the containment workflow before moving to eradication actions.</li>
+                        <li>Practice snapshot and preservation procedures inside the sandbox.</li>
+                        <li>Rehearse outbound blocking and credential review steps for faster response timing.</li>
+                    </ul>
+                </div>
+
+                <div class="card">
+                    <div class="card-title"><i data-lucide="check-square"></i> Coaching Checklist</div>
+                    <div class="toggle-row">
+                        <div>
+                            <div style="font-weight:600;font-size:0.92rem;">Document evidence before cleanup</div>
+                            <div class="surface-note">Preserve useful incident artifacts</div>
+                        </div>
+                        <div class="toggle on" data-static-toggle="true"></div>
+                    </div>
+                    <div class="toggle-row">
+                        <div>
+                            <div style="font-weight:600;font-size:0.92rem;">Validate containment before recovery</div>
+                            <div class="surface-note">Reduce repeat-compromise risk</div>
+                        </div>
+                        <div class="toggle on" data-static-toggle="true"></div>
+                    </div>
+                    <div class="toggle-row">
+                        <div>
+                            <div style="font-weight:600;font-size:0.92rem;">Speed up outbound traffic response</div>
+                            <div class="surface-note">Improve command-and-control disruption timing</div>
+                        </div>
+                        <div class="toggle" data-static-toggle="true"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="tab-content" id="tab-comparison">
+            <div class="grid-2">
+                <div class="card">
+                    <div class="card-title"><i data-lucide="bar-chart-2"></i> Internal Benchmark Comparison</div>
+
+                    <div style="margin-bottom:1rem;">
+                        <div class="toolbar" style="margin-bottom:0.35rem;">
+                            <span>Average Team Score</span>
+                            <span>78%</span>
+                        </div>
+                        <div class="progress-bar"><div class="progress-fill" style="width:78%;"></div></div>
+                    </div>
+
+                    <div style="margin-bottom:1rem;">
+                        <div class="toolbar" style="margin-bottom:0.35rem;">
+                            <span>Best Recent Run</span>
+                            <span>91%</span>
+                        </div>
+                        <div class="progress-bar"><div class="progress-fill" style="width:91%;"></div></div>
+                    </div>
+
+                    <div>
+                        <div class="toolbar" style="margin-bottom:0.35rem;">
+                            <span>Improvement Opportunity</span>
+                            <span>22%</span>
+                        </div>
+                        <div class="progress-bar"><div class="progress-fill" style="width:22%;"></div></div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-title"><i data-lucide="award"></i> Observations</div>
+                    <ul class="list-clean" style="font-size:0.92rem;">
+                        <li>Scenario B runs are generally faster, but Scenario A exposes more meaningful containment weaknesses.</li>
+                        <li>Higher scores correlate strongly with early evidence preservation and cleaner team communication.</li>
+                        <li>The largest consistent uplift area is reducing the gap between detection and first containment action.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+</main>
+
+<script src="js/shared.js"></script>
+<script src="js/pages/reports.js"></script>
+</body>
+</html>

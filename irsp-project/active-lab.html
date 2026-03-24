@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ResponseGrid - Active Lab</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lucide/0.263.0/lucide.min.js"></script>
+    <link rel="stylesheet" href="css/shared.css">
+</head>
+<body>
+
+<nav aria-label="Primary navigation">
+    <a href="dashboard.html" class="logo"><i data-lucide="shield-alert"></i> ResponseGrid</a>
+    <a href="dashboard.html" class="nav-item"><i data-lucide="layout-dashboard"></i> Dashboard</a>
+    <a href="active-lab.html" class="nav-item"><i data-lucide="terminal"></i> Active Lab</a>
+    <a href="reports.html" class="nav-item"><i data-lucide="file-text"></i> Reports</a>
+    <a href="team.html" class="nav-item"><i data-lucide="users"></i> Team</a>
+    <a href="mitre.html" class="nav-item"><i data-lucide="shield"></i> MITRE ATT&amp;CK</a>
+    <div class="nav-bottom">
+        <a href="settings.html" class="nav-item"><i data-lucide="settings"></i> Settings</a>
+    </div>
+</nav>
+
+<main>
+    <header>
+        <div>
+            <div class="status-badge green">Lab Environment Ready</div>
+            <h1>Simulation Launch Bay</h1>
+            <p class="subtitle">Browse exercises by difficulty, platform, and focus area. Launch live scenarios, preview planned modules, and maintain continuity with resume-ready lab state.</p>
+        </div>
+        <div>
+            <div class="header-panel">
+                <div class="eyebrow">Available Paths</div>
+                <div class="value" id="lab-available-paths">06</div>
+                <div class="surface-note" id="lab-available-paths-note">Two live exercises, four prototype modules</div>
+            </div>
+            <button class="btn btn-secondary" id="resume-last-btn" type="button" style="display:none;">
+                <i data-lucide="history"></i> Resume Last Scenario
+            </button>
+        </div>
+    </header>
+
+    <section class="grid-3 section-space">
+        <div class="card stat-card">
+            <div>
+                <div class="stat-value" id="lab-metric-advanced" style="color:var(--accent-red);">01</div>
+                <div class="stat-label">Advanced Exercise</div>
+            </div>
+            <div class="stat-caption" id="lab-metric-advanced-note">Scenario A delivers the highest-pressure ransomware containment drill.</div>
+        </div>
+        <div class="card stat-card">
+            <div>
+                <div class="stat-value" id="lab-metric-live" style="color:var(--accent-blue);">02</div>
+                <div class="stat-label">Live Scenario Pages</div>
+            </div>
+            <div class="stat-caption" id="lab-metric-live-note">Launchable exercises currently support Linux/Docker and Windows host investigations.</div>
+        </div>
+        <div class="card stat-card">
+            <div>
+                <div class="stat-value" id="lab-metric-prototype" style="color:var(--accent-yellow);">04</div>
+                <div class="stat-label">Planned Modules</div>
+            </div>
+            <div class="stat-caption" id="lab-metric-prototype-note">Social engineering, DDoS, insider-risk, and cloud IAM modules are seeded for prototype review.</div>
+        </div>
+    </section>
+
+    <section class="card section-space" aria-labelledby="lab-controls-title">
+        <div class="toolbar" style="margin-bottom:1rem;">
+            <div class="card-title" id="lab-controls-title"><i data-lucide="sliders-horizontal"></i> Scenario Controls</div>
+            <div id="results-summary" class="surface-note">Showing 6 scenarios</div>
+        </div>
+
+        <div class="grid-3" style="gap:1rem;">
+            <div>
+                <label class="form-label" for="scenario-search">Search Scenarios</label>
+                <input id="scenario-search" type="text" class="form-input" placeholder="Search by name, skill, or platform..." style="margin-bottom:0;">
+            </div>
+
+            <div>
+                <label class="form-label" for="difficulty-filter">Difficulty</label>
+                <select id="difficulty-filter" class="form-input" style="margin-bottom:0;">
+                    <option value="all" selected>All Levels</option>
+                    <option value="beginner">Beginner</option>
+                    <option value="intermediate">Intermediate</option>
+                    <option value="advanced">Advanced</option>
+                </select>
+            </div>
+
+            <div>
+                <label class="form-label" for="platform-filter">Platform</label>
+                <select id="platform-filter" class="form-input" style="margin-bottom:0;">
+                    <option value="all" selected>All Platforms</option>
+                    <option value="linux">Linux / Docker</option>
+                    <option value="windows">Windows Server</option>
+                    <option value="social">Social Engineering</option>
+                    <option value="network">Network Defense</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="toolbar" style="margin-top:1rem;">
+            <div class="surface-note">Filter by learning objective, environment, or delivery readiness.</div>
+            <button class="btn btn-secondary" id="clear-filters-btn" type="button">Clear Filters</button>
+        </div>
+    </section>
+
+    <section class="section-space" aria-labelledby="available-scenarios-title">
+        <div class="toolbar" style="margin-bottom:1rem;">
+            <div class="card-title" id="available-scenarios-title"><i data-lucide="play-circle"></i> Available Simulations</div>
+            <div class="surface-note">Select a card to preview readiness and scenario framing before launch.</div>
+        </div>
+
+        <div class="grid-2" id="scenario-grid">
+            <article
+                class="scenario-card card"
+                data-title="Ransomware Containment"
+                data-difficulty="advanced"
+                data-platform="linux"
+                data-status="available"
+                data-url="scenario-a.html"
+                data-scenario-id="scenario-a"
+                tabindex="0"
+                role="button"
+                aria-label="Launch Scenario A Ransomware Containment"
+            >
+                <div class="toolbar" style="margin-bottom:0.9rem;">
+                    <span class="status-badge red">Critical</span>
+                    <span class="surface-note">Scenario A</span>
+                </div>
+
+                <h3><i data-lucide="lock"></i> Ransomware Containment</h3>
+
+                <p>Contain a ransomware strain in a Linux-based Docker lab, isolate the impacted workload, eradicate the malicious script, and restore safe operations under pressure.</p>
+
+                <div class="scenario-meta">
+                    <span><i data-lucide="clock"></i> 45 min</span>
+                    <span><i data-lucide="zap"></i> Advanced</span>
+                    <span><i data-lucide="box"></i> Docker/Linux</span>
+                </div>
+
+                <div>
+                    <span class="mitre-tag">T1486</span>
+                    <span class="mitre-tag">T1059</span>
+                    <span class="mitre-tag">T1110</span>
+                </div>
+
+                <div class="action-stack" style="margin-top:auto;padding-top:1rem;">
+                    <button class="btn launch-btn" type="button" data-url="scenario-a.html" data-scenario-id="scenario-a">
+                        <i data-lucide="rocket"></i> Launch Scenario
+                    </button>
+                    <button class="btn btn-secondary preview-btn" type="button" data-preview="scenario-a">
+                        <i data-lucide="eye"></i> Preview
+                    </button>
+                </div>
+            </article>
+
+            <article
+                class="scenario-card card"
+                data-title="Compromised System Investigation"
+                data-difficulty="intermediate"
+                data-platform="windows"
+                data-status="available"
+                data-url="scenario-b.html"
+                data-scenario-id="scenario-b"
+                tabindex="0"
+                role="button"
+                aria-label="Launch Scenario B Compromised System Investigation"
+            >
+                <div class="toolbar" style="margin-bottom:0.9rem;">
+                    <span class="status-badge yellow">High</span>
+                    <span class="surface-note">Scenario B</span>
+                </div>
+
+                <h3><i data-lucide="search"></i> Compromised System Investigation</h3>
+
+                <p>Investigate a compromised Windows host, build the incident timeline, validate indicators of compromise, and apply containment steps without losing evidence fidelity.</p>
+
+                <div class="scenario-meta">
+                    <span><i data-lucide="clock"></i> 30 min</span>
+                    <span><i data-lucide="zap"></i> Intermediate</span>
+                    <span><i data-lucide="monitor"></i> Windows Server</span>
+                </div>
+
+                <div>
+                    <span class="mitre-tag">T1566</span>
+                    <span class="mitre-tag">T1071</span>
+                    <span class="mitre-tag">T1021</span>
+                </div>
+
+                <div class="action-stack" style="margin-top:auto;padding-top:1rem;">
+                    <button class="btn launch-btn" type="button" data-url="scenario-b.html" data-scenario-id="scenario-b">
+                        <i data-lucide="rocket"></i> Launch Scenario
+                    </button>
+                    <button class="btn btn-secondary preview-btn" type="button" data-preview="scenario-b">
+                        <i data-lucide="eye"></i> Preview
+                    </button>
+                </div>
+            </article>
+
+            <article
+                class="scenario-card card"
+                data-title="Vishing and Social Engineering"
+                data-difficulty="beginner"
+                data-platform="social"
+                data-status="coming-soon"
+                data-url=""
+                data-scenario-id="scenario-c"
+                tabindex="0"
+                role="button"
+                aria-label="Preview Scenario C Vishing and Social Engineering"
+                style="opacity:0.9;"
+            >
+                <div class="toolbar" style="margin-bottom:0.9rem;">
+                    <span class="status-badge blue">Coming Soon</span>
+                    <span class="surface-note">Scenario C</span>
+                </div>
+
+                <h3><i data-lucide="phone"></i> Vishing and Social Engineering</h3>
+
+                <p>Respond to simulated AI-generated vishing calls, identify spear-phishing patterns, and execute escalation procedures with communication discipline.</p>
+
+                <div class="scenario-meta">
+                    <span><i data-lucide="clock"></i> 20 min</span>
+                    <span><i data-lucide="zap"></i> Beginner</span>
+                    <span><i data-lucide="user-check"></i> Social Engineering</span>
+                </div>
+
+                <div>
+                    <span class="mitre-tag">T1566</span>
+                    <span class="mitre-tag">T1598</span>
+                    <span class="mitre-tag">Voice Impersonation</span>
+                </div>
+
+                <div class="action-stack" style="margin-top:auto;padding-top:1rem;">
+                    <button class="btn btn-secondary preview-btn" type="button" data-preview="scenario-c">
+                        <i data-lucide="eye"></i> Preview
+                    </button>
+                </div>
+            </article>
+
+            <article
+                class="scenario-card card"
+                data-title="DDoS Mitigation"
+                data-difficulty="intermediate"
+                data-platform="network"
+                data-status="coming-soon"
+                data-url=""
+                data-scenario-id="scenario-d"
+                tabindex="0"
+                role="button"
+                aria-label="Preview Scenario D DDoS Mitigation"
+                style="opacity:0.9;"
+            >
+                <div class="toolbar" style="margin-bottom:0.9rem;">
+                    <span class="status-badge blue">Coming Soon</span>
+                    <span class="surface-note">Scenario D</span>
+                </div>
+
+                <h3><i data-lucide="wifi-off"></i> DDoS Mitigation</h3>
+
+                <p>Detect evidence of service degradation, analyze traffic patterns, and coordinate mitigation decisions to restore service availability under load.</p>
+
+                <div class="scenario-meta">
+                    <span><i data-lucide="clock"></i> 25 min</span>
+                    <span><i data-lucide="zap"></i> Intermediate</span>
+                    <span><i data-lucide="network"></i> Network Defense</span>
+                </div>
+
+                <div>
+                    <span class="mitre-tag">Traffic Analysis</span>
+                    <span class="mitre-tag">Availability</span>
+                    <span class="mitre-tag">Mitigation Response</span>
+                </div>
+
+                <div class="action-stack" style="margin-top:auto;padding-top:1rem;">
+                    <button class="btn btn-secondary preview-btn" type="button" data-preview="scenario-d">
+                        <i data-lucide="eye"></i> Preview
+                    </button>
+                </div>
+            </article>
+
+            <article
+                class="scenario-card card"
+                data-title="Insider Exfiltration Review"
+                data-difficulty="advanced"
+                data-platform="windows"
+                data-status="coming-soon"
+                data-url=""
+                data-scenario-id="scenario-e"
+                tabindex="0"
+                role="button"
+                aria-label="Preview Scenario E Insider Exfiltration Review"
+                style="opacity:0.9;"
+            >
+                <div class="toolbar" style="margin-bottom:0.9rem;">
+                    <span class="status-badge blue">Prototype</span>
+                    <span class="surface-note">Scenario E</span>
+                </div>
+
+                <h3><i data-lucide="hard-drive-download"></i> Insider Exfiltration Review</h3>
+
+                <p>Investigate unusual archive creation, staged USB activity, and outbound file transfer events from a privileged user workstation.</p>
+
+                <div class="scenario-meta">
+                    <span><i data-lucide="clock"></i> 35 min</span>
+                    <span><i data-lucide="zap"></i> Advanced</span>
+                    <span><i data-lucide="monitor-up"></i> Windows Endpoint</span>
+                </div>
+
+                <div>
+                    <span class="mitre-tag">T1567</span>
+                    <span class="mitre-tag">T1020</span>
+                    <span class="mitre-tag">Data Staging</span>
+                </div>
+
+                <div class="action-stack" style="margin-top:auto;padding-top:1rem;">
+                    <button class="btn btn-secondary preview-btn" type="button" data-preview="scenario-e">
+                        <i data-lucide="eye"></i> Preview
+                    </button>
+                </div>
+            </article>
+
+            <article
+                class="scenario-card card"
+                data-title="Cloud IAM Privilege Escalation"
+                data-difficulty="intermediate"
+                data-platform="network"
+                data-status="coming-soon"
+                data-url=""
+                data-scenario-id="scenario-f"
+                tabindex="0"
+                role="button"
+                aria-label="Preview Scenario F Cloud IAM Privilege Escalation"
+                style="opacity:0.9;"
+            >
+                <div class="toolbar" style="margin-bottom:0.9rem;">
+                    <span class="status-badge blue">Prototype</span>
+                    <span class="surface-note">Scenario F</span>
+                </div>
+
+                <h3><i data-lucide="cloud-cog"></i> Cloud IAM Privilege Escalation</h3>
+
+                <p>Trace suspicious role assumption, token abuse, and policy changes across a hybrid cloud training tenant.</p>
+
+                <div class="scenario-meta">
+                    <span><i data-lucide="clock"></i> 28 min</span>
+                    <span><i data-lucide="zap"></i> Intermediate</span>
+                    <span><i data-lucide="cloud"></i> Cloud / Network</span>
+                </div>
+
+                <div>
+                    <span class="mitre-tag">T1098</span>
+                    <span class="mitre-tag">T1078</span>
+                    <span class="mitre-tag">IAM Drift</span>
+                </div>
+
+                <div class="action-stack" style="margin-top:auto;padding-top:1rem;">
+                    <button class="btn btn-secondary preview-btn" type="button" data-preview="scenario-f">
+                        <i data-lucide="eye"></i> Preview
+                    </button>
+                </div>
+            </article>
+        </div>
+    </section>
+
+    <section class="grid-2-1">
+        <div class="card">
+            <div class="card-title"><i data-lucide="info"></i> Scenario Details</div>
+            <div id="scenario-details">
+                <h3 style="margin-bottom:0.75rem;">Select a scenario</h3>
+                <p class="surface-note">Click any scenario card to preview difficulty, environment, expected objectives, and launch readiness.</p>
+            </div>
+        </div>
+
+        <div class="stack">
+            <div class="card">
+                <div class="card-title"><i data-lucide="activity"></i> Lab Readiness</div>
+                <div class="toggle-row">
+                    <div>
+                        <div style="font-weight:600;font-size:0.92rem;">Scenario Engine</div>
+                        <div class="surface-note">Interactive front-end simulation flow available now</div>
+                    </div>
+                    <div class="status-badge green">Ready</div>
+                </div>
+                <div class="toggle-row">
+                    <div>
+                        <div style="font-weight:600;font-size:0.92rem;">Navigation Links</div>
+                        <div class="surface-note">Scenario routing and page flow are configured</div>
+                    </div>
+                    <div class="status-badge green">Ready</div>
+                </div>
+                <div class="toggle-row">
+                    <div>
+                        <div style="font-weight:600;font-size:0.92rem;">Upcoming Modules</div>
+                        <div class="surface-note">Scenarios C and D remain roadmap items</div>
+                    </div>
+                    <div class="status-badge blue">Pending</div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title"><i data-lucide="clipboard-list"></i> Quick Notes</div>
+                <ul class="list-clean" style="font-size:0.92rem;">
+                    <li>Scenario A is the highest-intensity path and centers on ransomware containment discipline.</li>
+                    <li>Scenario B is the stronger fit for evidence mapping, timeline work, and host-oriented investigation.</li>
+                    <li>Your most recently launched scenario is stored locally and surfaced as a resume action.</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <section class="grid-2 section-space">
+        <div class="card">
+            <div class="toolbar" style="margin-bottom:1rem;">
+                <div class="card-title"><i data-lucide="history"></i> Recent Prototype Runs</div>
+                <div class="surface-note">Dummy simulation records for stakeholder walkthroughs.</div>
+            </div>
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                    <tr>
+                        <th>Start</th>
+                        <th>Scenario</th>
+                        <th>Team</th>
+                        <th>Status</th>
+                        <th>Score</th>
+                    </tr>
+                    </thead>
+                    <tbody id="lab-runs-body">
+                    <tr>
+                        <td>2026-03-24 09:15</td>
+                        <td>Scenario A</td>
+                        <td>Blue Team Alpha</td>
+                        <td><span class="status-badge yellow">Running</span></td>
+                        <td>--</td>
+                    </tr>
+                    <tr>
+                        <td>2026-03-24 08:10</td>
+                        <td>Scenario B</td>
+                        <td>Analyst Cohort 2</td>
+                        <td><span class="status-badge green">Completed</span></td>
+                        <td>81%</td>
+                    </tr>
+                    <tr>
+                        <td>2026-03-23 15:45</td>
+                        <td>Scenario A</td>
+                        <td>Red Team Beta</td>
+                        <td><span class="status-badge red">Timed Out</span></td>
+                        <td>58%</td>
+                    </tr>
+                    <tr>
+                        <td>2026-03-23 13:20</td>
+                        <td>Scenario D</td>
+                        <td>Network Defense Lab</td>
+                        <td><span class="status-badge blue">Planned</span></td>
+                        <td>--</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="toolbar" style="margin-bottom:1rem;">
+                <div class="card-title"><i data-lucide="server-cog"></i> Seeded Lab Assets</div>
+                <div class="surface-note">Prototype infrastructure inventory used across scenarios.</div>
+            </div>
+            <ul class="list-clean" id="lab-assets-list" style="font-size:0.9rem;">
+                <li><strong>docker-host-02</strong> | Ubuntu 22.04 | shared volumes mounted to `/srv/shared`</li>
+                <li><strong>WS-FINANCE-03</strong> | Windows Server 2022 | Office macros enabled for training</li>
+                <li><strong>edge-fw-01</strong> | Palo Alto traffic logs forwarded every 15 sec</li>
+                <li><strong>mail-gw-01</strong> | Microsoft 365 message trace feed enabled</li>
+                <li><strong>siem-lab-core</strong> | Prototype event index: `responsegrid`, retention: 30 days</li>
+            </ul>
+        </div>
+    </section>
+
+    <section class="grid-2 section-space">
+        <div class="card">
+            <div class="toolbar" style="margin-bottom:1rem;">
+                <div class="card-title"><i data-lucide="terminal-square"></i> Prototype Search Shell</div>
+                <div class="surface-note">Dummy search workflow for MVP walkthroughs.</div>
+            </div>
+            <div class="shell-window">
+                <div class="shell-header">
+                    <div class="shell-title">Saved Search: Launch Readiness</div>
+                    <div class="shell-tabs">
+                        <span class="shell-tab active">Search</span>
+                        <span class="shell-tab">Results</span>
+                    </div>
+                </div>
+                <div class="shell-body">
+<pre class="shell-code" id="lab-readiness-shell"><span class="accent">search</span> index=responsegrid sourcetype=lab:status scenario_id=*
+| stats latest(status) as status latest(owner) as owner latest(readiness) as readiness by scenario_id
+| sort scenario_id
+
+scenario-a status=ready owner=Blue Team Alpha readiness=98
+scenario-b status=ready owner=Analyst Cohort 2 readiness=96
+scenario-c status=prototype owner=Awareness Lab readiness=62
+scenario-d status=prototype owner=Network Defense Lab readiness=58
+scenario-e status=prototype owner=Insider Risk PM readiness=54
+scenario-f status=prototype owner=Cloud IAM Team readiness=57</pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="toolbar" style="margin-bottom:1rem;">
+                <div class="card-title"><i data-lucide="file-json-2"></i> Seed Data Snapshot</div>
+                <div class="surface-note">Example prototype artifacts loaded into the MVP.</div>
+            </div>
+            <div class="shell-window">
+                <div class="shell-header">
+                    <div class="shell-title">Scenario Seed Config</div>
+                    <div class="shell-tabs">
+                        <span class="shell-tab active">JSON</span>
+                    </div>
+                </div>
+                <div class="shell-body">
+<pre class="shell-code" id="lab-seed-snapshot">{
+  "scenario_id": "scenario-a",
+  "alerts_seeded": 27,
+  "hosts": ["container-01", "docker-host-02", "edge-fw-01"],
+  "mail_artifacts": 4,
+  "network_sessions": 188,
+  "mitre_tags": ["T1486", "T1059", "T1110", "T1071"],
+  "demo_mode": true
+}</pre>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div
+        id="lab-modal"
+        style="display:none;position:fixed;inset:0;background:rgba(2,6,23,0.78);z-index:999;align-items:center;justify-content:center;padding:1rem;"
+        aria-hidden="true"
+    >
+        <div
+            class="card"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="lab-modal-title"
+            style="width:min(720px, 100%);max-height:85vh;overflow:auto;"
+        >
+            <div class="toolbar" style="margin-bottom:1rem;">
+                <div>
+                    <div class="card-title" id="lab-modal-title" style="margin-bottom:0.3rem;"><i data-lucide="eye"></i> Scenario Preview</div>
+                    <p id="lab-modal-subtitle" class="surface-note"></p>
+                </div>
+                <button class="btn btn-secondary" type="button" id="close-modal-btn">Close</button>
+            </div>
+
+            <div id="lab-modal-body" style="font-size:0.92rem;"></div>
+        </div>
+    </div>
+</main>
+
+<script src="js/shared.js"></script>
+<script src="js/services/api-client.js"></script>
+<script src="js/pages/active-lab.js"></script>
+</body>
+</html>

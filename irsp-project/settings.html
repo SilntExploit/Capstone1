@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ResponseGrid - Settings</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lucide/0.263.0/lucide.min.js"></script>
+    <link rel="stylesheet" href="css/shared.css">
+</head>
+<body>
+
+<nav aria-label="Primary navigation">
+    <a href="dashboard.html" class="logo"><i data-lucide="shield-alert"></i> ResponseGrid</a>
+    <a href="dashboard.html" class="nav-item"><i data-lucide="layout-dashboard"></i> Dashboard</a>
+    <a href="active-lab.html" class="nav-item"><i data-lucide="terminal"></i> Active Lab</a>
+    <a href="reports.html" class="nav-item"><i data-lucide="file-text"></i> Reports</a>
+    <a href="team.html" class="nav-item"><i data-lucide="users"></i> Team</a>
+    <a href="mitre.html" class="nav-item"><i data-lucide="shield"></i> MITRE ATT&amp;CK</a>
+    <div class="nav-bottom">
+        <a href="settings.html" class="nav-item"><i data-lucide="settings"></i> Settings</a>
+    </div>
+</nav>
+
+<main>
+    <header>
+        <div>
+            <div class="status-badge blue">Platform Configuration</div>
+            <h1>Settings</h1>
+            <p class="subtitle">Control profile data, lab defaults, notification behavior, and security preferences for the ResponseGrid workspace.</p>
+        </div>
+        <div>
+            <button class="btn btn-secondary" id="reset-settings-btn" type="button">
+                <i data-lucide="rotate-ccw"></i> Reset
+            </button>
+            <button class="btn btn-success" id="save-settings-btn" type="button">
+                <i data-lucide="save"></i> Save Changes
+            </button>
+        </div>
+    </header>
+
+    <div class="card section-space" style="display:none;" id="settings-status-card">
+        <div class="card-title"><i data-lucide="info"></i> Status</div>
+        <p id="settings-status-text" class="surface-note" style="margin:0;">Settings ready.</p>
+    </div>
+
+    <section>
+        <div class="tabs" role="tablist" aria-label="Settings sections">
+            <div class="tab active" data-tab="tab-general" role="tab" aria-selected="true">General</div>
+            <div class="tab" data-tab="tab-environment" role="tab" aria-selected="false">Lab Environment</div>
+            <div class="tab" data-tab="tab-notifications" role="tab" aria-selected="false">Notifications</div>
+            <div class="tab" data-tab="tab-security" role="tab" aria-selected="false">Security</div>
+        </div>
+
+        <div class="tab-content active" id="tab-general">
+            <div class="grid-2">
+                <div class="card">
+                    <div class="card-title"><i data-lucide="user"></i> Profile Settings</div>
+
+                    <label class="form-label" for="display-name">Display Name</label>
+                    <input type="text" class="form-input" id="display-name" value="Jordan Davis" maxlength="60">
+
+                    <label class="form-label" for="email">Email</label>
+                    <input type="email" class="form-input" id="email" value="jordan@corp.local" maxlength="120">
+
+                    <label class="form-label" for="role">Role</label>
+                    <select class="form-input" id="role">
+                        <option selected>IR Lead</option>
+                        <option>SOC Analyst</option>
+                        <option>Forensic Analyst</option>
+                        <option>Network Analyst</option>
+                        <option>Trainee</option>
+                    </select>
+
+                    <label class="form-label" for="organization">Organization</label>
+                    <input type="text" class="form-input" id="organization" value="ResponseGrid Training Lab" maxlength="100">
+                </div>
+
+                <div class="card">
+                    <div class="card-title"><i data-lucide="palette"></i> Appearance</div>
+
+                    <div class="toggle-row">
+                        <div>
+                            <div style="font-weight:600;font-size:0.92rem;">Dark Mode</div>
+                            <div class="surface-note">Use the dark command-center theme across the platform</div>
+                        </div>
+                        <div class="toggle settings-toggle" data-setting="darkMode" role="switch" aria-checked="false" tabindex="0"></div>
+                    </div>
+
+                    <div class="toggle-row">
+                        <div>
+                            <div style="font-weight:600;font-size:0.92rem;">Compact Sidebar</div>
+                            <div class="surface-note">Collapse navigation labels and emphasize icon-based browsing</div>
+                        </div>
+                        <div class="toggle settings-toggle" data-setting="compactSidebar" role="switch" aria-checked="false" tabindex="0"></div>
+                    </div>
+
+                    <div class="toggle-row">
+                        <div>
+                            <div style="font-weight:600;font-size:0.92rem;">Show Timer in Header</div>
+                            <div class="surface-note">Display scenario timers across simulation views</div>
+                        </div>
+                        <div class="toggle on settings-toggle" data-setting="showTimer" role="switch" aria-checked="true" tabindex="0"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="tab-content" id="tab-environment">
+            <div class="grid-2">
+                <div class="card">
+                    <div class="card-title"><i data-lucide="box"></i> Container Settings</div>
+
+                    <label class="form-label" for="default-os">Default Container OS</label>
+                    <select class="form-input" id="default-os">
+                        <option selected>Ubuntu 22.04 LTS</option>
+                        <option>Debian 12</option>
+                        <option>Alpine 3.18</option>
+                        <option>Windows Server 2022</option>
+                    </select>
+
+                    <label class="form-label" for="max-containers">Max Containers per Simulation</label>
+                    <input type="number" class="form-input" id="max-containers" value="4" min="1" max="12">
+
+                    <label class="form-label" for="ram-limit">Container RAM Limit</label>
+                    <select class="form-input" id="ram-limit">
+                        <option>512 MB</option>
+                        <option selected>1 GB</option>
+                        <option>2 GB</option>
+                        <option>4 GB</option>
+                    </select>
+
+                    <label class="form-label" style="margin-bottom:0.75rem;">Auto-Destroy After Sim</label>
+                    <div class="toggle-row" style="border:none;padding:0;">
+                        <span>Destroy containers when simulation ends</span>
+                        <div class="toggle on settings-toggle" data-setting="autoDestroy" role="switch" aria-checked="true" tabindex="0"></div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-title"><i data-lucide="network"></i> Network Configuration</div>
+
+                    <label class="form-label" for="lab-subnet">Lab Subnet</label>
+                    <input type="text" class="form-input" id="lab-subnet" value="192.168.100.0/24">
+
+                    <label class="form-label" for="dns-server">DNS Server</label>
+                    <input type="text" class="form-input" id="dns-server" value="192.168.100.1">
+
+                    <label class="form-label" style="margin-bottom:0.75rem;">Enable Internet Access for Containers</label>
+                    <div class="toggle-row" style="border:none;padding:0;">
+                        <span>Allow outbound connections in the sandboxed lab</span>
+                        <div class="toggle settings-toggle" data-setting="internetAccess" role="switch" aria-checked="false" tabindex="0"></div>
+                    </div>
+
+                    <label class="form-label" for="log-retention" style="margin-top:1rem;">SIEM Log Retention</label>
+                    <select class="form-input" id="log-retention">
+                        <option>7 days</option>
+                        <option selected>30 days</option>
+                        <option>90 days</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <div class="tab-content" id="tab-notifications">
+            <div class="card" style="max-width:760px;">
+                <div class="card-title"><i data-lucide="bell"></i> Notification Preferences</div>
+
+                <div class="toggle-row">
+                    <div>
+                        <div style="font-weight:600;font-size:0.92rem;">Email Alerts</div>
+                        <div class="surface-note">Receive email when a simulation completes</div>
+                    </div>
+                    <div class="toggle on settings-toggle" data-setting="emailAlerts" role="switch" aria-checked="true" tabindex="0"></div>
+                </div>
+
+                <div class="toggle-row">
+                    <div>
+                        <div style="font-weight:600;font-size:0.92rem;">In-App SIEM Alerts</div>
+                        <div class="surface-note">Show real-time alert notifications inside the platform</div>
+                    </div>
+                    <div class="toggle on settings-toggle" data-setting="inAppAlerts" role="switch" aria-checked="true" tabindex="0"></div>
+                </div>
+
+                <div class="toggle-row">
+                    <div>
+                        <div style="font-weight:600;font-size:0.92rem;">Team Activity</div>
+                        <div class="surface-note">Notify when team members join or leave</div>
+                    </div>
+                    <div class="toggle settings-toggle" data-setting="teamActivity" role="switch" aria-checked="false" tabindex="0"></div>
+                </div>
+
+                <div class="toggle-row">
+                    <div>
+                        <div style="font-weight:600;font-size:0.92rem;">Weekly Summary</div>
+                        <div class="surface-note">Receive a weekly performance digest</div>
+                    </div>
+                    <div class="toggle on settings-toggle" data-setting="weeklySummary" role="switch" aria-checked="true" tabindex="0"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="tab-content" id="tab-security">
+            <div class="grid-2">
+                <div class="card">
+                    <div class="card-title"><i data-lucide="lock"></i> Authentication</div>
+
+                    <label class="form-label" for="current-password">Current Password</label>
+                    <input type="password" class="form-input" id="current-password" placeholder="********">
+
+                    <label class="form-label" for="new-password">New Password</label>
+                    <input type="password" class="form-input" id="new-password" placeholder="Enter new password">
+
+                    <label class="form-label" for="confirm-password">Confirm Password</label>
+                    <input type="password" class="form-input" id="confirm-password" placeholder="Confirm new password">
+
+                    <button class="btn" id="update-password-btn" type="button" style="margin-top:0.5rem;">Update Password</button>
+                </div>
+
+                <div class="card">
+                    <div class="card-title"><i data-lucide="shield-check"></i> Security Options</div>
+
+                    <div class="toggle-row">
+                        <div>
+                            <div style="font-weight:600;font-size:0.92rem;">Two-Factor Authentication</div>
+                            <div class="surface-note">Add an additional verification layer</div>
+                        </div>
+                        <div class="toggle settings-toggle" data-setting="twoFactor" role="switch" aria-checked="false" tabindex="0"></div>
+                    </div>
+
+                    <div class="toggle-row">
+                        <div>
+                            <div style="font-weight:600;font-size:0.92rem;">Session Timeout (30 min)</div>
+                            <div class="surface-note">Auto-logout on inactivity</div>
+                        </div>
+                        <div class="toggle on settings-toggle" data-setting="sessionTimeout" role="switch" aria-checked="true" tabindex="0"></div>
+                    </div>
+
+                    <div class="toggle-row">
+                        <div>
+                            <div style="font-weight:600;font-size:0.92rem;">Audit Logging</div>
+                            <div class="surface-note">Record user actions for traceability</div>
+                        </div>
+                        <div class="toggle on settings-toggle" data-setting="auditLogging" role="switch" aria-checked="true" tabindex="0"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</main>
+
+<script src="js/shared.js"></script>
+<script src="js/pages/settings.js"></script>
+</body>
+</html>

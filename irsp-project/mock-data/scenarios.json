@@ -1,0 +1,48 @@
+{
+  "items": [
+    {
+      "id": "scenario-a",
+      "name": "Ransomware Containment",
+      "status": "ready",
+      "environment": "Linux / Docker",
+      "difficulty": "advanced",
+      "owner": "Blue Team Alpha",
+      "readiness": 98,
+      "seeded_alerts": 27,
+      "seeded_events": 42381
+    },
+    {
+      "id": "scenario-b",
+      "name": "Compromised System Investigation",
+      "status": "ready",
+      "environment": "Windows Server",
+      "difficulty": "intermediate",
+      "owner": "Analyst Cohort 2",
+      "readiness": 96,
+      "seeded_alerts": 19,
+      "seeded_events": 18422
+    },
+    {
+      "id": "scenario-c",
+      "name": "Vishing and Social Engineering",
+      "status": "prototype",
+      "environment": "Voice / Email",
+      "difficulty": "beginner",
+      "owner": "Awareness Lab",
+      "readiness": 62,
+      "seeded_alerts": 8,
+      "seeded_events": 920
+    },
+    {
+      "id": "scenario-d",
+      "name": "DDoS Mitigation",
+      "status": "prototype",
+      "environment": "Network Defense",
+      "difficulty": "intermediate",
+      "owner": "Network Defense Lab",
+      "readiness": 58,
+      "seeded_alerts": 12,
+      "seeded_events": 5410
+    }
+  ]
+}

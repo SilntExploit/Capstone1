@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ResponseGrid - Scenario B: Compromised System</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lucide/0.263.0/lucide.min.js"></script>
+    <link rel="stylesheet" href="css/shared.css">
+</head>
+<body>
+
+<nav aria-label="Primary navigation">
+    <a href="dashboard.html" class="logo"><i data-lucide="shield-alert"></i> ResponseGrid</a>
+    <a href="dashboard.html" class="nav-item"><i data-lucide="layout-dashboard"></i> Dashboard</a>
+    <a href="active-lab.html" class="nav-item"><i data-lucide="terminal"></i> Active Lab</a>
+    <a href="reports.html" class="nav-item"><i data-lucide="file-text"></i> Reports</a>
+    <a href="team.html" class="nav-item"><i data-lucide="users"></i> Team</a>
+    <a href="mitre.html" class="nav-item"><i data-lucide="shield"></i> MITRE ATT&amp;CK</a>
+    <div class="nav-bottom">
+        <a href="settings.html" class="nav-item"><i data-lucide="settings"></i> Settings</a>
+    </div>
+</nav>
+
+<main>
+    <header>
+        <div>
+            <div class="status-badge yellow">Investigation Active</div>
+            <h1>Scenario B: Compromised System Investigation</h1>
+            <p class="subtitle">Windows Server environment focused on phishing-driven compromise, IOC mapping, persistence review, and host-level containment with MITRE mappings for T1566, T1071, and T1021.</p>
+        </div>
+        <div>
+            <div class="header-panel">
+                <div class="eyebrow">Host Status</div>
+                <div class="value">At Risk</div>
+                <div class="surface-note">Credential theft and persistence indicators confirmed</div>
+            </div>
+            <div class="header-panel header-timer">
+                <div class="eyebrow">Time Remaining</div>
+                <div class="value" id="timer">00:30:00</div>
+                <div class="surface-note">Investigation window</div>
+            </div>
+        </div>
+    </header>
+
+    <section class="grid-3 section-space">
+        <div class="card stat-card">
+            <div>
+                <div class="stat-value" style="color:var(--accent-red);">04</div>
+                <div class="stat-label">Confirmed IOCs</div>
+            </div>
+            <div class="stat-caption">Domain, IP, tool, and phishing artifact are already visible in the evidence trail.</div>
+        </div>
+        <div class="card stat-card">
+            <div>
+                <div class="stat-value" style="color:var(--accent-blue);">20%</div>
+                <div class="stat-label">Objective Completion</div>
+            </div>
+            <div class="stat-caption">Initial attack vector is identified. Evidence mapping and full containment remain open.</div>
+        </div>
+        <div class="card stat-card">
+            <div>
+                <div class="stat-value" style="color:var(--accent-yellow);">LSASS</div>
+                <div class="stat-label">Credential Target</div>
+            </div>
+            <div class="stat-caption">Credential dumping activity via `procdump.exe` is the highest-value escalation clue.</div>
+        </div>
+    </section>
+
+    <div class="grid-2-1">
+        <div class="stack">
+            <div class="card">
+                <div class="card-title"><i data-lucide="bell"></i> SIEM Alerts</div>
+                <div class="alert-item warning">
+                    <div class="alert-info">
+                        <h4>Suspicious outbound DNS queries</h4>
+                        <p>WS-FINANCE-03 to `dns-tunnel.malware.io` | 1,200 queries per minute</p>
+                    </div>
+                    <button class="btn btn-secondary">Investigate</button>
+                </div>
+                <div class="alert-item">
+                    <div class="alert-info">
+                        <h4>Credential dump detected (LSASS)</h4>
+                        <p>`procdump.exe` accessing `lsass.exe` on WS-FINANCE-03</p>
+                    </div>
+                    <button class="btn btn-danger">Contain</button>
+                </div>
+                <div class="alert-item info">
+                    <div class="alert-info">
+                        <h4>New scheduled task created</h4>
+                        <p>Task `WindowsUpdate_svc` created with SYSTEM privileges for persistence</p>
+                    </div>
+                    <button class="btn btn-secondary">Review</button>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title"><i data-lucide="clipboard-list"></i> Evidence Board</div>
+                <div class="table-wrap">
+                    <table class="dense-table" id="scenario-b-evidence-board">
+                        <thead>
+                        <tr>
+                            <th>Indicator</th>
+                            <th>Type</th>
+                            <th>Severity</th>
+                            <th>Status</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr data-record-id="ioc-domain" data-indicator="dns-tunnel.malware.io" data-type="Domain" data-severity="Critical" data-status="Confirmed IOC" data-summary="High-volume DNS tunneling aligned with beaconing from the compromised workstation." data-json='{&#10;  "indicator": "dns-tunnel.malware.io",&#10;  "type": "domain",&#10;  "host": "WS-FINANCE-03",&#10;  "query_volume_per_min": 1200,&#10;  "first_seen": "2026-03-24T09:18:02Z",&#10;  "classification": "dns-tunneling",&#10;  "confidence": "high"&#10;}' data-note='Pivot to proxy and DNS telemetry. This IOC is the strongest command-and-control signal in the run.'>
+                            <td>dns-tunnel.malware.io</td>
+                            <td>Domain</td>
+                            <td><span class="status-badge red">Critical</span></td>
+                            <td>Confirmed IOC</td>
+                        </tr>
+                        <tr data-record-id="ioc-ip" data-indicator="203.0.113.42" data-type="IP Address" data-severity="Critical" data-status="C2 Server" data-summary="Outbound TLS sessions from the workstation and proxy tier resolve to the active attacker node." data-json='{&#10;  "indicator": "203.0.113.42",&#10;  "type": "ip",&#10;  "dest_port": 443,&#10;  "sni": "update-win365.net",&#10;  "host": "WS-FINANCE-03",&#10;  "first_seen": "2026-03-24T09:18:05Z",&#10;  "classification": "c2",&#10;  "confidence": "high"&#10;}' data-note='Use this IOC for network block simulation and for validating proxy-enforced containment.'>
+                            <td>203.0.113.42</td>
+                            <td>IP Address</td>
+                            <td><span class="status-badge red">Critical</span></td>
+                            <td>C2 Server</td>
+                        </tr>
+                        <tr data-record-id="ioc-tool" data-indicator="procdump.exe" data-type="Tool" data-severity="High" data-status="Under Review" data-summary="Credential dumping utility executed against LSASS with memory-read permissions." data-json='{&#10;  "indicator": "procdump.exe",&#10;  "type": "tool",&#10;  "host": "WS-FINANCE-03",&#10;  "target_process": "lsass.exe",&#10;  "parent_process": "cmd.exe",&#10;  "user": "finance-user",&#10;  "classification": "credential_dumping",&#10;  "confidence": "medium-high"&#10;}' data-note='This artifact should drive both the credential-access finding and the host containment recommendation.'>
+                            <td>procdump.exe</td>
+                            <td>Tool</td>
+                            <td><span class="status-badge yellow">High</span></td>
+                            <td>Under Review</td>
+                        </tr>
+                        <tr data-record-id="ioc-file" data-indicator="phish-invoice.docm" data-type="File" data-severity="High" data-status="Initial Vector" data-summary="Macro-enabled document delivered through phishing and linked to the first PowerShell execution." data-json='{&#10;  "indicator": "phish-invoice.docm",&#10;  "type": "file",&#10;  "sender": "billing@invoice-sync.net",&#10;  "recipient": "finance-user@corp.local",&#10;  "macro_enabled": true,&#10;  "child_process": "powershell.exe",&#10;  "classification": "initial_access",&#10;  "confidence": "high"&#10;}' data-note='Keep this selected during stakeholder demos to show clear mapping from phishing artifact to host compromise.'>
+                            <td>phish-invoice.docm</td>
+                            <td>File</td>
+                            <td><span class="status-badge yellow">High</span></td>
+                            <td>Initial Vector</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title"><i data-lucide="terminal-square"></i> Investigation Query Shell</div>
+                <div class="shell-window" data-shell-group="scenario-b-query-shell">
+                    <div class="shell-header">
+                        <div class="shell-title">WS-FINANCE-03 / Investigation Query</div>
+                        <div class="shell-tabs">
+                            <button class="shell-tab active" type="button" data-shell-panel="search">Search</button>
+                            <button class="shell-tab" type="button" data-shell-panel="raw">Raw</button>
+                            <button class="shell-tab" type="button" data-shell-panel="timeline">Timeline</button>
+                        </div>
+                    </div>
+                    <div class="shell-body">
+                        <div class="shell-panel" data-shell-panel="search">
+<pre class="shell-code" id="scenario-b-search-panel"><span class="accent">search</span> index=responsegrid host=WS-FINANCE-03 (procdump.exe OR dns-tunnel.malware.io)
+| transaction maxspan=45m host
+| table _time process_name parent_process user dest_domain task_name
+
+09:14:25 powershell.exe WINWORD.EXE finance-user dns-tunnel.malware.io -
+09:31:42 procdump.exe cmd.exe finance-user - -
+09:45:14 schtasks.exe cmd.exe SYSTEM - WindowsUpdate_svc
+<span class="muted">correlation: phishing > PowerShell > LSASS dump > scheduled task persistence</span></pre>
+                        </div>
+                        <div class="shell-panel" data-shell-panel="raw" hidden>
+<pre class="shell-code" id="scenario-b-raw-panel">09:31:42 WS-FINANCE-03 sysmon:process Image=C:\Tools\procdump.exe TargetImage=C:\Windows\System32\lsass.exe GrantedAccess=0x1010
+09:45:14 WS-FINANCE-03 windows:taskscheduler TaskName=WindowsUpdate_svc Author=SYSTEM Trigger=AtLogon
+09:18:11 proxy-01 web:proxy dest_ip=203.0.113.42 sni=update-win365.net action=allowed</pre>
+                        </div>
+                        <div class="shell-panel" data-shell-panel="timeline" hidden>
+<pre class="shell-code" id="scenario-b-timeline-panel">09:12 phishing email delivered
+09:14 macro execution and PowerShell launcher
+09:18 outbound C2 established
+09:31 LSASS access observed
+09:45 scheduled task persistence registered</pre>
+                        </div>
+                    </div>
+                </div>
+                <div class="command-row">
+                    <input id="scenario-b-query-input" type="text" class="form-input" style="flex:1;" value="index=responsegrid host=WS-FINANCE-03 (procdump.exe OR dns-tunnel.malware.io)" placeholder="Enter search query...">
+                    <button class="btn" id="scenario-b-run-query" type="button">Run Query</button>
+                </div>
+                <div class="command-chips">
+                    <button class="chip-btn active" type="button" data-scenario-b-query="index=responsegrid host=WS-FINANCE-03 (procdump.exe OR dns-tunnel.malware.io)">Credential Dumping</button>
+                    <button class="chip-btn" type="button" data-scenario-b-query="index=responsegrid host=WS-FINANCE-03 (phish-invoice.docm OR powershell.exe)">Initial Access</button>
+                    <button class="chip-btn" type="button" data-scenario-b-query="index=responsegrid host=WS-FINANCE-03 (WindowsUpdate_svc OR schtasks.exe)">Persistence</button>
+                </div>
+                <p class="surface-note" id="scenario-b-query-status" style="margin-top:0.75rem;">Correlation view loaded for the active investigation chain.</p>
+            </div>
+
+            <div class="card">
+                <div class="card-title"><i data-lucide="clock-3"></i> Incident Timeline</div>
+                <div class="timeline">
+                    <div class="timeline-item">
+                        <span class="time">09:12:00</span>
+                        <p class="desc">Phishing email received by `finance-user@corp.local` with a macro-enabled attachment.</p>
+                    </div>
+                    <div class="timeline-item">
+                        <span class="time">09:14:22</span>
+                        <p class="desc">User opens `phish-invoice.docm` and the macro launches a PowerShell dropper.</p>
+                    </div>
+                    <div class="timeline-item">
+                        <span class="time">09:18:05</span>
+                        <p class="desc">Reverse shell established from WS-FINANCE-03 to 203.0.113.42:443.</p>
+                    </div>
+                    <div class="timeline-item">
+                        <span class="time">09:31:40</span>
+                        <p class="desc">Credentials dumped from `lsass.exe` using `procdump.exe`.</p>
+                    </div>
+                    <div class="timeline-item">
+                        <span class="time">09:45:12</span>
+                        <p class="desc">Persistence established via scheduled task `WindowsUpdate_svc`.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="toolbar" style="margin-bottom:1rem;">
+                    <div class="card-title"><i data-lucide="table-properties"></i> Indexed Investigation Logs</div>
+                    <div class="surface-note">Seeded endpoint and proxy data for prototype review.</div>
+                </div>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                        <tr>
+                            <th>_time</th>
+                            <th>host</th>
+                            <th>sourcetype</th>
+                            <th>event</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr>
+                            <td>09:14:25</td>
+                            <td>WS-FINANCE-03</td>
+                            <td>powershell:operational</td>
+                            <td>Encoded command executed from WINWORD.EXE child process</td>
+                        </tr>
+                        <tr>
+                            <td>09:18:11</td>
+                            <td>proxy-01</td>
+                            <td>web:proxy</td>
+                            <td>TLS session established to 203.0.113.42 SNI=update-win365.net</td>
+                        </tr>
+                        <tr>
+                            <td>09:31:42</td>
+                            <td>WS-FINANCE-03</td>
+                            <td>sysmon:process</td>
+                            <td>procdump.exe opened lsass.exe with PROCESS_VM_READ access</td>
+                        </tr>
+                        <tr>
+                            <td>09:45:14</td>
+                            <td>WS-FINANCE-03</td>
+                            <td>windows:taskscheduler</td>
+                            <td>Task registration name=WindowsUpdate_svc author=SYSTEM trigger=AtLogon</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="stack">
+            <div class="card">
+                <div class="card-title"><i data-lucide="target"></i> Objectives</div>
+                <ul class="objective-list">
+                    <li class="objective-item complete"><i data-lucide="check-circle" style="color:var(--accent-green);"></i> Identify initial attack vector</li>
+                    <li class="objective-item"><i data-lucide="circle" style="color:var(--text-dim);"></i> Map all IOCs to evidence board</li>
+                    <li class="objective-item"><i data-lucide="circle" style="color:var(--text-dim);"></i> Build complete incident timeline</li>
+                    <li class="objective-item"><i data-lucide="circle" style="color:var(--text-dim);"></i> Contain compromised system</li>
+                    <li class="objective-item"><i data-lucide="circle" style="color:var(--text-dim);"></i> Remove persistence mechanism</li>
+                </ul>
+                <p class="surface-note" style="margin-top:1rem;">Completion: 20%</p>
+                <div class="progress-bar"><div class="progress-fill" style="width:20%;"></div></div>
+            </div>
+
+            <div class="card">
+                <div class="toolbar" style="margin-bottom:0.85rem;">
+                    <div class="card-title"><i data-lucide="file-search-2"></i> Selected Evidence</div>
+                    <div class="surface-note" id="scenario-b-evidence-note">Click any evidence row to inspect context.</div>
+                </div>
+                <div class="key-value-list" style="margin-bottom:0.85rem;">
+                    <div class="key-value-item">
+                        <span class="key">Indicator</span>
+                        <span class="value" id="scenario-b-detail-indicator">dns-tunnel.malware.io</span>
+                    </div>
+                    <div class="key-value-item">
+                        <span class="key">Type</span>
+                        <span class="value" id="scenario-b-detail-type">Domain</span>
+                    </div>
+                    <div class="key-value-item">
+                        <span class="key">Severity</span>
+                        <span class="value" id="scenario-b-detail-severity" style="color:var(--accent-red);">Critical</span>
+                    </div>
+                    <div class="key-value-item">
+                        <span class="key">Status</span>
+                        <span class="value" id="scenario-b-detail-status">Confirmed IOC</span>
+                    </div>
+                </div>
+                <p class="detail-note" id="scenario-b-detail-summary" style="margin-bottom:0.85rem;">High-volume DNS tunneling aligned with beaconing from the compromised workstation.</p>
+                <div class="shell-window" data-shell-group="scenario-b-evidence-shell">
+                    <div class="shell-header">
+                        <div class="shell-title">Evidence Context</div>
+                        <div class="shell-tabs">
+                            <button class="shell-tab active" type="button" data-shell-panel="json">JSON</button>
+                            <button class="shell-tab" type="button" data-shell-panel="note">Analyst Note</button>
+                        </div>
+                    </div>
+                    <div class="shell-body">
+                        <div class="shell-panel" data-shell-panel="json">
+<pre class="shell-code" id="scenario-b-detail-json">{
+  "indicator": "dns-tunnel.malware.io",
+  "type": "domain",
+  "host": "WS-FINANCE-03",
+  "query_volume_per_min": 1200,
+  "first_seen": "2026-03-24T09:18:02Z",
+  "classification": "dns-tunneling",
+  "confidence": "high"
+}</pre>
+                        </div>
+                        <div class="shell-panel" data-shell-panel="note" hidden>
+<pre class="shell-code" id="scenario-b-detail-note-panel">Pivot to proxy and DNS telemetry. This IOC is the strongest command-and-control signal in the run.</pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title"><i data-lucide="message-square"></i> Team Comms</div>
+                <div class="chat-box">
+                    <div class="msg"><span class="msg-sender">System:</span> Scenario B started. Compromised host detected.</div>
+                    <div class="msg"><span class="msg-sender">IR Lead:</span> Starting with email gateway logs to confirm the entry path.</div>
+                    <div class="msg"><span class="msg-sender">Forensics:</span> LSASS dump confirmed. Credential theft is in progress.</div>
+                    <div class="msg"><span class="msg-sender">SOC:</span> DNS tunneling host has queried the suspicious domain 6,812 times in the last hour.</div>
+                </div>
+                <input type="text" class="form-input" style="margin-bottom:0;margin-top:0.85rem;" placeholder="Type message...">
+            </div>
+
+            <div class="card">
+                <div class="card-title"><i data-lucide="zap"></i> Quick Actions</div>
+                <div class="action-stack">
+                    <button class="btn btn-danger"><i data-lucide="plug-zap"></i> Isolate WS-FINANCE-03</button>
+                    <button class="btn btn-secondary"><i data-lucide="search-code"></i> Query SIEM Logs</button>
+                    <button class="btn btn-secondary"><i data-lucide="trash-2"></i> Remove Scheduled Task</button>
+                    <a href="reports.html" class="btn"><i data-lucide="bar-chart-3"></i> View Reports</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<script src="js/shared.js"></script>
+<script src="js/pages/scenario-b.js"></script>
+</body>
+</html>

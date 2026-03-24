@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ResponseGrid - Team Management</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lucide/0.263.0/lucide.min.js"></script>
+    <link rel="stylesheet" href="css/shared.css">
+</head>
+<body>
+
+<nav aria-label="Primary navigation">
+    <a href="dashboard.html" class="logo"><i data-lucide="shield-alert"></i> ResponseGrid</a>
+    <a href="dashboard.html" class="nav-item"><i data-lucide="layout-dashboard"></i> Dashboard</a>
+    <a href="active-lab.html" class="nav-item"><i data-lucide="terminal"></i> Active Lab</a>
+    <a href="reports.html" class="nav-item"><i data-lucide="file-text"></i> Reports</a>
+    <a href="team.html" class="nav-item"><i data-lucide="users"></i> Team</a>
+    <a href="mitre.html" class="nav-item"><i data-lucide="shield"></i> MITRE ATT&amp;CK</a>
+    <div class="nav-bottom">
+        <a href="settings.html" class="nav-item"><i data-lucide="settings"></i> Settings</a>
+    </div>
+</nav>
+
+<main>
+    <header>
+        <div>
+            <div class="status-badge blue">Team Operations</div>
+            <h1>Team Management</h1>
+            <p class="subtitle">Manage trainees, assign response roles, and maintain readiness across the incident response simulation program.</p>
+        </div>
+        <div>
+            <button class="btn"><i data-lucide="user-plus"></i> Add Member</button>
+        </div>
+    </header>
+
+    <section class="grid-3 section-space">
+        <div class="card stat-card">
+            <div>
+                <div class="stat-value" style="color:var(--accent-blue);">8</div>
+                <div class="stat-label">Total Members</div>
+            </div>
+            <div class="stat-caption">Core roster across incident command, SOC, forensics, and network roles.</div>
+        </div>
+        <div class="card stat-card">
+            <div>
+                <div class="stat-value" style="color:var(--accent-green);">5</div>
+                <div class="stat-label">Currently Online</div>
+            </div>
+            <div class="stat-caption">Analysts currently available for live scenarios and coaching workflows.</div>
+        </div>
+        <div class="card stat-card">
+            <div>
+                <div class="stat-value" style="color:var(--accent-yellow);">2</div>
+                <div class="stat-label">In Active Simulation</div>
+            </div>
+            <div class="stat-caption">Members currently assigned to hands-on scenario execution.</div>
+        </div>
+    </section>
+
+    <div class="grid-2-1">
+        <div class="card">
+            <div class="toolbar" style="margin-bottom:1rem;">
+                <div class="card-title" style="margin-bottom:0;"><i data-lucide="users"></i> Team Roster</div>
+                <div class="surface-note">Track operational role, status, and training performance at a glance.</div>
+            </div>
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                    <tr>
+                        <th>Member</th>
+                        <th>Role</th>
+                        <th>Status</th>
+                        <th>Simulations</th>
+                        <th>Avg Score</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr>
+                        <td style="display:flex;align-items:center;gap:10px;">
+                            <div class="avatar" style="background:var(--accent-blue);">JD</div>
+                            <div>
+                                <div style="font-weight:600;">Jordan Davis</div>
+                                <div class="surface-note" style="font-size:0.78rem;">jordan@corp.local</div>
+                            </div>
+                        </td>
+                        <td>IR Lead</td>
+                        <td><span class="status-badge green">Online</span></td>
+                        <td>8</td>
+                        <td>87%</td>
+                    </tr>
+                    <tr>
+                        <td style="display:flex;align-items:center;gap:10px;">
+                            <div class="avatar" style="background:var(--accent-green);color:#04101d;">AK</div>
+                            <div>
+                                <div style="font-weight:600;">Aisha Khan</div>
+                                <div class="surface-note" style="font-size:0.78rem;">aisha@corp.local</div>
+                            </div>
+                        </td>
+                        <td>SOC Analyst</td>
+                        <td><span class="status-badge green">In Sim</span></td>
+                        <td>12</td>
+                        <td>82%</td>
+                    </tr>
+                    <tr>
+                        <td style="display:flex;align-items:center;gap:10px;">
+                            <div class="avatar" style="background:var(--accent-purple);">MT</div>
+                            <div>
+                                <div style="font-weight:600;">Marcus Thompson</div>
+                                <div class="surface-note" style="font-size:0.78rem;">marcus@corp.local</div>
+                            </div>
+                        </td>
+                        <td>Forensic Analyst</td>
+                        <td><span class="status-badge green">Online</span></td>
+                        <td>6</td>
+                        <td>91%</td>
+                    </tr>
+                    <tr>
+                        <td style="display:flex;align-items:center;gap:10px;">
+                            <div class="avatar" style="background:var(--accent-yellow);color:#04101d;">SL</div>
+                            <div>
+                                <div style="font-weight:600;">Sarah Lopez</div>
+                                <div class="surface-note" style="font-size:0.78rem;">sarah@corp.local</div>
+                            </div>
+                        </td>
+                        <td>Network Analyst</td>
+                        <td><span class="status-badge yellow">Away</span></td>
+                        <td>4</td>
+                        <td>75%</td>
+                    </tr>
+                    <tr>
+                        <td style="display:flex;align-items:center;gap:10px;">
+                            <div class="avatar" style="background:var(--accent-red);">RN</div>
+                            <div>
+                                <div style="font-weight:600;">Raj Nair</div>
+                                <div class="surface-note" style="font-size:0.78rem;">raj@corp.local</div>
+                            </div>
+                        </td>
+                        <td>Trainee</td>
+                        <td><span class="status-badge green">In Sim</span></td>
+                        <td>2</td>
+                        <td>68%</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="stack">
+            <div class="card">
+                <div class="card-title"><i data-lucide="briefcase"></i> Teams</div>
+                <div class="alert-item info" style="border-left-color:var(--accent-blue);">
+                    <div class="alert-info">
+                        <h4>Blue Team Alpha</h4>
+                        <p>3 members · 8 simulations completed</p>
+                    </div>
+                </div>
+                <div class="alert-item info" style="border-left-color:var(--accent-purple);">
+                    <div class="alert-info">
+                        <h4>Red Team Beta</h4>
+                        <p>3 members · 4 simulations completed</p>
+                    </div>
+                </div>
+                <div class="alert-item info" style="border-left-color:var(--accent-green);">
+                    <div class="alert-info">
+                        <h4>SOC Training Group</h4>
+                        <p>5 members · 2 simulations completed</p>
+                    </div>
+                </div>
+                <button class="btn btn-secondary" style="width:100%;margin-top:0.5rem;">Create Team</button>
+            </div>
+
+            <div class="card">
+                <div class="card-title"><i data-lucide="key"></i> Role Permissions</div>
+                <div style="font-size:0.9rem;">
+                    <div class="toggle-row">
+                        <span style="font-weight:600;">IR Lead</span>
+                        <span class="surface-note">Full platform access</span>
+                    </div>
+                    <div class="toggle-row">
+                        <span style="font-weight:600;">SOC Analyst</span>
+                        <span class="surface-note">Lab + Reports</span>
+                    </div>
+                    <div class="toggle-row">
+                        <span style="font-weight:600;">Forensic Analyst</span>
+                        <span class="surface-note">Lab + Reports</span>
+                    </div>
+                    <div class="toggle-row">
+                        <span style="font-weight:600;">Network Analyst</span>
+                        <span class="surface-note">Lab + MITRE Review</span>
+                    </div>
+                    <div class="toggle-row">
+                        <span style="font-weight:600;">Trainee</span>
+                        <span class="surface-note">Lab only</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<script src="js/shared.js"></script>
+</body>
+</html>
