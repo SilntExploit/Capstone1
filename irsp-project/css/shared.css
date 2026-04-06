@@ -1046,6 +1046,12 @@ select.form-input {
     overflow-x: auto;
 }
 
+#dashboard-results-table.search-flash {
+    outline: 2px solid rgba(14, 165, 233, 0.35);
+    box-shadow: 0 0 0 6px rgba(14, 165, 233, 0.08);
+    transition: outline-color 180ms ease, box-shadow 180ms ease;
+}
+
 .surface-note {
     color: var(--text-dim);
     font-size: 0.78rem;

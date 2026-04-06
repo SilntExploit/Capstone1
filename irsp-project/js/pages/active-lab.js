@@ -225,9 +225,10 @@
                 return `${card.dataset.scenarioId} status=${statusValue} owner=${metrics.owner || 'Prototype Team'} readiness=${readinessValue}`;
             });
 
-        readinessShell.innerHTML = `<span class="accent">search</span> index=responsegrid sourcetype=lab:status scenario_id=*
-| stats latest(status) as status latest(owner) as owner latest(readiness) as readiness by scenario_id
-| sort scenario_id
+        readinessShell.innerHTML = `ResponseGridLabStatus
+| where scenario_id startswith "scenario-"
+| summarize status = take_any(status), owner = take_any(owner), readiness = max(readiness) by scenario_id
+| order by scenario_id asc
 
 ${rows.join('\n')}`;
     }

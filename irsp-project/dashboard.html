@@ -45,7 +45,7 @@
     <section class="card console-bar section-space">
         <div class="console-search">
             <i data-lucide="search"></i>
-            <input id="dashboard-search-input" type="text" value='index=responsegrid sourcetype=* (host=container-01 OR host=docker-host-02) severity>=high' aria-label="Search query">
+            <input id="dashboard-search-input" type="text" value='host in ("container-01", "docker-host-02") and severity in ("high", "critical")' aria-label="Search query">
         </div>
         <div class="console-actions">
             <span class="status-badge red">5 Notable</span>
@@ -54,11 +54,11 @@
             <button class="btn"><i data-lucide="shield-ban"></i> Start Containment</button>
         </div>
         <div class="command-chips" style="grid-column:1 / -1;margin-top:0;">
-            <button class="chip-btn active" type="button" data-query-preset='index=responsegrid sourcetype=* (host=container-01 OR host=docker-host-02) severity>=high'>Containment Path</button>
-            <button class="chip-btn" type="button" data-query-preset='index=responsegrid host=container-01 (encrypt OR rename OR /srv/shared)'>Impact Burst</button>
-            <button class="chip-btn" type="button" data-query-preset='index=responsegrid (ssh OR svc-backup OR okta) src_ip=192.168.1.45'>Identity Pivot</button>
-            <button class="chip-btn" type="button" data-query-preset='index=responsegrid dest_ip=203.0.113.42 dest_port=8443'>C2 Traffic</button>
-            <button class="chip-btn" type="button" data-query-preset='index=responsegrid sourcetype=o365:message_trace sender_domain=corp-updates.net'>Email Trail</button>
+            <button class="chip-btn active" type="button" data-query-preset='host in ("container-01", "docker-host-02") and severity in ("high", "critical")'>Containment Path</button>
+            <button class="chip-btn" type="button" data-query-preset='host == "container-01" and ("encrypt" or "rename" or "/srv/shared")'>Impact Burst</button>
+            <button class="chip-btn" type="button" data-query-preset='src_ip == "192.168.1.45" and (event has "ssh" or user == "svc-backup" or sourcetype == "okta:system")'>Identity Pivot</button>
+            <button class="chip-btn" type="button" data-query-preset='dest_ip == "203.0.113.42" and dest_port == 8443'>C2 Traffic</button>
+            <button class="chip-btn" type="button" data-query-preset='sourcetype == "o365:message_trace" and sender_domain == "corp-updates.net"'>Email Trail</button>
         </div>
         <div class="console-status">
             <span id="dashboard-search-status">Search job DEFAULT completed at 14:24:19 with 15 of 42,381 events shown.</span>
@@ -148,7 +148,7 @@
                 </div>
             </section>
 
-            <section class="card" aria-labelledby="events-title">
+            <section class="card" id="dashboard-search-results-card" aria-labelledby="events-title">
                 <div class="toolbar" style="margin-bottom:0.85rem;">
                     <div class="card-title" id="events-title"><i data-lucide="database-zap"></i> Search Results</div>
                     <div class="surface-note" id="dashboard-results-note">15 of 42,381 events shown</div>
@@ -254,9 +254,10 @@
                     </div>
                     <div class="shell-body">
                         <div class="shell-panel" data-shell-panel="search">
-<pre class="shell-code" id="dashboard-search-panel-search"><span class="accent">search</span> index=responsegrid sourcetype=* (host=container-01 OR host=docker-host-02)
-| stats count min(_time) as firstSeen max(_time) as lastSeen by host sourcetype
-| sort - count
+<pre class="shell-code" id="dashboard-search-panel-search">ResponseGridLogs
+| where host in ("container-01", "docker-host-02") and severity in ("high", "critical")
+| summarize eventCount = count(), firstSeen = min(timestamp), lastSeen = max(timestamp) by host, sourcetype
+| order by eventCount desc
 
 host=container-01 sourcetype=auditd count=412 firstSeen=14:21:58 lastSeen=14:23:55
 host=docker-host-02 sourcetype=sysmon:process count=53 firstSeen=14:18:11 lastSeen=14:22:31
@@ -265,8 +266,10 @@ host=mail-gw-01 sourcetype=o365:message_trace count=7 firstSeen=13:57:18 lastSee
 <span class="muted">job runtime=0.48s events scanned=42,381 result rows=4</span></pre>
                         </div>
                         <div class="shell-panel" data-shell-panel="statistics" hidden>
-<pre class="shell-code" id="dashboard-search-panel-stats">search index=responsegrid sourcetype=* (host=container-01 OR host=docker-host-02)
-| top sourcetype
+<pre class="shell-code" id="dashboard-search-panel-stats">ResponseGridLogs
+| where host in ("container-01", "docker-host-02") and severity in ("high", "critical")
+| summarize count() by sourcetype
+| order by count_ desc
 
 auditd 412
 pan:traffic 88

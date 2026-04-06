@@ -24,8 +24,9 @@
         {
             id: 'initial-access',
             match: query => /phish|powershell|docm|winword/i.test(query),
-            search: `search index=responsegrid host=WS-FINANCE-03 (phish-invoice.docm OR powershell.exe)
-| table _time process_name parent_process user file_name command_line
+            search: `ResponseGridLogs
+| where host == "WS-FINANCE-03" and ("phish-invoice.docm" or "powershell.exe")
+| project timestamp, process_name, parent_process, user, file_name, command_line
 
 09:14:22 WINWORD.EXE explorer.exe finance-user phish-invoice.docm macro enabled
 09:14:25 powershell.exe WINWORD.EXE finance-user - encoded command executed
@@ -40,8 +41,9 @@ launch chain confirms phishing-led initial access.`,
         {
             id: 'persistence',
             match: query => /windowsupdate_svc|schtasks|persistence/i.test(query),
-            search: `search index=responsegrid host=WS-FINANCE-03 (WindowsUpdate_svc OR schtasks.exe)
-| table _time process_name parent_process user task_name trigger
+            search: `ResponseGridLogs
+| where host == "WS-FINANCE-03" and ("WindowsUpdate_svc" or "schtasks.exe")
+| project timestamp, process_name, parent_process, user, task_name, trigger
 
 09:45:14 schtasks.exe cmd.exe SYSTEM WindowsUpdate_svc AtLogon
 09:45:17 taskeng.exe services.exe SYSTEM WindowsUpdate_svc Registered
@@ -56,9 +58,9 @@ persistence is active at user logon with SYSTEM privileges.`,
         {
             id: 'credential-dumping',
             match: () => true,
-            search: `search index=responsegrid host=WS-FINANCE-03 (procdump.exe OR dns-tunnel.malware.io)
-| transaction maxspan=45m host
-| table _time process_name parent_process user dest_domain task_name
+            search: `ResponseGridLogs
+| where host == "WS-FINANCE-03" and ("procdump.exe" or "dns-tunnel.malware.io")
+| summarize earliest = min(timestamp), latest = max(timestamp) by host, process_name, parent_process, user, dest_domain, task_name
 
 09:14:25 powershell.exe WINWORD.EXE finance-user dns-tunnel.malware.io -
 09:31:42 procdump.exe cmd.exe finance-user - -

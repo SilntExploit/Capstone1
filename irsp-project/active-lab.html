@@ -490,9 +490,10 @@
                     </div>
                 </div>
                 <div class="shell-body">
-<pre class="shell-code" id="lab-readiness-shell"><span class="accent">search</span> index=responsegrid sourcetype=lab:status scenario_id=*
-| stats latest(status) as status latest(owner) as owner latest(readiness) as readiness by scenario_id
-| sort scenario_id
+<pre class="shell-code" id="lab-readiness-shell">ResponseGridLabStatus
+| where scenario_id startswith "scenario-"
+| summarize status = take_any(status), owner = take_any(owner), readiness = max(readiness) by scenario_id
+| order by scenario_id asc
 
 scenario-a status=ready owner=Blue Team Alpha readiness=98
 scenario-b status=ready owner=Analyst Cohort 2 readiness=96

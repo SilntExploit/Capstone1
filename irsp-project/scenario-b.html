@@ -148,9 +148,9 @@
                     </div>
                     <div class="shell-body">
                         <div class="shell-panel" data-shell-panel="search">
-<pre class="shell-code" id="scenario-b-search-panel"><span class="accent">search</span> index=responsegrid host=WS-FINANCE-03 (procdump.exe OR dns-tunnel.malware.io)
-| transaction maxspan=45m host
-| table _time process_name parent_process user dest_domain task_name
+<pre class="shell-code" id="scenario-b-search-panel">ResponseGridLogs
+| where host == "WS-FINANCE-03" and ("procdump.exe" or "dns-tunnel.malware.io")
+| summarize earliest = min(timestamp), latest = max(timestamp) by host, process_name, parent_process, user, dest_domain, task_name
 
 09:14:25 powershell.exe WINWORD.EXE finance-user dns-tunnel.malware.io -
 09:31:42 procdump.exe cmd.exe finance-user - -
@@ -172,13 +172,13 @@
                     </div>
                 </div>
                 <div class="command-row">
-                    <input id="scenario-b-query-input" type="text" class="form-input" style="flex:1;" value="index=responsegrid host=WS-FINANCE-03 (procdump.exe OR dns-tunnel.malware.io)" placeholder="Enter search query...">
+                    <input id="scenario-b-query-input" type="text" class="form-input" style="flex:1;" value='host == "WS-FINANCE-03" and ("procdump.exe" or "dns-tunnel.malware.io")' placeholder="Enter search query...">
                     <button class="btn" id="scenario-b-run-query" type="button">Run Query</button>
                 </div>
                 <div class="command-chips">
-                    <button class="chip-btn active" type="button" data-scenario-b-query="index=responsegrid host=WS-FINANCE-03 (procdump.exe OR dns-tunnel.malware.io)">Credential Dumping</button>
-                    <button class="chip-btn" type="button" data-scenario-b-query="index=responsegrid host=WS-FINANCE-03 (phish-invoice.docm OR powershell.exe)">Initial Access</button>
-                    <button class="chip-btn" type="button" data-scenario-b-query="index=responsegrid host=WS-FINANCE-03 (WindowsUpdate_svc OR schtasks.exe)">Persistence</button>
+                    <button class="chip-btn active" type="button" data-scenario-b-query='host == "WS-FINANCE-03" and ("procdump.exe" or "dns-tunnel.malware.io")'>Credential Dumping</button>
+                    <button class="chip-btn" type="button" data-scenario-b-query='host == "WS-FINANCE-03" and ("phish-invoice.docm" or "powershell.exe")'>Initial Access</button>
+                    <button class="chip-btn" type="button" data-scenario-b-query='host == "WS-FINANCE-03" and ("WindowsUpdate_svc" or "schtasks.exe")'>Persistence</button>
                 </div>
                 <p class="surface-note" id="scenario-b-query-status" style="margin-top:0.75rem;">Correlation view loaded for the active investigation chain.</p>
             </div>

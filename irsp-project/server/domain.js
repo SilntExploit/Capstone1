@@ -151,6 +151,12 @@ function tokenizeQuery(query) {
             continue;
         }
 
+        if (char === ',') {
+            tokens.push({ type: ',' });
+            index += 1;
+            continue;
+        }
+
         if (char === '"' || char === '\'') {
             const quote = char;
             let value = '';
@@ -170,7 +176,7 @@ function tokenizeQuery(query) {
         }
 
         const twoCharOperator = source.slice(index, index + 2);
-        if (['>=', '<=', '!='].includes(twoCharOperator)) {
+        if (['>=', '<=', '!=', '=='].includes(twoCharOperator)) {
             tokens.push({ type: 'OP', value: twoCharOperator });
             index += 2;
             continue;
@@ -196,6 +202,8 @@ function tokenizeQuery(query) {
             const keyword = normalizeValue(value);
             if (keyword === 'and' || keyword === 'or' || keyword === 'not') {
                 tokens.push({ type: 'KEYWORD', value: keyword.toUpperCase() });
+            } else if (['contains', 'has', 'startswith', 'in'].includes(keyword)) {
+                tokens.push({ type: 'OP', value: keyword });
             } else {
                 tokens.push({ type: 'TERM', value });
             }
@@ -267,6 +275,37 @@ function parseQuery(query) {
                 field: fieldToken.value,
                 operator: operatorToken.value,
                 value
+            };
+        }
+
+        if (operatorToken && operatorToken.type === 'OP' && operatorToken.value === 'in' && valueToken && valueToken.type === '(') {
+            consume();
+            consume();
+
+            const values = [];
+            while (peek() && peek().type !== ')') {
+                if (peek().type === ',') {
+                    consume();
+                    continue;
+                }
+
+                if (peek().type === 'TERM') {
+                    values.push(consume().value);
+                    continue;
+                }
+
+                break;
+            }
+
+            if (peek() && peek().type === ')') {
+                consume();
+            }
+
+            return {
+                type: 'field',
+                field: fieldToken.value,
+                operator: operatorToken.value,
+                value: values
             };
         }
 
@@ -342,6 +381,7 @@ function parseQuery(query) {
 
 function compareValues(field, operator, recordValue, expectedValue) {
     const actual = String(recordValue || '');
+    const expectedList = Array.isArray(expectedValue) ? expectedValue.map(value => String(value || '')) : null;
     const expected = String(expectedValue || '');
     const normalizedField = normalizeValue(field);
     const normalizedActual = normalizeValue(actual);
@@ -349,6 +389,14 @@ function compareValues(field, operator, recordValue, expectedValue) {
 
     if (operator === '!=') {
         return !compareValues(field, '=', recordValue, expectedValue);
+    }
+
+    if (operator === '==') {
+        return compareValues(field, '=', recordValue, expectedValue);
+    }
+
+    if (operator === 'in') {
+        return (expectedList || []).some(value => compareValues(field, '=', recordValue, value));
     }
 
     if (normalizedField === 'severity' && ['>', '>=', '<', '<=', '='].includes(operator)) {
@@ -390,6 +438,14 @@ function compareValues(field, operator, recordValue, expectedValue) {
         return normalizedActual === normalizedExpected;
     }
 
+    if (operator === 'contains' || operator === 'has') {
+        return normalizedActual.includes(normalizedExpected);
+    }
+
+    if (operator === 'startswith') {
+        return normalizedActual.startsWith(normalizedExpected);
+    }
+
     return false;
 }
 
@@ -424,7 +480,13 @@ function evaluateQueryNode(node, record) {
 }
 
 function searchLogs(items, query) {
-    const effectiveQuery = String(query || '').replace(/^\s*search\s+/i, '').trim();
+    const effectiveQuery = String(query || '')
+        .replace(/^\s*search\s+/i, '')
+        .replace(/^\s*responsegridlogs\s*\|\s*where\s+/i, '')
+        .replace(/^\s*responsegridlogs\s+/i, '')
+        .replace(/^\s*where\s+/i, '')
+        .replace(/\s*\|[\s\S]*$/, '')
+        .trim();
     const normalizedQuery = normalizeValue(effectiveQuery);
     if (!normalizedQuery) return items;
 

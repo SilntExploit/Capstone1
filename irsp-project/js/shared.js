@@ -615,6 +615,8 @@
         const searchStatsPanel = document.getElementById(config.searchStatsPanelId || 'dashboard-search-panel-stats');
         const searchRawPanel = document.getElementById(config.searchRawPanelId || 'dashboard-search-panel-raw');
         const searchResultsBody = document.getElementById(config.searchResultsBodyId || 'dashboard-results-body');
+        const searchResultsTable = document.getElementById(config.searchResultsTableId || 'dashboard-results-table');
+        const searchResultsCard = document.getElementById(config.searchResultsCardId || 'dashboard-search-results-card');
         const drilldownHost = document.getElementById(config.drilldownHostId || 'drilldown-host');
         const drilldownSourcetype = document.getElementById(config.drilldownSourcetypeId || 'drilldown-sourcetype');
         const drilldownUser = document.getElementById(config.drilldownUserId || 'drilldown-user');
@@ -668,16 +670,18 @@
                 match: query => /encrypt|rename|impact|auditd|shared/i.test(query),
                 rowId: 'evt-encrypt',
                 resultsNote: '11 of 1,184 impact events shown',
-                search: `search index=responsegrid host=container-01 (auditd OR falco OR inotify)
-| stats count min(_time) as firstSeen max(_time) as lastSeen by host sourcetype
-| sort - count
+                search: `ResponseGridLogs
+| where host == "container-01" and (sourcetype in ("auditd", "falco", "inotify") or event has "/srv/shared")
+| summarize eventCount = count(), firstSeen = min(timestamp), lastSeen = max(timestamp) by host, sourcetype
+| order by eventCount desc
 
 host=container-01 sourcetype=auditd count=412 firstSeen=14:21:58 lastSeen=14:23:55
 host=container-01 sourcetype=falco count=37 firstSeen=14:22:01 lastSeen=14:24:37
 host=container-01 sourcetype=inotify count=735 firstSeen=14:22:14 lastSeen=14:24:02
 job runtime=0.41s events scanned=18,420 result rows=3`,
-                stats: `search index=responsegrid host=container-01 rename OR encrypt
-| timechart span=1m count by sourcetype
+                stats: `ResponseGridLogs
+| where host == "container-01" and (event has "rename" or event has "encrypt")
+| summarize count() by bin(timestamp, 1m), sourcetype
 
 14:21 auditd=88 falco=3 inotify=174
 14:22 auditd=201 falco=12 inotify=388
@@ -693,16 +697,18 @@ impact burst began at 14:22 and peaked in the shared volume.`,
                 match: query => /ssh|svc-backup|identity|okta|auth/i.test(query),
                 rowId: 'evt-ssh',
                 resultsNote: '9 of 604 authentication events shown',
-                search: `search index=responsegrid (host=docker-host-02 OR host=idp-01) (ssh OR svc-backup OR outcome=SUCCESS)
-| table _time host sourcetype user src_ip outcome
-| sort _time
+                search: `ResponseGridLogs
+| where host in ("docker-host-02", "idp-01") and (event has "ssh" or user == "svc-backup" or outcome == "SUCCESS")
+| project timestamp, host, sourcetype, user, src_ip, outcome
+| order by timestamp asc
 
 14:20:56 docker-host-02 linux_secure root 192.168.1.45 FAILURE
 14:21:43 docker-host-02 linux_secure root 192.168.1.45 FAILURE
 14:23:19 idp-01 okta:system svc-backup 192.168.1.45 SUCCESS
 job runtime=0.29s events scanned=6,204 result rows=3`,
-                stats: `search index=responsegrid (ssh OR okta) src_ip=192.168.1.45
-| stats count by host outcome
+                stats: `ResponseGridLogs
+| where src_ip == "192.168.1.45" and (event has "ssh" or sourcetype == "okta:system")
+| summarize count() by host, outcome
 
 docker-host-02 FAILURE 47
 idp-01 SUCCESS 1
@@ -716,15 +722,17 @@ single success follows a burst of failed SSH attempts from the same origin.`,
                 match: query => /203\.0\.113\.42|8443|c2|traffic|beacon|pan:traffic/i.test(query),
                 rowId: 'evt-c2',
                 resultsNote: '8 of 982 network events shown',
-                search: `search index=responsegrid dest_ip=203.0.113.42 dest_port=8443
-| stats count sum(bytes_out) as bytesOut by host dest_ip dest_port
-| sort - bytesOut
+                search: `ResponseGridLogs
+| where dest_ip == "203.0.113.42" and dest_port == 8443
+| summarize eventCount = count(), bytesOut = sum(toint(bytes_out)) by host, dest_ip, dest_port
+| order by bytesOut desc
 
 host=container-01 dest_ip=203.0.113.42 dest_port=8443 count=88 bytesOut=982341
 host=edge-fw-01 dest_ip=203.0.113.42 dest_port=8443 count=88 bytesOut=982341
 job runtime=0.18s events scanned=982 result rows=2`,
-                stats: `search index=responsegrid dest_ip=203.0.113.42
-| timechart span=1m sum(bytes_out) as bytesOut
+                stats: `ResponseGridLogs
+| where dest_ip == "203.0.113.42"
+| summarize bytesOut = sum(toint(bytes_out)) by bin(timestamp, 1m)
 
 14:21 120341
 14:22 452981
@@ -739,13 +747,15 @@ egress volume aligns with the active encryption process window.`,
                 match: query => /mail|phish|invoice|o365|policy/i.test(query),
                 rowId: 'evt-mail',
                 resultsNote: '4 of 121 email events shown',
-                search: `search index=responsegrid sourcetype=o365:message_trace sender_domain=corp-updates.net
-| table _time recipient sender subject delivered attachment
+                search: `ResponseGridLogs
+| where sourcetype == "o365:message_trace" and sender_domain == "corp-updates.net"
+| project timestamp, recipient, sender, subject, delivered, attachment
 
 14:24:19 analyst@responsegrid.local benefits@corp-updates.net "Updated payroll policy" true policy_update.iso
 14:24:20 finance@responsegrid.local benefits@corp-updates.net "Updated payroll policy" true policy_update.iso`,
-                stats: `search index=responsegrid sourcetype=o365:message_trace sender_domain=corp-updates.net
-| stats dc(recipient) as recipients values(subject) as subjects by sender_domain
+                stats: `ResponseGridLogs
+| where sourcetype == "o365:message_trace" and sender_domain == "corp-updates.net"
+| summarize recipients = dcount(recipient), subjects = make_set(subject) by sender_domain
 
 sender_domain=corp-updates.net recipients=2 subjects="Updated payroll policy"
 
@@ -757,17 +767,20 @@ email trail supports the initial access hypothesis.`,
                 match: () => true,
                 rowId: 'evt-ssh',
                 resultsNote: '15 of 42,381 events shown',
-                search: `search index=responsegrid sourcetype=* (host=container-01 OR host=docker-host-02)
-| stats count min(_time) as firstSeen max(_time) as lastSeen by host sourcetype
-| sort - count
+                search: `ResponseGridLogs
+| where host in ("container-01", "docker-host-02") and severity in ("high", "critical")
+| summarize eventCount = count(), firstSeen = min(timestamp), lastSeen = max(timestamp) by host, sourcetype
+| order by eventCount desc
 
 host=container-01 sourcetype=auditd count=412 firstSeen=14:21:58 lastSeen=14:23:55
 host=docker-host-02 sourcetype=sysmon:process count=53 firstSeen=14:18:11 lastSeen=14:22:31
 host=edge-fw-01 sourcetype=pan:traffic count=88 firstSeen=14:19:44 lastSeen=14:23:02
 host=mail-gw-01 sourcetype=o365:message_trace count=7 firstSeen=13:57:18 lastSeen=14:24:19
 job runtime=0.48s events scanned=42,381 result rows=4`,
-                stats: `search index=responsegrid sourcetype=* (host=container-01 OR host=docker-host-02)
-| top sourcetype
+                stats: `ResponseGridLogs
+| where host in ("container-01", "docker-host-02") and severity in ("high", "critical")
+| summarize count() by sourcetype
+| order by count_ desc
 
 auditd 412
 pan:traffic 88
@@ -913,6 +926,15 @@ highest density is concentrated on container impact telemetry.`,
         function renderSearchResults(payload) {
             if (!searchResultsBody || !payload || !Array.isArray(payload.results)) return;
 
+            if (!payload.results.length) {
+                searchResultsBody.innerHTML = `
+                    <tr>
+                        <td colspan="4" class="surface-note" style="padding:1rem 0.9rem;">No matching events found for this query.</td>
+                    </tr>
+                `;
+                return;
+            }
+
             searchResultsBody.innerHTML = payload.results.map(record => {
                 const jsonValue = escapeHtml(JSON.stringify(record, null, 2));
                 const fieldsValue = escapeHtml(Object.entries(record).map(([key, value]) => `${key}: ${value}`).join('\n'));
@@ -997,6 +1019,20 @@ highest density is concentrated on container impact telemetry.`,
                             firstRow.click();
                         }
 
+                        if (searchResultsCard) {
+                            searchResultsCard.scrollIntoView({
+                                behavior: 'smooth',
+                                block: 'start'
+                            });
+                        }
+
+                        if (searchResultsTable) {
+                            searchResultsTable.classList.add('search-flash');
+                            window.setTimeout(() => {
+                                searchResultsTable.classList.remove('search-flash');
+                            }, 900);
+                        }
+
                         return;
                     }
                 } catch (error) {
@@ -1076,19 +1112,19 @@ highest density is concentrated on container impact telemetry.`,
             if (alertId === 'encryption') {
                 appendTimelineItem(IRSP.getTimestamp(), 'Encryption activity investigated and malicious process confirmed.');
                 appendChatMessage('IR Lead', 'Encryption process confirmed. Proceeding with containment workflow.');
-                runSearch('index=responsegrid host=container-01 (encrypt OR rename OR /srv/shared)', true);
+                runSearch('host == "container-01" and ("encrypt" or "rename" or "/srv/shared")', true);
             }
 
             if (alertId === 'ssh') {
                 appendTimelineItem(IRSP.getTimestamp(), 'SSH brute-force attempts reviewed and escalation path documented.');
                 appendChatMessage('Analyst 2', 'Credential attack path noted. Reviewing identity exposure.');
-                runSearch('index=responsegrid (ssh OR svc-backup OR okta) src_ip=192.168.1.45', true);
+                runSearch('src_ip == "192.168.1.45" and (event has "ssh" or user == "svc-backup" or sourcetype == "okta:system")', true);
             }
 
             if (alertId === 'c2') {
                 appendTimelineItem(IRSP.getTimestamp(), 'Suspicious outbound C2 activity contained at perimeter controls.');
                 appendChatMessage('Network', 'Outbound connection blocked. C2 disruption confirmed.');
-                runSearch('index=responsegrid dest_ip=203.0.113.42 dest_port=8443', true);
+                runSearch('dest_ip == "203.0.113.42" and dest_port == 8443', true);
             }
 
             updateProgress();
