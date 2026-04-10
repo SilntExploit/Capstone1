@@ -32,6 +32,50 @@
       "severity": "critical",
       "status": "collected",
       "summary": "procdump.exe process lineage and memory access rights archived for the case."
+    },
+    {
+      "id": "ev-3001",
+      "scenario_id": "scenario-c",
+      "collected_at": "2026-03-24T16:09:18Z",
+      "type": "transcript",
+      "title": "Vishing transcript excerpt preserved",
+      "source": "helpdesk-queue",
+      "severity": "high",
+      "status": "collected",
+      "summary": "Caller impersonated the CFO and pressured staff to reset MFA immediately."
+    },
+    {
+      "id": "ev-4001",
+      "scenario_id": "scenario-d",
+      "collected_at": "2026-03-24T17:43:02Z",
+      "type": "network",
+      "title": "Edge traffic histogram snapshot",
+      "source": "edge-lb-01",
+      "severity": "high",
+      "status": "collected",
+      "summary": "Load balancer distribution shows the request spike concentrating on authentication endpoints."
+    },
+    {
+      "id": "ev-5001",
+      "scenario_id": "scenario-e",
+      "collected_at": "2026-03-24T18:25:11Z",
+      "type": "archive",
+      "title": "Staged archive metadata captured",
+      "source": "HR-LAPTOP-07",
+      "severity": "critical",
+      "status": "collected",
+      "summary": "7z archive creation arguments and destination path preserved for insider-risk review."
+    },
+    {
+      "id": "ev-6001",
+      "scenario_id": "scenario-f",
+      "collected_at": "2026-03-24T19:15:02Z",
+      "type": "iam",
+      "title": "AssumeRole session context preserved",
+      "source": "cloudtrail-us-east-1",
+      "severity": "critical",
+      "status": "collected",
+      "summary": "Temporary credential session tags and source principal metadata preserved for investigation."
     }
   ]
 }

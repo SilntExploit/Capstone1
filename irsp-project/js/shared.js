@@ -144,7 +144,7 @@
 
         initNavHighlight() {
             const currentPath = (window.location.pathname.split('/').pop() || 'dashboard.html').toLowerCase();
-            const normalizedPath = currentPath.startsWith('scenario-') ? 'active-lab.html' : currentPath;
+            const normalizedPath = (currentPath.startsWith('scenario-') || currentPath === 'scenario-generic.html') ? 'active-lab.html' : currentPath;
             const navItems = document.querySelectorAll('.nav-item');
 
             navItems.forEach(item => {

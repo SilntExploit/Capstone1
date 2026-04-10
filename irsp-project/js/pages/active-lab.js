@@ -13,6 +13,7 @@
     const modal = document.getElementById('lab-modal');
     const modalBody = document.getElementById('lab-modal-body');
     const modalSubtitle = document.getElementById('lab-modal-subtitle');
+    const modalActions = document.getElementById('lab-modal-actions');
     const closeModalBtn = document.getElementById('close-modal-btn');
     const availablePathsValue = document.getElementById('lab-available-paths');
     const availablePathsNote = document.getElementById('lab-available-paths-note');
@@ -27,15 +28,16 @@
     const readinessShell = document.getElementById('lab-readiness-shell');
     const seedSnapshot = document.getElementById('lab-seed-snapshot');
     const STORAGE_KEY = 'irsp-last-scenario';
+    const WORKSPACE_STORAGE_KEY = 'irsp-active-workspace';
     const PINNED_STORAGE_KEY = 'irsp-pinned-scenarios';
     const SELECTED_STORAGE_KEY = 'irsp-selected-scenario';
     const scenarioMetrics = {
         'scenario-a': { readiness: '98%', telemetry: '27 alerts, 188 sessions', focus: 'Containment', owner: 'Blue Team Alpha', status: 'ready', alertsSeeded: 27, eventsSeeded: 42381 },
         'scenario-b': { readiness: '96%', telemetry: '19 alerts, 4 confirmed IOCs', focus: 'Investigation', owner: 'Analyst Cohort 2', status: 'ready', alertsSeeded: 19, eventsSeeded: 18422 },
-        'scenario-c': { readiness: '62%', telemetry: 'voice transcript + email trail', focus: 'Awareness', owner: 'Awareness Lab', status: 'prototype', alertsSeeded: 8, eventsSeeded: 920 },
-        'scenario-d': { readiness: '58%', telemetry: 'traffic spikes + service health', focus: 'Availability', owner: 'Network Defense Lab', status: 'prototype', alertsSeeded: 12, eventsSeeded: 5410 },
-        'scenario-e': { readiness: '54%', telemetry: 'USB logs + proxy uploads', focus: 'Insider Risk', owner: 'Insider Risk PM', status: 'prototype', alertsSeeded: 14, eventsSeeded: 2640 },
-        'scenario-f': { readiness: '57%', telemetry: 'IAM audit trails + sign-ins', focus: 'Cloud IAM', owner: 'Cloud IAM Team', status: 'prototype', alertsSeeded: 11, eventsSeeded: 3180 }
+        'scenario-c': { readiness: '62%', telemetry: 'voice transcript + email trail', focus: 'Awareness', owner: 'Awareness Lab', status: 'ready', alertsSeeded: 8, eventsSeeded: 920 },
+        'scenario-d': { readiness: '58%', telemetry: 'traffic spikes + service health', focus: 'Availability', owner: 'Network Defense Lab', status: 'ready', alertsSeeded: 12, eventsSeeded: 5410 },
+        'scenario-e': { readiness: '54%', telemetry: 'USB logs + proxy uploads', focus: 'Insider Risk', owner: 'Insider Risk PM', status: 'ready', alertsSeeded: 14, eventsSeeded: 2640 },
+        'scenario-f': { readiness: '57%', telemetry: 'IAM audit trails + sign-ins', focus: 'Cloud IAM', owner: 'Cloud IAM Team', status: 'ready', alertsSeeded: 11, eventsSeeded: 3180 }
     };
 
     const previewData = {
@@ -105,55 +107,124 @@
         },
         'scenario-c': {
             title: 'Scenario C: Vishing & Social Engineering',
-            subtitle: 'Beginner | Planned Module',
+            subtitle: 'Beginner | 20 min | Voice / Email',
             body: `
-                <div class="alert-item warning" style="margin-bottom:1rem;">
+                <div class="alert-item info" style="margin-bottom:1rem;">
                     <div class="alert-info">
-                        <h4>Status</h4>
-                        <p>This scenario is not yet linked to a full lab page, but the concept is already represented in the platform roadmap.</p>
+                        <h4>Focus Area</h4>
+                        <p>Voice-phishing validation, help-desk escalation discipline, identity verification, and mail-rule review.</p>
                     </div>
                 </div>
-                <p class="surface-note">Intended focus: executive impersonation, escalation judgment, phishing awareness, and communication handling.</p>
+                <p class="surface-note">This module now opens a working scenario page with seeded transcript, identity, and mailbox telemetry.</p>
             `
         },
         'scenario-d': {
             title: 'Scenario D: DDoS Mitigation',
-            subtitle: 'Intermediate | Planned Module',
+            subtitle: 'Intermediate | 25 min | Network Defense',
             body: `
-                <div class="alert-item warning" style="margin-bottom:1rem;">
+                <div class="alert-item info" style="margin-bottom:1rem;">
                     <div class="alert-info">
-                        <h4>Status</h4>
-                        <p>This scenario is planned but does not yet have a linked page. You can still keep it visible as part of the training roadmap.</p>
+                        <h4>Focus Area</h4>
+                        <p>Traffic triage, service-health validation, rate-limit response, and stakeholder coordination during availability pressure.</p>
                     </div>
                 </div>
-                <p class="surface-note">Intended focus: traffic spike analysis, service impact review, mitigation planning, and recovery coordination.</p>
+                <p class="surface-note">The live module includes seeded edge, WAF, and health telemetry with response actions.</p>
             `
         },
         'scenario-e': {
             title: 'Scenario E: Insider Exfiltration Review',
-            subtitle: 'Advanced | Prototype Module',
+            subtitle: 'Advanced | 35 min | Windows Endpoint',
             body: `
-                <div class="alert-item warning" style="margin-bottom:1rem;">
+                <div class="alert-item info" style="margin-bottom:1rem;">
                     <div class="alert-info">
-                        <h4>Prototype Focus</h4>
-                        <p>Archive creation, removable media correlation, and outbound transfer review tied to insider-risk workflows.</p>
+                        <h4>Focus Area</h4>
+                        <p>Archive staging, removable media review, proxy upload correlation, and insider-risk evidence handling.</p>
                     </div>
                 </div>
-                <p class="surface-note">Seeded artifacts include USB insertion logs, ZIP creation events, and proxy uploads to a personal file-sharing domain.</p>
+                <p class="surface-note">The scenario page now supports alert actions, evidence review, and log search against the seeded insider dataset.</p>
             `
         },
         'scenario-f': {
             title: 'Scenario F: Cloud IAM Privilege Escalation',
-            subtitle: 'Intermediate | Prototype Module',
+            subtitle: 'Intermediate | 28 min | Cloud / Network',
             body: `
-                <div class="alert-item warning" style="margin-bottom:1rem;">
+                <div class="alert-item info" style="margin-bottom:1rem;">
                     <div class="alert-info">
-                        <h4>Prototype Focus</h4>
-                        <p>Role assumption anomalies, policy drift, and privileged token review across cloud control-plane logs.</p>
+                        <h4>Focus Area</h4>
+                        <p>Role-assumption anomalies, policy drift, impossible travel, and cloud control-plane evidence review.</p>
                     </div>
                 </div>
-                <p class="surface-note">Seeded artifacts include CloudTrail-style audit rows, impossible-travel sign-ins, and admin role changes outside change windows.</p>
+                <p class="surface-note">The module now opens a working cloud-IAM scenario page backed by seeded audit logs and actions.</p>
             `
+        }
+    };
+
+    const launchProfiles = {
+        'scenario-a': {
+            title: 'Scenario A Launch',
+            subtitle: 'Provision the ransomware containment workspace and analyst VM',
+            icon: 'server-cog',
+            workspace: 'Ransomware Containment Workspace',
+            vmName: 'rg-ransomware-vm-a',
+            environment: 'Linux / Docker response workspace',
+            services: ['Container response shell', 'Process kill and isolation workflow', 'Artifact hashing and recovery checkpoints'],
+            dataFlow: ['Loads Scenario A seeded telemetry', 'Stores user actions and lab state locally', 'Routes into the live ransomware simulation page'],
+            note: 'Python processing services from the diagram are intentionally skipped here. This boot step stays in the front-end prototype.'
+        },
+        'scenario-b': {
+            title: 'Scenario B Launch',
+            subtitle: 'Provision the log-based investigation workspace and analyst VM',
+            icon: 'monitor-smartphone',
+            workspace: 'Log-Based Workspace',
+            vmName: 'rg-investigation-vm-b',
+            environment: 'Windows-focused investigation workspace',
+            services: ['Log review and query shell', 'Evidence board and IOC drilldowns', 'Timeline reconstruction and analyst actions'],
+            dataFlow: ['Loads Scenario B seeded telemetry', 'Stores user actions and lab state locally', 'Routes into the live compromised system investigation page'],
+            note: 'The architecture diagram shows backend processing too, but this prototype launch flow keeps the VM/workspace experience in the browser.'
+        },
+        'scenario-c': {
+            title: 'Scenario C Launch',
+            subtitle: 'Provision the social-engineering review workspace and analyst VM',
+            icon: 'phone-call',
+            workspace: 'Social Engineering Review Workspace',
+            vmName: 'rg-vishing-vm-c',
+            environment: 'Voice / Email analyst workspace',
+            services: ['Transcript review shell', 'Identity verification evidence board', 'Mailbox-rule triage and action logging'],
+            dataFlow: ['Loads Scenario C seeded telemetry', 'Persists local workspace state for resume support', 'Routes into the live vishing scenario page'],
+            note: 'This launch flow remains mock-backed, but the scenario page now works end to end with seeded actions and evidence.'
+        },
+        'scenario-d': {
+            title: 'Scenario D Launch',
+            subtitle: 'Provision the DDoS mitigation workspace and analyst VM',
+            icon: 'wifi-off',
+            workspace: 'Availability Defense Workspace',
+            vmName: 'rg-ddos-vm-d',
+            environment: 'Network defense analyst workspace',
+            services: ['Edge traffic triage', 'Health and WAF correlation', 'Mitigation response logging'],
+            dataFlow: ['Loads Scenario D seeded telemetry', 'Persists local workspace state for resume support', 'Routes into the live DDoS scenario page'],
+            note: 'The page models response decisions and evidence flow even though no live cloud edge is being provisioned.'
+        },
+        'scenario-e': {
+            title: 'Scenario E Launch',
+            subtitle: 'Provision the insider-risk review workspace and analyst VM',
+            icon: 'hard-drive-download',
+            workspace: 'Insider Risk Review Workspace',
+            vmName: 'rg-insider-vm-e',
+            environment: 'Windows endpoint investigation workspace',
+            services: ['USB and archive telemetry review', 'DLP and proxy evidence pivots', 'Containment action logging'],
+            dataFlow: ['Loads Scenario E seeded telemetry', 'Persists local workspace state for resume support', 'Routes into the live insider-exfiltration scenario page'],
+            note: 'This scenario remains mock-backed but now has a complete workflow inside the app.'
+        },
+        'scenario-f': {
+            title: 'Scenario F Launch',
+            subtitle: 'Provision the cloud IAM investigation workspace and analyst VM',
+            icon: 'cloud-cog',
+            workspace: 'Cloud IAM Investigation Workspace',
+            vmName: 'rg-cloudiam-vm-f',
+            environment: 'Cloud audit and identity workspace',
+            services: ['CloudTrail-style log review', 'Role-assumption analysis', 'Policy-drift containment workflow'],
+            dataFlow: ['Loads Scenario F seeded telemetry', 'Persists local workspace state for resume support', 'Routes into the live cloud IAM scenario page'],
+            note: 'This is the right integration point for future real cloud-provider APIs or IaC execution.'
         }
     };
 
@@ -284,13 +355,13 @@ ${rows.join('\n')}`;
         const advancedCount = scenarioCards.filter(card => card.dataset.difficulty === 'advanced').length;
 
         availablePathsValue.textContent = String(scenarioCards.length).padStart(2, '0');
-        availablePathsNote.textContent = `${liveCount} live exercises, ${prototypeCount} prototype modules`;
+        availablePathsNote.textContent = `${liveCount} live exercises, ${prototypeCount} roadmap modules`;
         advancedMetric.textContent = String(advancedCount).padStart(2, '0');
         advancedMetricNote.textContent = `${advancedCount} advanced exercises seeded for higher-pressure response drills.`;
         liveMetric.textContent = String(liveCount).padStart(2, '0');
         liveMetricNote.textContent = `${liveCount} scenarios are launchable through the mock backend and UI flow.`;
         prototypeMetric.textContent = String(prototypeCount).padStart(2, '0');
-        prototypeMetricNote.textContent = `${prototypeCount} modules remain in prototype review for roadmap demos.`;
+        prototypeMetricNote.textContent = prototypeCount ? `${prototypeCount} modules remain in roadmap review.` : 'All seeded modules are launchable in the app.';
 
         if (assetsList) {
             assetsList.innerHTML = `
@@ -539,23 +610,136 @@ ${rows.join('\n')}`;
         }
     }
 
+    function openModal(config) {
+        modal.style.display = 'flex';
+        modal.setAttribute('aria-hidden', 'false');
+        document.body.style.overflow = 'hidden';
+        document.getElementById('lab-modal-title').innerHTML = `<i data-lucide="${config.icon || 'eye'}"></i> ${config.title}`;
+        modalSubtitle.textContent = config.subtitle || '';
+        modalBody.innerHTML = config.body || '';
+        modalActions.innerHTML = config.actions || '';
+        modalActions.style.display = config.actions ? 'flex' : 'none';
+        refreshIcons();
+    }
+
     function openPreview(id) {
         const data = previewData[id];
         if (!data) return;
 
-        modal.style.display = 'flex';
-        modal.setAttribute('aria-hidden', 'false');
-        document.body.style.overflow = 'hidden';
-        document.getElementById('lab-modal-title').innerHTML = `<i data-lucide="eye"></i> ${data.title}`;
-        modalSubtitle.textContent = data.subtitle;
-        modalBody.innerHTML = data.body;
-        refreshIcons();
+        openModal({
+            icon: 'eye',
+            title: data.title,
+            subtitle: data.subtitle,
+            body: data.body
+        });
     }
 
     function closePreview() {
         modal.style.display = 'none';
         modal.setAttribute('aria-hidden', 'true');
         document.body.style.overflow = '';
+        modalActions.innerHTML = '';
+        modalActions.style.display = 'none';
+    }
+
+    function saveWorkspaceState(profile, scenarioId, url, title) {
+        localStorage.setItem(WORKSPACE_STORAGE_KEY, JSON.stringify({
+            scenarioId,
+            url,
+            title,
+            workspace: profile.workspace,
+            vmName: profile.vmName,
+            environment: profile.environment,
+            status: 'running',
+            startedAt: new Date().toISOString()
+        }));
+    }
+
+    function launchScenario(card, launchButton) {
+        const scenarioId = launchButton.dataset.scenarioId;
+        const profile = launchProfiles[scenarioId];
+        if (!profile) {
+            saveLastScenario(launchButton.dataset.scenarioId, launchButton.dataset.url, card.dataset.title);
+            window.location.href = launchButton.dataset.url;
+            return;
+        }
+
+        openModal({
+            icon: profile.icon,
+            title: profile.title,
+            subtitle: profile.subtitle,
+            body: `
+                <div class="grid-2" style="margin-bottom:1rem;">
+                    <div class="card" style="padding:1rem;">
+                        <div class="card-title"><i data-lucide="cpu"></i> VM Instance</div>
+                        <div class="key-value-list" style="margin-top:0.75rem;">
+                            <div class="key-value-item">
+                                <span class="key">VM Name</span>
+                                <span class="value">${profile.vmName}</span>
+                            </div>
+                            <div class="key-value-item">
+                                <span class="key">Workspace</span>
+                                <span class="value">${profile.workspace}</span>
+                            </div>
+                            <div class="key-value-item">
+                                <span class="key">Environment</span>
+                                <span class="value">${profile.environment}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card" style="padding:1rem;">
+                        <div class="card-title"><i data-lucide="workflow"></i> Boot Sequence</div>
+                        <ul class="list-clean" style="font-size:0.88rem;margin-top:0.75rem;">
+                            <li>Attach seeded scenario telemetry and run history</li>
+                            <li>Prepare analyst workspace controls for ${card.dataset.title}</li>
+                            <li>Preserve session state locally for resume support</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="card" style="padding:1rem;margin-bottom:1rem;">
+                    <div class="card-title"><i data-lucide="app-window"></i> Workspace Services</div>
+                    <ul class="list-clean" style="font-size:0.88rem;margin-top:0.75rem;">
+                        ${profile.services.map(item => `<li>${item}</li>`).join('')}
+                    </ul>
+                </div>
+                <div class="card" style="padding:1rem;">
+                    <div class="card-title"><i data-lucide="database-zap"></i> Data Flow</div>
+                    <ul class="list-clean" style="font-size:0.88rem;margin-top:0.75rem;">
+                        ${profile.dataFlow.map(item => `<li>${item}</li>`).join('')}
+                    </ul>
+                    <p class="surface-note" style="margin-top:0.85rem;">${profile.note}</p>
+                </div>
+            `,
+            actions: `
+                <button class="btn btn-secondary" type="button" id="launch-vm-cancel">Cancel</button>
+                <button class="btn" type="button" id="launch-vm-confirm">
+                    <i data-lucide="rocket"></i> Start VM
+                </button>
+            `
+        });
+
+        const cancelButton = document.getElementById('launch-vm-cancel');
+        const confirmButton = document.getElementById('launch-vm-confirm');
+
+        if (cancelButton) {
+            cancelButton.addEventListener('click', closePreview);
+        }
+
+        if (confirmButton) {
+            confirmButton.addEventListener('click', function () {
+                confirmButton.disabled = true;
+                confirmButton.innerHTML = '<i data-lucide="loader-2"></i> Booting Workspace...';
+                modalSubtitle.textContent = `${profile.vmName} is starting. Preparing ${profile.workspace}.`;
+                refreshIcons();
+
+                saveLastScenario(scenarioId, launchButton.dataset.url, card.dataset.title);
+                saveWorkspaceState(profile, scenarioId, launchButton.dataset.url, card.dataset.title);
+
+                window.setTimeout(function () {
+                    window.location.href = launchButton.dataset.url;
+                }, 900);
+            });
+        }
     }
 
     scenarioCards.forEach(card => {
@@ -577,8 +761,7 @@ ${rows.join('\n')}`;
         if (launchButton) {
             launchButton.addEventListener('click', function (event) {
                 event.stopPropagation();
-                saveLastScenario(this.dataset.scenarioId, this.dataset.url, card.dataset.title);
-                window.location.href = this.dataset.url;
+                launchScenario(card, this);
             });
         }
 

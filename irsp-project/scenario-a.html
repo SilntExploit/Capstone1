@@ -42,6 +42,32 @@
         </div>
     </header>
 
+    <section class="card section-space" aria-labelledby="scenario-a-workspace-title">
+        <div class="toolbar" style="margin-bottom:0.85rem;">
+            <div>
+                <div class="card-title" id="scenario-a-workspace-title"><i data-lucide="server-cog"></i> Active Workspace</div>
+                <div class="surface-note">Architecture-aligned VM boot for the ransomware containment flow.</div>
+            </div>
+            <span class="status-badge green" id="scenario-a-workspace-status">VM Running</span>
+        </div>
+        <div class="grid-3">
+            <div class="card" style="padding:1rem;">
+                <div class="eyebrow">Workspace</div>
+                <div class="value" style="font-size:1.05rem;" id="scenario-a-workspace-name">Ransomware Containment Workspace</div>
+                <div class="surface-note" id="scenario-a-workspace-vm">VM: rg-ransomware-vm-a</div>
+            </div>
+            <div class="card" style="padding:1rem;">
+                <div class="eyebrow">Environment</div>
+                <div style="font-weight:600;">Linux / Docker analyst VM</div>
+                <div class="surface-note" id="scenario-a-workspace-started">Booted from the Launch Bay</div>
+            </div>
+            <div class="card" style="padding:1rem;">
+                <div class="eyebrow">Services</div>
+                <div class="surface-note">Container response shell, seeded telemetry, artifact workflow, and local run history.</div>
+            </div>
+        </div>
+    </section>
+
     <section class="grid-3 section-space">
         <div class="card stat-card">
             <div>

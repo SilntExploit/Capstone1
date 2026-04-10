@@ -25,7 +25,7 @@
     {
       "id": "scenario-c",
       "name": "Vishing and Social Engineering",
-      "status": "prototype",
+      "status": "ready",
       "environment": "Voice / Email",
       "difficulty": "beginner",
       "owner": "Awareness Lab",
@@ -36,13 +36,35 @@
     {
       "id": "scenario-d",
       "name": "DDoS Mitigation",
-      "status": "prototype",
+      "status": "ready",
       "environment": "Network Defense",
       "difficulty": "intermediate",
       "owner": "Network Defense Lab",
       "readiness": 58,
       "seeded_alerts": 12,
       "seeded_events": 5410
+    },
+    {
+      "id": "scenario-e",
+      "name": "Insider Exfiltration Review",
+      "status": "ready",
+      "environment": "Windows Endpoint",
+      "difficulty": "advanced",
+      "owner": "Insider Risk PM",
+      "readiness": 54,
+      "seeded_alerts": 14,
+      "seeded_events": 2640
+    },
+    {
+      "id": "scenario-f",
+      "name": "Cloud IAM Privilege Escalation",
+      "status": "ready",
+      "environment": "Cloud / Network",
+      "difficulty": "intermediate",
+      "owner": "Cloud IAM Team",
+      "readiness": 57,
+      "seeded_alerts": 11,
+      "seeded_events": 3180
     }
   ]
 }

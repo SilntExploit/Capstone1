@@ -1,6 +1,7 @@
 (function () {
     'use strict';
 
+    const workspaceState = safeWorkspaceState();
     startTimer('timer', 1800);
 
     const queryInput = document.getElementById('scenario-b-query-input');
@@ -19,6 +20,32 @@
     const detailJson = document.getElementById('scenario-b-detail-json');
     const detailNote = document.getElementById('scenario-b-detail-note-panel');
     const evidenceNote = document.getElementById('scenario-b-evidence-note');
+    const workspaceName = document.getElementById('scenario-b-workspace-name');
+    const workspaceVm = document.getElementById('scenario-b-workspace-vm');
+    const workspaceStarted = document.getElementById('scenario-b-workspace-started');
+    const workspaceStatus = document.getElementById('scenario-b-workspace-status');
+
+    function safeWorkspaceState() {
+        try {
+            return JSON.parse(localStorage.getItem('irsp-active-workspace')) || {};
+        } catch (error) {
+            return {};
+        }
+    }
+
+    function formatWorkspaceStart(value) {
+        const date = new Date(value);
+        if (Number.isNaN(date.getTime())) return 'Booted from the Launch Bay';
+        return `Booted ${date.toLocaleString()}`;
+    }
+
+    function renderWorkspace() {
+        if (!workspaceState || workspaceState.scenarioId !== 'scenario-b') return;
+        if (workspaceName) workspaceName.textContent = workspaceState.workspace || 'Log-Based Workspace';
+        if (workspaceVm) workspaceVm.textContent = `VM: ${workspaceState.vmName || 'rg-investigation-vm-b'}`;
+        if (workspaceStarted) workspaceStarted.textContent = formatWorkspaceStart(workspaceState.startedAt);
+        if (workspaceStatus) workspaceStatus.textContent = workspaceState.status === 'running' ? 'VM Running' : 'VM Ready';
+    }
 
     const queryProfiles = [
         {
@@ -123,4 +150,5 @@ correlation: phishing > PowerShell > LSASS dump > scheduled task persistence`,
     });
 
     runQuery(queryInput.value);
+    renderWorkspace();
 })();

@@ -1,11 +1,38 @@
 (function () {
     'use strict';
 
+    const workspaceState = safeWorkspaceState();
     startTimer('timer', 2700);
 
     const objectives = Array.from(document.querySelectorAll('[data-objective]'));
     const progressText = document.getElementById('scenario-a-progress-text');
     const progressFill = document.getElementById('scenario-a-progress-fill');
+    const workspaceName = document.getElementById('scenario-a-workspace-name');
+    const workspaceVm = document.getElementById('scenario-a-workspace-vm');
+    const workspaceStarted = document.getElementById('scenario-a-workspace-started');
+    const workspaceStatus = document.getElementById('scenario-a-workspace-status');
+
+    function safeWorkspaceState() {
+        try {
+            return JSON.parse(localStorage.getItem('irsp-active-workspace')) || {};
+        } catch (error) {
+            return {};
+        }
+    }
+
+    function formatWorkspaceStart(value) {
+        const date = new Date(value);
+        if (Number.isNaN(date.getTime())) return 'Booted from the Launch Bay';
+        return `Booted ${date.toLocaleString()}`;
+    }
+
+    function renderWorkspace() {
+        if (!workspaceState || workspaceState.scenarioId !== 'scenario-a') return;
+        if (workspaceName) workspaceName.textContent = workspaceState.workspace || 'Ransomware Containment Workspace';
+        if (workspaceVm) workspaceVm.textContent = `VM: ${workspaceState.vmName || 'rg-ransomware-vm-a'}`;
+        if (workspaceStarted) workspaceStarted.textContent = formatWorkspaceStart(workspaceState.startedAt);
+        if (workspaceStatus) workspaceStatus.textContent = workspaceState.status === 'running' ? 'VM Running' : 'VM Ready';
+    }
 
     function markComplete(key) {
         const objective = objectives.find(item => item.dataset.objective === key);
@@ -98,4 +125,5 @@
     });
 
     renderProgress();
+    renderWorkspace();
 })();

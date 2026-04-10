@@ -44,6 +44,42 @@
       "type": "timeline",
       "source": "Playback",
       "message": "DNS tunneling volume crossed the notable threshold on WS-FINANCE-03."
+    },
+    {
+      "id": "pb-6",
+      "scenario_id": "scenario-c",
+      "cursor": 6,
+      "timestamp": "2026-03-24T16:12:04Z",
+      "type": "chat",
+      "source": "Awareness",
+      "message": "Caller pressure indicators matched the vishing playbook. Help desk escalation path is active."
+    },
+    {
+      "id": "pb-7",
+      "scenario_id": "scenario-d",
+      "cursor": 7,
+      "timestamp": "2026-03-24T17:45:05Z",
+      "type": "timeline",
+      "source": "Network",
+      "message": "Rate limiting reduced edge saturation, but health checks remain unstable in one region."
+    },
+    {
+      "id": "pb-8",
+      "scenario_id": "scenario-e",
+      "cursor": 8,
+      "timestamp": "2026-03-24T18:27:41Z",
+      "type": "evidence",
+      "source": "Insider Risk",
+      "message": "Proxy upload artifacts and removable-media telemetry have been staged into the case."
+    },
+    {
+      "id": "pb-9",
+      "scenario_id": "scenario-f",
+      "cursor": 9,
+      "timestamp": "2026-03-24T19:16:14Z",
+      "type": "chat",
+      "source": "CloudSec",
+      "message": "Role assumption chain now links the automation principal to the widened administrator policy."
     }
   ]
 }

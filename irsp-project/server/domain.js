@@ -702,6 +702,42 @@ function applyAction(state, body) {
         });
     }
 
+    if (!evidenceItem) {
+        const actionLabels = {
+            investigate: 'investigation',
+            acknowledge: 'acknowledgement',
+            contain: 'containment'
+        };
+        const actionLabel = actionLabels[action] || 'response';
+        const sourceHost = alert.host || `scenario-${scenarioId}`;
+
+        evidenceItem = createEvidenceItem(state, {
+            scenario_id: scenarioId,
+            type: actionLabel,
+            title: `${alert.title} ${action === 'contain' ? 'containment' : 'review'} artifact`,
+            source: sourceHost,
+            summary: `Analyst recorded ${actionLabel} context for "${alert.title}".`,
+            severity: alert.severity || 'medium'
+        });
+
+        playbackEvent = createPlaybackEvent(state, {
+            scenario_id: scenarioId,
+            type: action === 'contain' ? 'timeline' : 'chat',
+            source: 'ResponseGrid',
+            message: `${actionLabel[0].toUpperCase()}${actionLabel.slice(1)} logged for ${alert.title}.`
+        });
+
+        logItem = appendActionLog(state, {
+            scenario_id: scenarioId,
+            host: sourceHost,
+            sourcetype: 'irsp:actions',
+            severity: alert.severity || 'medium',
+            user: 'IR Lead',
+            event: `Analyst marked alert "${alert.title}" as ${alert.status}.`,
+            technique_id: alert.technique_id || ''
+        });
+    }
+
     return {
         statusCode: 200,
         payload: {

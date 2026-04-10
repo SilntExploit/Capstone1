@@ -32,9 +32,36 @@
       "scenario_id": "scenario-d",
       "timestamp": "2026-03-23T13:20:00Z",
       "team": "Network Defense Lab",
-      "status": "planned",
+      "status": "completed",
       "score": null,
       "lead": "Samir Patel"
+    },
+    {
+      "id": "run-20260324-005",
+      "scenario_id": "scenario-c",
+      "timestamp": "2026-03-24T16:00:00Z",
+      "team": "Awareness Lab",
+      "status": "running",
+      "score": null,
+      "lead": "Elena Brooks"
+    },
+    {
+      "id": "run-20260324-006",
+      "scenario_id": "scenario-e",
+      "timestamp": "2026-03-24T18:05:00Z",
+      "team": "Insider Risk PM",
+      "status": "completed",
+      "score": 78,
+      "lead": "Priya Nair"
+    },
+    {
+      "id": "run-20260324-007",
+      "scenario_id": "scenario-f",
+      "timestamp": "2026-03-24T19:00:00Z",
+      "team": "Cloud IAM Team",
+      "status": "running",
+      "score": null,
+      "lead": "Noah Kim"
     }
   ]
 }

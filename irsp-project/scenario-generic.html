@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ResponseGrid - Scenario Workspace</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lucide/0.263.0/lucide.min.js"></script>
+    <link rel="stylesheet" href="css/shared.css">
+</head>
+<body>
+
+<nav aria-label="Primary navigation">
+    <a href="dashboard.html" class="logo"><i data-lucide="shield-alert"></i> ResponseGrid</a>
+    <a href="dashboard.html" class="nav-item"><i data-lucide="layout-dashboard"></i> Dashboard</a>
+    <a href="active-lab.html" class="nav-item"><i data-lucide="terminal"></i> Active Lab</a>
+    <a href="reports.html" class="nav-item"><i data-lucide="file-text"></i> Reports</a>
+    <a href="team.html" class="nav-item"><i data-lucide="users"></i> Team</a>
+    <a href="mitre.html" class="nav-item"><i data-lucide="shield"></i> MITRE ATT&amp;CK</a>
+    <div class="nav-bottom">
+        <a href="settings.html" class="nav-item"><i data-lucide="settings"></i> Settings</a>
+    </div>
+</nav>
+
+<main>
+    <header>
+        <div>
+            <div class="status-badge" id="generic-risk-badge">Simulation Active</div>
+            <h1 id="generic-title">Scenario Workspace</h1>
+            <p class="subtitle" id="generic-subtitle">Loading scenario context...</p>
+        </div>
+        <div>
+            <div class="header-panel">
+                <div class="eyebrow">Scenario Owner</div>
+                <div class="value" id="generic-owner">ResponseGrid</div>
+                <div class="surface-note" id="generic-environment">Seeded analyst workspace</div>
+            </div>
+            <div class="header-panel header-timer">
+                <div class="eyebrow">Time Remaining</div>
+                <div class="value" id="timer">00:25:00</div>
+                <div class="surface-note">Guided response window</div>
+            </div>
+        </div>
+    </header>
+
+    <section class="card section-space" aria-labelledby="generic-workspace-title">
+        <div class="toolbar" style="margin-bottom:0.85rem;">
+            <div>
+                <div class="card-title" id="generic-workspace-title"><i data-lucide="monitor"></i> Active Workspace</div>
+                <div class="surface-note" id="generic-workspace-note">Seeded analyst workspace linked from the Launch Bay.</div>
+            </div>
+            <span class="status-badge green" id="generic-workspace-status">VM Running</span>
+        </div>
+        <div class="grid-3">
+            <div class="card" style="padding:1rem;">
+                <div class="eyebrow">Workspace</div>
+                <div class="value" style="font-size:1.05rem;" id="generic-workspace-name">Workspace</div>
+                <div class="surface-note" id="generic-workspace-vm">VM: --</div>
+            </div>
+            <div class="card" style="padding:1rem;">
+                <div class="eyebrow">Environment</div>
+                <div style="font-weight:600;" id="generic-workspace-environment">Analyst environment</div>
+                <div class="surface-note" id="generic-workspace-started">Booted from the Launch Bay</div>
+            </div>
+            <div class="card" style="padding:1rem;">
+                <div class="eyebrow">Services</div>
+                <div class="surface-note" id="generic-services">Telemetry review, evidence pivots, and action logging.</div>
+            </div>
+        </div>
+    </section>
+
+    <section class="grid-3 section-space">
+        <div class="card stat-card">
+            <div>
+                <div class="stat-value" id="generic-alert-count" style="color:var(--accent-red);">00</div>
+                <div class="stat-label">Active Alerts</div>
+            </div>
+            <div class="stat-caption" id="generic-alert-note">Waiting for seeded alerts.</div>
+        </div>
+        <div class="card stat-card">
+            <div>
+                <div class="stat-value" id="generic-progress" style="color:var(--accent-blue);">0%</div>
+                <div class="stat-label">Objective Completion</div>
+            </div>
+            <div class="stat-caption" id="generic-progress-note">Complete response tasks to advance the scenario.</div>
+        </div>
+        <div class="card stat-card">
+            <div>
+                <div class="stat-value" id="generic-evidence-count" style="color:var(--accent-green);">00</div>
+                <div class="stat-label">Evidence Items</div>
+            </div>
+            <div class="stat-caption" id="generic-evidence-note">Collected artifacts update as you take actions.</div>
+        </div>
+    </section>
+
+    <section class="grid-2-1">
+        <div class="stack">
+            <div class="card">
+                <div class="toolbar" style="margin-bottom:1rem;">
+                    <div class="card-title"><i data-lucide="siren"></i> Alert Queue</div>
+                    <div class="surface-note" id="generic-alert-status">Loading alert telemetry...</div>
+                </div>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                        <tr>
+                            <th>Time</th>
+                            <th>Host</th>
+                            <th>Alert</th>
+                            <th>Action</th>
+                        </tr>
+                        </thead>
+                        <tbody id="generic-alerts-body"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title"><i data-lucide="terminal-square"></i> Search Workspace</div>
+                <div class="command-row" style="margin-top:1rem;">
+                    <input id="generic-query-input" type="text" class="form-input" style="flex:1;" placeholder="Search seeded telemetry...">
+                    <button class="btn" id="generic-run-query" type="button">Run Query</button>
+                </div>
+                <div class="command-chips" id="generic-query-chips"></div>
+                <p class="surface-note" id="generic-query-status" style="margin-top:0.75rem;">Use quick queries or search by host, event, user, or technique.</p>
+                <div class="table-wrap" style="margin-top:1rem;">
+                    <table>
+                        <thead>
+                        <tr>
+                            <th>_time</th>
+                            <th>host</th>
+                            <th>source</th>
+                            <th>event</th>
+                        </tr>
+                        </thead>
+                        <tbody id="generic-results-body"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="stack">
+            <div class="card">
+                <div class="card-title"><i data-lucide="target"></i> Objectives</div>
+                <ul class="objective-list" id="generic-objectives"></ul>
+                <p class="surface-note" id="generic-objective-status" style="margin-top:1rem;">Track alert handling and evidence collection to complete the scenario.</p>
+                <div class="progress-bar"><div class="progress-fill" id="generic-progress-fill" style="width:0%;"></div></div>
+            </div>
+
+            <div class="card">
+                <div class="toolbar" style="margin-bottom:1rem;">
+                    <div class="card-title"><i data-lucide="folder-kanban"></i> Evidence Locker</div>
+                    <div class="surface-note" id="generic-evidence-status">Loading evidence...</div>
+                </div>
+                <div id="generic-evidence-list" class="stack" style="gap:0.8rem;"></div>
+            </div>
+
+            <div class="card">
+                <div class="toolbar" style="margin-bottom:1rem;">
+                    <div class="card-title"><i data-lucide="radio"></i> Live Updates</div>
+                    <div class="surface-note" id="generic-live-status">Loading playback...</div>
+                </div>
+                <div class="timeline" id="generic-live-feed"></div>
+            </div>
+        </div>
+    </section>
+</main>
+
+<script src="js/shared.js"></script>
+<script src="js/services/api-client.js"></script>
+<script src="js/pages/scenario-generic.js"></script>
+</body>
+</html>
