@@ -56,6 +56,17 @@
         </div>
     </section>
 
+    <section class="card section-space" id="print-report-sheet" hidden>
+        <div class="toolbar" style="margin-bottom:1rem;">
+            <div>
+                <div class="status-badge blue">Export Ready</div>
+                <h2 id="print-report-title" style="margin-top:0.5rem;">ResponseGrid Report Summary</h2>
+                <p class="surface-note" id="print-report-meta">Select a report to build the export sheet.</p>
+            </div>
+        </div>
+        <div id="print-report-body"></div>
+    </section>
+
     <section class="card console-bar section-space">
         <div style="display:grid;grid-template-columns:minmax(0,1.4fr) repeat(2, minmax(180px, 1fr));gap:0.75rem;align-items:center;">
             <div class="console-search">
@@ -201,33 +212,13 @@
 
         <div class="tab-content" id="tab-feedback">
             <div class="card section-space">
-                <div class="card-title"><i data-lucide="message-circle"></i> Latest Feedback – Scenario A (Mar 17)</div>
-
-                <div class="alert-item success">
-                    <div class="alert-info">
-                        <h4>Strength: Rapid identification</h4>
-                        <p>Entry point was identified within three minutes, well ahead of the internal benchmark pace.</p>
-                    </div>
-                </div>
-
-                <div class="alert-item success">
-                    <div class="alert-info">
-                        <h4>Strength: Team communication</h4>
-                        <p>Incident channel usage remained consistent during containment and supported synchronized decision-making.</p>
-                    </div>
-                </div>
-
-                <div class="alert-item warning">
-                    <div class="alert-info">
-                        <h4>Improvement: Delayed C2 block</h4>
-                        <p>C2 traffic was blocked later than ideal. Earlier disruption would have reduced scenario impact.</p>
-                    </div>
-                </div>
-
-                <div class="alert-item">
-                    <div class="alert-info">
-                        <h4>Gap: Missing forensic snapshot</h4>
-                        <p>Memory or disk snapshot capture did not happen before eradication. Evidence preservation needs to move earlier.</p>
+                <div class="card-title" id="feedback-title"><i data-lucide="message-circle"></i> Latest Feedback – Scenario A</div>
+                <div id="feedback-cards">
+                    <div class="alert-item success">
+                        <div class="alert-info">
+                            <h4>Strength: Rapid identification</h4>
+                            <p>Entry point was identified within three minutes, well ahead of the internal benchmark pace.</p>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -235,35 +226,21 @@
             <div class="grid-2">
                 <div class="card">
                     <div class="card-title"><i data-lucide="book-open"></i> Recommended Next Steps</div>
-                    <ul class="list-clean" style="font-size:0.92rem;">
+                    <ul class="list-clean" style="font-size:0.92rem;" id="feedback-next-steps">
                         <li>Review the containment workflow before moving to eradication actions.</li>
-                        <li>Practice snapshot and preservation procedures inside the sandbox.</li>
-                        <li>Rehearse outbound blocking and credential review steps for faster response timing.</li>
                     </ul>
                 </div>
 
                 <div class="card">
                     <div class="card-title"><i data-lucide="check-square"></i> Coaching Checklist</div>
-                    <div class="toggle-row">
-                        <div>
-                            <div style="font-weight:600;font-size:0.92rem;">Document evidence before cleanup</div>
-                            <div class="surface-note">Preserve useful incident artifacts</div>
+                    <div id="feedback-checklist">
+                        <div class="toggle-row">
+                            <div>
+                                <div style="font-weight:600;font-size:0.92rem;">Document evidence before cleanup</div>
+                                <div class="surface-note">Preserve useful incident artifacts</div>
+                            </div>
+                            <div class="toggle on" data-static-toggle="true"></div>
                         </div>
-                        <div class="toggle on" data-static-toggle="true"></div>
-                    </div>
-                    <div class="toggle-row">
-                        <div>
-                            <div style="font-weight:600;font-size:0.92rem;">Validate containment before recovery</div>
-                            <div class="surface-note">Reduce repeat-compromise risk</div>
-                        </div>
-                        <div class="toggle on" data-static-toggle="true"></div>
-                    </div>
-                    <div class="toggle-row">
-                        <div>
-                            <div style="font-weight:600;font-size:0.92rem;">Speed up outbound traffic response</div>
-                            <div class="surface-note">Improve command-and-control disruption timing</div>
-                        </div>
-                        <div class="toggle" data-static-toggle="true"></div>
                     </div>
                 </div>
             </div>

@@ -124,6 +124,7 @@ svg {
     border: 0;
 }
 
+
 /* ── Sidebar ───────────────────────────────── */
 nav {
     width: 248px;
@@ -169,13 +170,14 @@ nav::before {
     font-family: 'IBM Plex Sans', sans-serif;
     font-size: 1rem;
     font-weight: 700;
+    padding-bottom: 1.55rem;
 }
 
 .logo::after {
     content: 'Incident Simulation';
     position: absolute;
     left: 3.35rem;
-    bottom: 0.55rem;
+    bottom: 0.32rem;
     font-family: 'IBM Plex Sans', sans-serif;
     font-size: 0.67rem;
     letter-spacing: 0.08em;
@@ -1742,5 +1744,65 @@ select.form-input {
 
     .logo {
         padding-bottom: 1rem;
+    }
+}
+
+@media print {
+    body.print-report-mode main > * {
+        display: none !important;
+    }
+
+    body {
+        display: block;
+        background: #fff;
+        color: #111827;
+    }
+
+    body::before,
+    nav,
+    .tabs,
+    .console-bar,
+    .nav-bottom,
+    #refresh-metrics-btn,
+    #export-report-btn,
+    #copy-summary-btn,
+    .metric-strip,
+    #tab-history,
+    #tab-feedback,
+    #tab-comparison {
+        display: none !important;
+    }
+
+    main {
+        width: 100%;
+        margin: 0;
+        padding: 0.75in;
+    }
+
+    .card,
+    .metric-tile,
+    .table-wrap {
+        box-shadow: none !important;
+        border: 1px solid #dbe2ea !important;
+        background: #fff !important;
+        break-inside: avoid;
+    }
+
+    .grid-2-1,
+    .metric-strip {
+        display: block !important;
+    }
+
+    .grid-2-1 > *,
+    .metric-strip > * {
+        margin-bottom: 1rem;
+    }
+
+    #print-report-sheet {
+        display: block !important;
+    }
+
+    body.print-report-mode #print-report-sheet {
+        display: block !important;
     }
 }

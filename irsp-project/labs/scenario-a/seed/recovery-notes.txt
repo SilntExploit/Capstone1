@@ -1,0 +1,5 @@
+Recovery playbook notes
+1. Capture process metadata
+2. Block suspicious egress
+3. Remove simulator artifact
+4. Restore clean copies

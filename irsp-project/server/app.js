@@ -3,6 +3,7 @@ const { URL } = require('url');
 const { DATA_DIR, DEFAULT_LIMIT, HOST, MIME_TYPES, PORT, ROOT_DIR } = require('./config');
 const { applyAction, buildSearchResponse, filterByScenario, sortByCursor, sortByTimestampDesc } = require('./domain');
 const { readRequestBody, sendJson, sendText } = require('./http');
+const { executeLabCommand, inspectContainerState, readContainerState, resetLab, startLab, stopLab } = require('./lab-scenario-a');
 const { serveStatic } = require('./static');
 const { createState } = require('./state');
 
@@ -113,6 +114,63 @@ function createApp() {
             } catch (error) {
                 sendJson(response, 400, {
                     error: 'Invalid JSON payload'
+                });
+            }
+            return;
+        }
+
+        if (requestUrl.pathname === '/api/labs/scenario-a/state' && request.method === 'GET') {
+            try {
+                sendJson(response, 200, await inspectContainerState());
+            } catch (error) {
+                sendJson(response, 500, {
+                    error: error.message || 'Unable to read Scenario A lab state'
+                });
+            }
+            return;
+        }
+
+        if (requestUrl.pathname === '/api/labs/scenario-a/start' && request.method === 'POST') {
+            try {
+                sendJson(response, 200, await startLab());
+            } catch (error) {
+                sendJson(response, 500, {
+                    error: error.message || 'Unable to start Scenario A lab'
+                });
+            }
+            return;
+        }
+
+        if (requestUrl.pathname === '/api/labs/scenario-a/stop' && request.method === 'POST') {
+            try {
+                sendJson(response, 200, await stopLab());
+            } catch (error) {
+                sendJson(response, 500, {
+                    error: error.message || 'Unable to stop Scenario A lab'
+                });
+            }
+            return;
+        }
+
+        if (requestUrl.pathname === '/api/labs/scenario-a/reset' && request.method === 'POST') {
+            try {
+                sendJson(response, 200, await resetLab());
+            } catch (error) {
+                sendJson(response, 500, {
+                    error: error.message || 'Unable to reset Scenario A lab'
+                });
+            }
+            return;
+        }
+
+        if (requestUrl.pathname === '/api/labs/scenario-a/exec' && request.method === 'POST') {
+            try {
+                const body = await readRequestBody(request);
+                const result = await executeLabCommand(body.command);
+                sendJson(response, result.statusCode, result.payload);
+            } catch (error) {
+                sendJson(response, 500, {
+                    error: error.message || 'Unable to execute Scenario A lab command'
                 });
             }
             return;

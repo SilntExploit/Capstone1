@@ -26,7 +26,7 @@
         <div>
             <div class="status-badge yellow">Investigation Active</div>
             <h1>Scenario B: Compromised System Investigation</h1>
-            <p class="subtitle">Windows Server environment focused on phishing-driven compromise, IOC mapping, persistence review, and host-level containment with MITRE mappings for T1566, T1071, and T1021.</p>
+            <p class="subtitle" id="scenario-b-subtitle">Windows Server environment focused on phishing-driven compromise, IOC mapping, persistence review, and host-level containment with MITRE mappings for T1566, T1071, and T1021.</p>
         </div>
         <div>
             <div class="header-panel">
@@ -46,24 +46,24 @@
         <div class="toolbar" style="margin-bottom:0.85rem;">
             <div>
                 <div class="card-title" id="scenario-b-workspace-title"><i data-lucide="monitor-smartphone"></i> Active Workspace</div>
-                <div class="surface-note">Architecture-aligned VM boot for the log-based investigation flow.</div>
+                <div class="surface-note" id="scenario-b-workspace-note">Sanitized endpoint evidence pack loaded for the no-VM investigation flow.</div>
             </div>
-            <span class="status-badge green" id="scenario-b-workspace-status">VM Running</span>
+            <span class="status-badge green" id="scenario-b-workspace-status">Pack Loaded</span>
         </div>
         <div class="grid-3">
             <div class="card" style="padding:1rem;">
                 <div class="eyebrow">Workspace</div>
                 <div class="value" style="font-size:1.05rem;" id="scenario-b-workspace-name">Log-Based Workspace</div>
-                <div class="surface-note" id="scenario-b-workspace-vm">VM: rg-investigation-vm-b</div>
+                <div class="surface-note" id="scenario-b-workspace-vm">Pack: ws-finance-03_sanitized_bundle</div>
             </div>
             <div class="card" style="padding:1rem;">
                 <div class="eyebrow">Environment</div>
-                <div style="font-weight:600;">Windows investigation analyst VM</div>
+                <div style="font-weight:600;" id="scenario-b-environment-copy">Offline Windows endpoint evidence pack</div>
                 <div class="surface-note" id="scenario-b-workspace-started">Booted from the Launch Bay</div>
             </div>
             <div class="card" style="padding:1rem;">
                 <div class="eyebrow">Services</div>
-                <div class="surface-note">Query shell, IOC evidence board, timeline review, and local run history.</div>
+                <div class="surface-note" id="scenario-b-services-copy">Query shell, IOC evidence board, timeline review, and local run history.</div>
             </div>
         </div>
     </section>
@@ -71,24 +71,24 @@
     <section class="grid-3 section-space">
         <div class="card stat-card">
             <div>
-                <div class="stat-value" style="color:var(--accent-red);">04</div>
+                <div class="stat-value" style="color:var(--accent-red);" id="scenario-b-ioc-count">04</div>
                 <div class="stat-label">Confirmed IOCs</div>
             </div>
-            <div class="stat-caption">Domain, IP, tool, and phishing artifact are already visible in the evidence trail.</div>
+            <div class="stat-caption" id="scenario-b-ioc-note">Domain, IP, tool, and phishing artifact are already visible in the evidence trail.</div>
         </div>
         <div class="card stat-card">
             <div>
-                <div class="stat-value" style="color:var(--accent-blue);">20%</div>
+                <div class="stat-value" style="color:var(--accent-blue);" id="scenario-b-completion-value">20%</div>
                 <div class="stat-label">Objective Completion</div>
             </div>
-            <div class="stat-caption">Initial attack vector is identified. Evidence mapping and full containment remain open.</div>
+            <div class="stat-caption" id="scenario-b-completion-note">Initial attack vector is identified. Evidence mapping and full containment remain open.</div>
         </div>
         <div class="card stat-card">
             <div>
-                <div class="stat-value" style="color:var(--accent-yellow);">LSASS</div>
+                <div class="stat-value" style="color:var(--accent-yellow);" id="scenario-b-target-value">LSASS</div>
                 <div class="stat-label">Credential Target</div>
             </div>
-            <div class="stat-caption">Credential dumping activity via `procdump.exe` is the highest-value escalation clue.</div>
+            <div class="stat-caption" id="scenario-b-target-note">Credential dumping activity via `procdump.exe` is the highest-value escalation clue.</div>
         </div>
     </section>
 
@@ -96,26 +96,14 @@
         <div class="stack">
             <div class="card">
                 <div class="card-title"><i data-lucide="bell"></i> SIEM Alerts</div>
-                <div class="alert-item warning">
-                    <div class="alert-info">
-                        <h4>Suspicious outbound DNS queries</h4>
-                        <p>WS-FINANCE-03 to `dns-tunnel.malware.io` | 1,200 queries per minute</p>
+                <div id="scenario-b-alerts">
+                    <div class="alert-item warning">
+                        <div class="alert-info">
+                            <h4>Loading investigation alerts</h4>
+                            <p>Pulling sanitized endpoint telemetry pack.</p>
+                        </div>
+                        <button class="btn btn-secondary" disabled>Loading</button>
                     </div>
-                    <button class="btn btn-secondary">Investigate</button>
-                </div>
-                <div class="alert-item">
-                    <div class="alert-info">
-                        <h4>Credential dump detected (LSASS)</h4>
-                        <p>`procdump.exe` accessing `lsass.exe` on WS-FINANCE-03</p>
-                    </div>
-                    <button class="btn btn-danger">Contain</button>
-                </div>
-                <div class="alert-item info">
-                    <div class="alert-info">
-                        <h4>New scheduled task created</h4>
-                        <p>Task `WindowsUpdate_svc` created with SYSTEM privileges for persistence</p>
-                    </div>
-                    <button class="btn btn-secondary">Review</button>
                 </div>
             </div>
 
@@ -131,7 +119,7 @@
                             <th>Status</th>
                         </tr>
                         </thead>
-                        <tbody>
+                        <tbody id="scenario-b-evidence-body">
                         <tr data-record-id="ioc-domain" data-indicator="dns-tunnel.malware.io" data-type="Domain" data-severity="Critical" data-status="Confirmed IOC" data-summary="High-volume DNS tunneling aligned with beaconing from the compromised workstation." data-json='{&#10;  "indicator": "dns-tunnel.malware.io",&#10;  "type": "domain",&#10;  "host": "WS-FINANCE-03",&#10;  "query_volume_per_min": 1200,&#10;  "first_seen": "2026-03-24T09:18:02Z",&#10;  "classification": "dns-tunneling",&#10;  "confidence": "high"&#10;}' data-note='Pivot to proxy and DNS telemetry. This IOC is the strongest command-and-control signal in the run.'>
                             <td>dns-tunnel.malware.io</td>
                             <td>Domain</td>
@@ -211,7 +199,7 @@
 
             <div class="card">
                 <div class="card-title"><i data-lucide="clock-3"></i> Incident Timeline</div>
-                <div class="timeline">
+                <div class="timeline" id="scenario-b-timeline-list">
                     <div class="timeline-item">
                         <span class="time">09:12:00</span>
                         <p class="desc">Phishing email received by `finance-user@corp.local` with a macro-enabled attachment.</p>
@@ -250,7 +238,7 @@
                             <th>event</th>
                         </tr>
                         </thead>
-                        <tbody>
+                        <tbody id="scenario-b-logs-body">
                         <tr>
                             <td>09:14:25</td>
                             <td>WS-FINANCE-03</td>
@@ -285,14 +273,14 @@
             <div class="card">
                 <div class="card-title"><i data-lucide="target"></i> Objectives</div>
                 <ul class="objective-list">
-                    <li class="objective-item complete"><i data-lucide="check-circle" style="color:var(--accent-green);"></i> Identify initial attack vector</li>
-                    <li class="objective-item"><i data-lucide="circle" style="color:var(--text-dim);"></i> Map all IOCs to evidence board</li>
-                    <li class="objective-item"><i data-lucide="circle" style="color:var(--text-dim);"></i> Build complete incident timeline</li>
-                    <li class="objective-item"><i data-lucide="circle" style="color:var(--text-dim);"></i> Contain compromised system</li>
-                    <li class="objective-item"><i data-lucide="circle" style="color:var(--text-dim);"></i> Remove persistence mechanism</li>
+                    <li class="objective-item" data-objective="entry"><i data-lucide="circle" style="color:var(--text-dim);"></i> Identify initial attack vector</li>
+                    <li class="objective-item" data-objective="map"><i data-lucide="circle" style="color:var(--text-dim);"></i> Map all IOCs to evidence board</li>
+                    <li class="objective-item" data-objective="timeline"><i data-lucide="circle" style="color:var(--text-dim);"></i> Build complete incident timeline</li>
+                    <li class="objective-item" data-objective="contain"><i data-lucide="circle" style="color:var(--text-dim);"></i> Contain compromised system</li>
+                    <li class="objective-item" data-objective="remove"><i data-lucide="circle" style="color:var(--text-dim);"></i> Remove persistence mechanism</li>
                 </ul>
-                <p class="surface-note" style="margin-top:1rem;">Completion: 20%</p>
-                <div class="progress-bar"><div class="progress-fill" style="width:20%;"></div></div>
+                <p class="surface-note" id="scenario-b-progress-text" style="margin-top:1rem;">Completion: 20%</p>
+                <div class="progress-bar"><div class="progress-fill" id="scenario-b-progress-fill" style="width:20%;"></div></div>
             </div>
 
             <div class="card">
@@ -348,7 +336,7 @@
 
             <div class="card">
                 <div class="card-title"><i data-lucide="message-square"></i> Team Comms</div>
-                <div class="chat-box">
+                <div class="chat-box" id="scenario-b-comms-box">
                     <div class="msg"><span class="msg-sender">System:</span> Scenario B started. Compromised host detected.</div>
                     <div class="msg"><span class="msg-sender">IR Lead:</span> Starting with email gateway logs to confirm the entry path.</div>
                     <div class="msg"><span class="msg-sender">Forensics:</span> LSASS dump confirmed. Credential theft is in progress.</div>
@@ -360,9 +348,10 @@
             <div class="card">
                 <div class="card-title"><i data-lucide="zap"></i> Quick Actions</div>
                 <div class="action-stack">
-                    <button class="btn btn-danger"><i data-lucide="plug-zap"></i> Isolate WS-FINANCE-03</button>
-                    <button class="btn btn-secondary"><i data-lucide="search-code"></i> Query SIEM Logs</button>
-                    <button class="btn btn-secondary"><i data-lucide="trash-2"></i> Remove Scheduled Task</button>
+                    <button class="btn btn-danger" type="button" id="scenario-b-action-contain"><i data-lucide="plug-zap"></i> Isolate WS-FINANCE-03</button>
+                    <button class="btn btn-secondary" type="button" id="scenario-b-action-query"><i data-lucide="search-code"></i> Query SIEM Logs</button>
+                    <button class="btn btn-secondary" type="button" id="scenario-b-action-remove"><i data-lucide="trash-2"></i> Remove Scheduled Task</button>
+                    <button class="btn btn-secondary" type="button" id="scenario-b-action-reset"><i data-lucide="rotate-ccw"></i> Reset Evidence Pack</button>
                     <a href="reports.html" class="btn"><i data-lucide="bar-chart-3"></i> View Reports</a>
                 </div>
             </div>

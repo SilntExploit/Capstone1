@@ -1,0 +1,4 @@
+Customer ledger extract
+ACME-001, 12884.17, normal
+ACME-002, 943.20, flagged
+ACME-003, 5510.44, pending

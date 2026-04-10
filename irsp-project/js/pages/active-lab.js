@@ -173,14 +173,14 @@
         },
         'scenario-b': {
             title: 'Scenario B Launch',
-            subtitle: 'Provision the log-based investigation workspace and analyst VM',
+            subtitle: 'Load the no-VM Windows evidence pack and analyst workspace',
             icon: 'monitor-smartphone',
-            workspace: 'Log-Based Workspace',
-            vmName: 'rg-investigation-vm-b',
-            environment: 'Windows-focused investigation workspace',
+            workspace: 'Windows Evidence Pack Workspace',
+            vmName: 'ws-finance-03_sanitized_bundle',
+            environment: 'Offline Windows endpoint investigation pack',
             services: ['Log review and query shell', 'Evidence board and IOC drilldowns', 'Timeline reconstruction and analyst actions'],
             dataFlow: ['Loads Scenario B seeded telemetry', 'Stores user actions and lab state locally', 'Routes into the live compromised system investigation page'],
-            note: 'The architecture diagram shows backend processing too, but this prototype launch flow keeps the VM/workspace experience in the browser.'
+            note: 'This Scenario B flow no longer provisions a VM. It opens a browser-based evidence pack built from sanitized Windows endpoint telemetry.'
         },
         'scenario-c': {
             title: 'Scenario C Launch',
@@ -658,6 +658,7 @@ ${rows.join('\n')}`;
     function launchScenario(card, launchButton) {
         const scenarioId = launchButton.dataset.scenarioId;
         const profile = launchProfiles[scenarioId];
+        const isEvidencePack = scenarioId === 'scenario-b';
         if (!profile) {
             saveLastScenario(launchButton.dataset.scenarioId, launchButton.dataset.url, card.dataset.title);
             window.location.href = launchButton.dataset.url;
@@ -671,10 +672,10 @@ ${rows.join('\n')}`;
             body: `
                 <div class="grid-2" style="margin-bottom:1rem;">
                     <div class="card" style="padding:1rem;">
-                        <div class="card-title"><i data-lucide="cpu"></i> VM Instance</div>
+                        <div class="card-title"><i data-lucide="${isEvidencePack ? 'folder-open-dot' : 'cpu'}"></i> ${isEvidencePack ? 'Evidence Pack' : 'VM Instance'}</div>
                         <div class="key-value-list" style="margin-top:0.75rem;">
                             <div class="key-value-item">
-                                <span class="key">VM Name</span>
+                                <span class="key">${isEvidencePack ? 'Pack Name' : 'VM Name'}</span>
                                 <span class="value">${profile.vmName}</span>
                             </div>
                             <div class="key-value-item">
@@ -713,7 +714,7 @@ ${rows.join('\n')}`;
             actions: `
                 <button class="btn btn-secondary" type="button" id="launch-vm-cancel">Cancel</button>
                 <button class="btn" type="button" id="launch-vm-confirm">
-                    <i data-lucide="rocket"></i> Start VM
+                    <i data-lucide="rocket"></i> ${isEvidencePack ? 'Load Evidence Pack' : 'Start VM'}
                 </button>
             `
         });
@@ -728,8 +729,10 @@ ${rows.join('\n')}`;
         if (confirmButton) {
             confirmButton.addEventListener('click', function () {
                 confirmButton.disabled = true;
-                confirmButton.innerHTML = '<i data-lucide="loader-2"></i> Booting Workspace...';
-                modalSubtitle.textContent = `${profile.vmName} is starting. Preparing ${profile.workspace}.`;
+                confirmButton.innerHTML = `<i data-lucide="loader-2"></i> ${isEvidencePack ? 'Loading Workspace...' : 'Booting Workspace...'}`;
+                modalSubtitle.textContent = isEvidencePack
+                    ? `${profile.vmName} is loading. Preparing ${profile.workspace}.`
+                    : `${profile.vmName} is starting. Preparing ${profile.workspace}.`;
                 refreshIcons();
 
                 saveLastScenario(scenarioId, launchButton.dataset.url, card.dataset.title);

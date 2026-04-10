@@ -1,0 +1,130 @@
+{
+  "meta": {
+    "subtitle": "Sanitized Windows endpoint exports drive this exercise. No VM is required: trainees investigate a downloaded evidence pack built from realistic Sysmon, PowerShell, Security, Task Scheduler, proxy, and DNS telemetry.",
+    "workspace_note": "Evidence-pack workflow using sanitized Windows Server and workstation exports instead of a live VM.",
+    "environment_copy": "Offline Windows endpoint evidence pack",
+    "services_copy": "Query shell, IOC evidence board, timeline review, host logs, and local run scoring.",
+    "target_value": "LSASS",
+    "target_note": "Credential dumping via procdump.exe remains the clearest escalation clue in the case file.",
+    "ioc_note": "Four seeded indicators came from sanitized host, email, DNS, and proxy exports."
+  },
+  "alerts": [
+    {
+      "id": "dns-alert",
+      "level": "warning",
+      "title": "Suspicious outbound DNS queries",
+      "description": "WS-FINANCE-03 queried dns-tunnel.malware.io 1,200 times per minute.",
+      "action": "Investigate",
+      "action_type": "investigate"
+    },
+    {
+      "id": "lsass-alert",
+      "level": "critical",
+      "title": "Credential dump detected (LSASS)",
+      "description": "procdump.exe accessed lsass.exe on WS-FINANCE-03 with memory-read permissions.",
+      "action": "Contain",
+      "action_type": "contain"
+    },
+    {
+      "id": "task-alert",
+      "level": "info",
+      "title": "New scheduled task created",
+      "description": "WindowsUpdate_svc was registered with SYSTEM privileges and an AtLogon trigger.",
+      "action": "Review",
+      "action_type": "remove_persistence"
+    }
+  ],
+  "queries": [
+    {
+      "id": "credential-dumping",
+      "label": "Credential Dumping",
+      "query": "host == \"WS-FINANCE-03\" and (\"procdump.exe\" or \"dns-tunnel.malware.io\")",
+      "search": "ResponseGridLogs\n| where host == \"WS-FINANCE-03\" and (\"procdump.exe\" or \"dns-tunnel.malware.io\")\n| summarize earliest = min(timestamp), latest = max(timestamp) by host, process_name, parent_process, user, dest_domain, task_name\n\n09:14:25 powershell.exe WINWORD.EXE finance-user dns-tunnel.malware.io -\n09:31:42 procdump.exe cmd.exe finance-user - -\n09:45:14 schtasks.exe cmd.exe SYSTEM - WindowsUpdate_svc\n\ncorrelation: phishing > PowerShell > LSASS dump > scheduled task persistence",
+      "raw": "09:31:42 WS-FINANCE-03 sysmon:process Image=C:\\Tools\\procdump.exe TargetImage=C:\\Windows\\System32\\lsass.exe GrantedAccess=0x1010\n09:45:14 WS-FINANCE-03 windows:taskscheduler TaskName=WindowsUpdate_svc Author=SYSTEM Trigger=AtLogon\n09:18:11 proxy-01 web:proxy dest_ip=203.0.113.42 sni=update-win365.net action=allowed",
+      "timeline": "09:12 phishing email delivered\n09:14 macro execution and PowerShell launcher\n09:18 outbound C2 established\n09:31 LSASS access observed\n09:45 scheduled task persistence registered",
+      "status": "Correlation view loaded for the active investigation chain."
+    },
+    {
+      "id": "initial-access",
+      "label": "Initial Access",
+      "query": "host == \"WS-FINANCE-03\" and (\"phish-invoice.docm\" or \"powershell.exe\")",
+      "search": "ResponseGridLogs\n| where host == \"WS-FINANCE-03\" and (\"phish-invoice.docm\" or \"powershell.exe\")\n| project timestamp, process_name, parent_process, user, file_name, command_line\n\n09:14:22 WINWORD.EXE explorer.exe finance-user phish-invoice.docm macro enabled\n09:14:25 powershell.exe WINWORD.EXE finance-user - encoded command executed\n\nlaunch chain confirms phishing-led initial access.",
+      "raw": "09:14:25 WS-FINANCE-03 powershell:operational ParentImage=WINWORD.EXE CommandLine=powershell.exe -enc SQBFAFgA...\n09:12:03 mail-gw-01 o365:message_trace sender=billing@invoice-sync.net subject=\"Invoice review\" attachment=phish-invoice.docm",
+      "timeline": "09:12 email delivered\n09:14 document opened\n09:14 macro launched PowerShell",
+      "status": "Initial access query completed. Document-to-PowerShell chain confirmed."
+    },
+    {
+      "id": "persistence",
+      "label": "Persistence",
+      "query": "host == \"WS-FINANCE-03\" and (\"WindowsUpdate_svc\" or \"schtasks.exe\")",
+      "search": "ResponseGridLogs\n| where host == \"WS-FINANCE-03\" and (\"WindowsUpdate_svc\" or \"schtasks.exe\")\n| project timestamp, process_name, parent_process, user, task_name, trigger\n\n09:45:14 schtasks.exe cmd.exe SYSTEM WindowsUpdate_svc AtLogon\n09:45:17 taskeng.exe services.exe SYSTEM WindowsUpdate_svc Registered\n\npersistence is active at user logon with SYSTEM privileges.",
+      "raw": "09:45:14 WS-FINANCE-03 windows:taskscheduler TaskName=WindowsUpdate_svc Trigger=AtLogon Author=SYSTEM\n09:45:18 WS-FINANCE-03 security EventID=4698 TaskName=WindowsUpdate_svc SubjectUserName=SYSTEM",
+      "timeline": "09:31 credential access\n09:45 scheduled task created\n09:46 persistence checkpoint reached",
+      "status": "Persistence query completed. Scheduled task remains the active foothold."
+    }
+  ],
+  "evidence": [
+    {
+      "record_id": "ioc-domain",
+      "indicator": "dns-tunnel.malware.io",
+      "type": "Domain",
+      "severity": "Critical",
+      "status": "Confirmed IOC",
+      "summary": "High-volume DNS tunneling aligned with beaconing from the compromised workstation.",
+      "json": "{\n  \"indicator\": \"dns-tunnel.malware.io\",\n  \"type\": \"domain\",\n  \"host\": \"WS-FINANCE-03\",\n  \"query_volume_per_min\": 1200,\n  \"first_seen\": \"2026-03-24T09:18:02Z\",\n  \"classification\": \"dns-tunneling\",\n  \"confidence\": \"high\"\n}",
+      "note": "Pivot to proxy and DNS telemetry. This IOC is the strongest command-and-control signal in the run."
+    },
+    {
+      "record_id": "ioc-ip",
+      "indicator": "203.0.113.42",
+      "type": "IP Address",
+      "severity": "Critical",
+      "status": "C2 Server",
+      "summary": "Outbound TLS sessions from the workstation and proxy tier resolve to the active attacker node.",
+      "json": "{\n  \"indicator\": \"203.0.113.42\",\n  \"type\": \"ip\",\n  \"dest_port\": 443,\n  \"sni\": \"update-win365.net\",\n  \"host\": \"WS-FINANCE-03\",\n  \"first_seen\": \"2026-03-24T09:18:05Z\",\n  \"classification\": \"c2\",\n  \"confidence\": \"high\"\n}",
+      "note": "Use this IOC for network block simulation and for validating proxy-enforced containment."
+    },
+    {
+      "record_id": "ioc-tool",
+      "indicator": "procdump.exe",
+      "type": "Tool",
+      "severity": "High",
+      "status": "Under Review",
+      "summary": "Credential dumping utility executed against LSASS with memory-read permissions.",
+      "json": "{\n  \"indicator\": \"procdump.exe\",\n  \"type\": \"tool\",\n  \"host\": \"WS-FINANCE-03\",\n  \"target_process\": \"lsass.exe\",\n  \"parent_process\": \"cmd.exe\",\n  \"user\": \"finance-user\",\n  \"classification\": \"credential_dumping\",\n  \"confidence\": \"medium-high\"\n}",
+      "note": "This artifact should drive both the credential-access finding and the host containment recommendation."
+    },
+    {
+      "record_id": "ioc-file",
+      "indicator": "phish-invoice.docm",
+      "type": "File",
+      "severity": "High",
+      "status": "Initial Vector",
+      "summary": "Macro-enabled document delivered through phishing and linked to the first PowerShell execution.",
+      "json": "{\n  \"indicator\": \"phish-invoice.docm\",\n  \"type\": \"file\",\n  \"sender\": \"billing@invoice-sync.net\",\n  \"recipient\": \"finance-user@corp.local\",\n  \"macro_enabled\": true,\n  \"child_process\": \"powershell.exe\",\n  \"classification\": \"initial_access\",\n  \"confidence\": \"high\"\n}",
+      "note": "Keep this selected during stakeholder demos to show clear mapping from phishing artifact to host compromise."
+    }
+  ],
+  "timeline": [
+    { "time": "09:12:00", "desc": "Phishing email received by finance-user@corp.local with a macro-enabled attachment." },
+    { "time": "09:14:22", "desc": "User opens phish-invoice.docm and the macro launches a PowerShell dropper." },
+    { "time": "09:18:05", "desc": "Reverse shell established from WS-FINANCE-03 to 203.0.113.42:443." },
+    { "time": "09:31:40", "desc": "Credentials dumped from lsass.exe using procdump.exe." },
+    { "time": "09:45:12", "desc": "Persistence established via scheduled task WindowsUpdate_svc." }
+  ],
+  "logs": [
+    { "time": "09:12:03", "host": "mail-gw-01", "sourcetype": "o365:message_trace", "event": "Message delivered from billing@invoice-sync.net with attachment phish-invoice.docm" },
+    { "time": "09:14:25", "host": "WS-FINANCE-03", "sourcetype": "powershell:operational", "event": "Encoded command executed from WINWORD.EXE child process" },
+    { "time": "09:18:11", "host": "proxy-01", "sourcetype": "web:proxy", "event": "TLS session established to 203.0.113.42 SNI=update-win365.net" },
+    { "time": "09:31:42", "host": "WS-FINANCE-03", "sourcetype": "sysmon:process", "event": "procdump.exe opened lsass.exe with PROCESS_VM_READ access" },
+    { "time": "09:45:14", "host": "WS-FINANCE-03", "sourcetype": "windows:taskscheduler", "event": "Task registration name=WindowsUpdate_svc author=SYSTEM trigger=AtLogon" }
+  ],
+  "comms": {
+    "base": [
+      { "sender": "System", "message": "Scenario B loaded from a sanitized Windows endpoint evidence pack." },
+      { "sender": "IR Lead", "message": "Start with the email and PowerShell chain to lock down initial access." },
+      { "sender": "Forensics", "message": "LSASS access is confirmed. Preserve that evidence before cleanup." },
+      { "sender": "SOC", "message": "The suspicious domain appears in both DNS and proxy exports." }
+    ]
+  }
+}
