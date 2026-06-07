@@ -6,6 +6,186 @@
     <title>ResponseGrid - Team Management</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/lucide/0.263.0/lucide.min.js"></script>
     <link rel="stylesheet" href="css/shared.css">
+    <style>
+        .modal-backdrop {
+            position: fixed;
+            inset: 0;
+            background: rgba(2, 6, 14, 0.55);
+            z-index: 50;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+            animation: fadeIn 0.18s ease;
+        }
+        .modal-backdrop[hidden] { display: none !important; }
+
+        .modal {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-xl);
+            padding: 1.5rem;
+            width: min(520px, 100%);
+            box-shadow: var(--shadow-lg);
+            animation: riseIn 0.22s ease;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.25rem;
+        }
+
+        .modal-title {
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--text-soft);
+        }
+
+        .modal-footer {
+            display: flex;
+            gap: 0.65rem;
+            justify-content: flex-end;
+            margin-top: 1.25rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--border);
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.75rem;
+        }
+
+        @media (max-width: 480px) {
+            .form-row { grid-template-columns: 1fr; }
+        }
+
+        .form-group { margin-bottom: 0.85rem; }
+        .form-group:last-child { margin-bottom: 0; }
+
+        .detail-panel {
+            border-top: 1px solid var(--border);
+            padding-top: 1rem;
+            margin-top: 1rem;
+            animation: riseIn 0.2s ease;
+        }
+        .detail-panel[hidden] { display: none !important; }
+
+        .avatar-lg {
+            width: 52px;
+            height: 52px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1rem;
+            flex-shrink: 0;
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.14);
+        }
+
+        .search-bar {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: #f8fafc;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: 0.42rem 0.65rem;
+            min-width: 170px;
+        }
+        .search-bar input {
+            border: none;
+            outline: none;
+            background: transparent;
+            color: var(--text-main);
+            font-size: 0.84rem;
+            width: 100%;
+        }
+        .search-bar i, .search-bar svg {
+            width: 0.82rem;
+            height: 0.82rem;
+            color: var(--text-dim);
+            flex-shrink: 0;
+        }
+
+        .filter-chips { display: flex; gap: 0.35rem; flex-wrap: wrap; }
+
+        .filter-chip {
+            border: 1px solid var(--border);
+            background: #f8fafc;
+            color: var(--text-soft);
+            border-radius: 999px;
+            padding: 0.3rem 0.62rem;
+            font-size: 0.72rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: border-color 0.15s, color 0.15s, background 0.15s;
+        }
+        .filter-chip:hover,
+        .filter-chip.active {
+            border-color: rgba(249,115,22,0.22);
+            color: var(--accent-primary);
+            background: rgba(249,115,22,0.08);
+        }
+
+        .row-actions {
+            display: flex;
+            gap: 0.3rem;
+            opacity: 0;
+            transition: opacity 0.15s ease;
+        }
+        tr:hover .row-actions,
+        tr.selected .row-actions { opacity: 1; }
+
+        .toast {
+            position: fixed;
+            bottom: 1.5rem;
+            right: 1.5rem;
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: 0.72rem 1rem;
+            font-size: 0.84rem;
+            color: var(--text-main);
+            box-shadow: var(--shadow-lg);
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            animation: riseIn 0.2s ease;
+            max-width: 340px;
+        }
+        .toast[hidden] { display: none !important; }
+        .toast i, .toast svg { width: 1rem; height: 1rem; flex-shrink: 0; }
+        .toast.success { border-left: 3px solid var(--accent-green); }
+        .toast.error   { border-left: 3px solid var(--accent-red); }
+
+        .empty-state {
+            text-align: center;
+            padding: 2.5rem 1rem;
+            color: var(--text-dim);
+        }
+        .empty-state i, .empty-state svg {
+            display: block;
+            margin: 0 auto 0.75rem;
+            width: 2rem;
+            height: 2rem;
+            opacity: 0.38;
+        }
+        .empty-state strong { font-size: 0.9rem; }
+        .empty-state p { font-size: 0.82rem; margin-top: 0.3rem; }
+
+        .team-item { cursor: default; }
+        .team-item .alert-info { flex: 1; min-width: 0; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to   { opacity: 1; }
+        }
+    </style>
 </head>
 <body>
 
@@ -29,28 +209,28 @@
             <p class="subtitle">Manage trainees, assign response roles, and maintain readiness across the incident response simulation program.</p>
         </div>
         <div>
-            <button class="btn"><i data-lucide="user-plus"></i> Add Member</button>
+            <button class="btn" id="add-member-btn"><i data-lucide="user-plus"></i> Add Member</button>
         </div>
     </header>
 
     <section class="grid-3 section-space">
         <div class="card stat-card">
             <div>
-                <div class="stat-value" style="color:var(--accent-blue);">8</div>
+                <div class="stat-value" id="stat-total" style="color:var(--accent-blue);">0</div>
                 <div class="stat-label">Total Members</div>
             </div>
             <div class="stat-caption">Core roster across incident command, SOC, forensics, and network roles.</div>
         </div>
         <div class="card stat-card">
             <div>
-                <div class="stat-value" style="color:var(--accent-green);">5</div>
+                <div class="stat-value" id="stat-online" style="color:var(--accent-green);">0</div>
                 <div class="stat-label">Currently Online</div>
             </div>
             <div class="stat-caption">Analysts currently available for live scenarios and coaching workflows.</div>
         </div>
         <div class="card stat-card">
             <div>
-                <div class="stat-value" style="color:var(--accent-yellow);">2</div>
+                <div class="stat-value" id="stat-insim" style="color:var(--accent-yellow);">0</div>
                 <div class="stat-label">In Active Simulation</div>
             </div>
             <div class="stat-caption">Members currently assigned to hands-on scenario execution.</div>
@@ -58,146 +238,752 @@
     </section>
 
     <div class="grid-2-1">
+        <!-- Left: Roster -->
         <div class="card">
-            <div class="toolbar" style="margin-bottom:1rem;">
-                <div class="card-title" style="margin-bottom:0;"><i data-lucide="users"></i> Team Roster</div>
-                <div class="surface-note">Track operational role, status, and training performance at a glance.</div>
+            <div class="toolbar" style="margin-bottom:1rem;align-items:flex-start;">
+                <div>
+                    <div class="card-title" style="margin-bottom:0.25rem;"><i data-lucide="users"></i> Team Roster</div>
+                    <div class="surface-note">Track operational role, status, and training performance at a glance.</div>
+                </div>
+                <div style="display:flex;gap:0.55rem;align-items:center;flex-wrap:wrap;margin-top:0.2rem;">
+                    <div class="search-bar">
+                        <i data-lucide="search"></i>
+                        <input type="text" id="roster-search" placeholder="Search members…" aria-label="Search members">
+                    </div>
+                    <div class="filter-chips">
+                        <button class="filter-chip active" data-filter="all">All</button>
+                        <button class="filter-chip" data-filter="online">Online</button>
+                        <button class="filter-chip" data-filter="in-sim">In Sim</button>
+                        <button class="filter-chip" data-filter="away">Away</button>
+                        <button class="filter-chip" data-filter="offline">Offline</button>
+                    </div>
+                </div>
             </div>
+
             <div class="table-wrap">
                 <table>
                     <thead>
-                    <tr>
-                        <th>Member</th>
-                        <th>Role</th>
-                        <th>Status</th>
-                        <th>Simulations</th>
-                        <th>Avg Score</th>
-                    </tr>
+                        <tr>
+                            <th>Member</th>
+                            <th>Role</th>
+                            <th>Status</th>
+                            <th>Sims</th>
+                            <th>Avg Score</th>
+                            <th></th>
+                        </tr>
                     </thead>
-                    <tbody>
-                    <tr>
-                        <td style="display:flex;align-items:center;gap:10px;">
-                            <div class="avatar" style="background:var(--accent-blue);">JD</div>
-                            <div>
-                                <div style="font-weight:600;">Jordan Davis</div>
-                                <div class="surface-note" style="font-size:0.78rem;">jordan@corp.local</div>
-                            </div>
-                        </td>
-                        <td>IR Lead</td>
-                        <td><span class="status-badge green">Online</span></td>
-                        <td>8</td>
-                        <td>87%</td>
-                    </tr>
-                    <tr>
-                        <td style="display:flex;align-items:center;gap:10px;">
-                            <div class="avatar" style="background:var(--accent-green);color:#04101d;">AK</div>
-                            <div>
-                                <div style="font-weight:600;">Aisha Khan</div>
-                                <div class="surface-note" style="font-size:0.78rem;">aisha@corp.local</div>
-                            </div>
-                        </td>
-                        <td>SOC Analyst</td>
-                        <td><span class="status-badge green">In Sim</span></td>
-                        <td>12</td>
-                        <td>82%</td>
-                    </tr>
-                    <tr>
-                        <td style="display:flex;align-items:center;gap:10px;">
-                            <div class="avatar" style="background:var(--accent-purple);">MT</div>
-                            <div>
-                                <div style="font-weight:600;">Marcus Thompson</div>
-                                <div class="surface-note" style="font-size:0.78rem;">marcus@corp.local</div>
-                            </div>
-                        </td>
-                        <td>Forensic Analyst</td>
-                        <td><span class="status-badge green">Online</span></td>
-                        <td>6</td>
-                        <td>91%</td>
-                    </tr>
-                    <tr>
-                        <td style="display:flex;align-items:center;gap:10px;">
-                            <div class="avatar" style="background:var(--accent-yellow);color:#04101d;">SL</div>
-                            <div>
-                                <div style="font-weight:600;">Sarah Lopez</div>
-                                <div class="surface-note" style="font-size:0.78rem;">sarah@corp.local</div>
-                            </div>
-                        </td>
-                        <td>Network Analyst</td>
-                        <td><span class="status-badge yellow">Away</span></td>
-                        <td>4</td>
-                        <td>75%</td>
-                    </tr>
-                    <tr>
-                        <td style="display:flex;align-items:center;gap:10px;">
-                            <div class="avatar" style="background:var(--accent-red);">RN</div>
-                            <div>
-                                <div style="font-weight:600;">Raj Nair</div>
-                                <div class="surface-note" style="font-size:0.78rem;">raj@corp.local</div>
-                            </div>
-                        </td>
-                        <td>Trainee</td>
-                        <td><span class="status-badge green">In Sim</span></td>
-                        <td>2</td>
-                        <td>68%</td>
-                    </tr>
-                    </tbody>
+                    <tbody id="roster-tbody"></tbody>
                 </table>
+                <div id="roster-empty" class="empty-state" hidden>
+                    <i data-lucide="users"></i>
+                    <strong>No members found</strong>
+                    <p>Adjust your search or filter, or add a new member.</p>
+                </div>
+            </div>
+
+            <!-- Member detail panel (shown when a row is selected) -->
+            <div class="detail-panel" id="member-detail" hidden>
+                <div class="card-title" style="font-size:0.82rem;margin-bottom:0.75rem;">
+                    <i data-lucide="user"></i> Member Details
+                </div>
+                <div style="display:flex;gap:0.9rem;align-items:flex-start;">
+                    <div class="avatar-lg" id="detail-avatar"></div>
+                    <div style="flex:1;min-width:0;">
+                        <div style="font-weight:700;font-size:0.96rem;" id="detail-name"></div>
+                        <div class="surface-note" id="detail-email"></div>
+                        <div style="margin-top:0.5rem;display:flex;gap:0.45rem;flex-wrap:wrap;">
+                            <span class="status-badge blue" id="detail-role"></span>
+                            <span class="status-badge" id="detail-status-badge"></span>
+                        </div>
+                    </div>
+                    <div style="text-align:right;flex-shrink:0;">
+                        <div class="surface-note" style="font-size:0.68rem;text-transform:uppercase;letter-spacing:0.08em;">Avg Score</div>
+                        <div style="font-weight:700;font-size:1.4rem;margin-top:0.12rem;" id="detail-score"></div>
+                    </div>
+                </div>
+                <div class="key-value-list" style="margin-top:0.85rem;">
+                    <div class="key-value-item">
+                        <span class="key">Simulations Completed</span>
+                        <span class="value" id="detail-sims"></span>
+                    </div>
+                    <div class="key-value-item">
+                        <span class="key">Performance Level</span>
+                        <span class="value" id="detail-perf"></span>
+                    </div>
+                </div>
             </div>
         </div>
 
+        <!-- Right: Teams + Permissions -->
         <div class="stack">
             <div class="card">
                 <div class="card-title"><i data-lucide="briefcase"></i> Teams</div>
-                <div class="alert-item info" style="border-left-color:var(--accent-blue);">
-                    <div class="alert-info">
-                        <h4>Blue Team Alpha</h4>
-                        <p>3 members · 8 simulations completed</p>
-                    </div>
-                </div>
-                <div class="alert-item info" style="border-left-color:var(--accent-purple);">
-                    <div class="alert-info">
-                        <h4>Red Team Beta</h4>
-                        <p>3 members · 4 simulations completed</p>
-                    </div>
-                </div>
-                <div class="alert-item info" style="border-left-color:var(--accent-green);">
-                    <div class="alert-info">
-                        <h4>SOC Training Group</h4>
-                        <p>5 members · 2 simulations completed</p>
-                    </div>
-                </div>
-                <button class="btn btn-secondary" style="width:100%;margin-top:0.5rem;">Create Team</button>
+                <div id="teams-list"></div>
+                <button class="btn btn-secondary" id="create-team-btn" style="width:100%;margin-top:0.5rem;">
+                    <i data-lucide="plus"></i> Create Team
+                </button>
             </div>
 
             <div class="card">
                 <div class="card-title"><i data-lucide="key"></i> Role Permissions</div>
-                <div style="font-size:0.9rem;">
-                    <div class="toggle-row">
-                        <span style="font-weight:600;">IR Lead</span>
-                        <span class="surface-note">Full platform access</span>
-                    </div>
-                    <div class="toggle-row">
-                        <span style="font-weight:600;">SOC Analyst</span>
-                        <span class="surface-note">Lab + Reports</span>
-                    </div>
-                    <div class="toggle-row">
-                        <span style="font-weight:600;">Forensic Analyst</span>
-                        <span class="surface-note">Lab + Reports</span>
-                    </div>
-                    <div class="toggle-row">
-                        <span style="font-weight:600;">Network Analyst</span>
-                        <span class="surface-note">Lab + MITRE Review</span>
-                    </div>
-                    <div class="toggle-row">
-                        <span style="font-weight:600;">Trainee</span>
-                        <span class="surface-note">Lab only</span>
-                    </div>
-                </div>
+                <div style="font-size:0.9rem;" id="permissions-list"></div>
             </div>
         </div>
     </div>
 </main>
 
+<!-- ── Add / Edit Member Modal ──────────────────────── -->
+<div class="modal-backdrop" id="member-modal" hidden role="dialog" aria-modal="true" aria-labelledby="member-modal-title">
+    <div class="modal">
+        <div class="modal-header">
+            <div class="modal-title" id="member-modal-title">Add Member</div>
+            <button class="icon-btn" id="close-member-modal" aria-label="Close"><i data-lucide="x"></i></button>
+        </div>
+        <form id="member-form" novalidate>
+            <input type="hidden" id="member-edit-id">
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label" for="member-name">Full Name *</label>
+                    <input class="form-input" id="member-name" type="text" placeholder="e.g. Jordan Davis" autocomplete="off" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="member-email">Email *</label>
+                    <input class="form-input" id="member-email" type="email" placeholder="user@corp.local" autocomplete="off" required>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label" for="member-role">Role *</label>
+                    <select class="form-input" id="member-role" required>
+                        <option value="">Select role…</option>
+                        <option value="IR Lead">IR Lead</option>
+                        <option value="SOC Analyst">SOC Analyst</option>
+                        <option value="Forensic Analyst">Forensic Analyst</option>
+                        <option value="Network Analyst">Network Analyst</option>
+                        <option value="Trainee">Trainee</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="member-status">Status</label>
+                    <select class="form-input" id="member-status">
+                        <option value="online">Online</option>
+                        <option value="away">Away</option>
+                        <option value="in-sim">In Simulation</option>
+                        <option value="offline">Offline</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label" for="member-sims">Simulations Completed</label>
+                    <input class="form-input" id="member-sims" type="number" min="0" max="9999" value="0">
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="member-score">Avg Score (%)</label>
+                    <input class="form-input" id="member-score" type="number" min="0" max="100" value="0">
+                </div>
+            </div>
+            <div id="member-form-error" style="color:var(--accent-red);font-size:0.82rem;padding:0.4rem 0 0;" hidden></div>
+        </form>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" id="cancel-member-btn">Cancel</button>
+            <button class="btn" id="save-member-btn"><i data-lucide="check"></i> Save Member</button>
+        </div>
+    </div>
+</div>
+
+<!-- ── Create Team Modal ─────────────────────────────── -->
+<div class="modal-backdrop" id="team-modal" hidden role="dialog" aria-modal="true" aria-labelledby="team-modal-title">
+    <div class="modal" style="width:min(400px,100%);">
+        <div class="modal-header">
+            <div class="modal-title" id="team-modal-title">Create Team</div>
+            <button class="icon-btn" id="close-team-modal" aria-label="Close"><i data-lucide="x"></i></button>
+        </div>
+        <form id="team-form" novalidate>
+            <div class="form-group">
+                <label class="form-label" for="team-name">Team Name *</label>
+                <input class="form-input" id="team-name" type="text" placeholder="e.g. Blue Team Alpha" autocomplete="off" required>
+            </div>
+            <div class="form-group">
+                <label class="form-label" for="team-color">Color</label>
+                <select class="form-input" id="team-color">
+                    <option value="var(--accent-blue)">Blue</option>
+                    <option value="var(--accent-red)">Red</option>
+                    <option value="var(--accent-green)">Green</option>
+                    <option value="var(--accent-purple)">Purple</option>
+                    <option value="var(--accent-yellow)">Yellow</option>
+                    <option value="var(--accent-primary)">Orange</option>
+                </select>
+            </div>
+            <div id="team-form-error" style="color:var(--accent-red);font-size:0.82rem;padding:0.4rem 0 0;" hidden></div>
+        </form>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" id="cancel-team-btn">Cancel</button>
+            <button class="btn" id="save-team-btn"><i data-lucide="plus"></i> Create Team</button>
+        </div>
+    </div>
+</div>
+
+<!-- ── Toast ─────────────────────────────────────────── -->
+<div class="toast" id="toast" hidden role="status" aria-live="polite">
+    <i data-lucide="check-circle" id="toast-icon"></i>
+    <span id="toast-msg">Done.</span>
+</div>
+
 <script src="js/shared.js"></script>
+<script>
+(function () {
+    'use strict';
+
+    // ── Constants ────────────────────────────────────────────
+    var STORAGE_KEY = 'irsp-team-v2';
+
+    var ROLE_COLORS = {
+        'IR Lead':          'var(--accent-blue)',
+        'SOC Analyst':      'var(--accent-green)',
+        'Forensic Analyst': 'var(--accent-purple)',
+        'Network Analyst':  'var(--accent-yellow)',
+        'Trainee':          'var(--accent-red)',
+    };
+
+    var LIGHT_ACCENT_ROLES = ['SOC Analyst', 'Network Analyst'];
+
+    var ROLE_PERMISSIONS = {
+        'IR Lead':          'Full platform access',
+        'SOC Analyst':      'Lab + Reports',
+        'Forensic Analyst': 'Lab + Reports',
+        'Network Analyst':  'Lab + MITRE Review',
+        'Trainee':          'Lab only',
+    };
+
+    var STATUS_LABEL = {
+        'online':  'Online',
+        'away':    'Away',
+        'in-sim':  'In Sim',
+        'offline': 'Offline',
+    };
+
+    var STATUS_BADGE = {
+        'online':  'green',
+        'away':    'yellow',
+        'in-sim':  'green',
+        'offline': 'red',
+    };
+
+    var DEFAULT_MEMBERS = [
+        { id: 'jd', name: 'Jordan Davis',    email: 'jordan@corp.local',  role: 'IR Lead',           status: 'online',  sims: 8,  score: 87 },
+        { id: 'ak', name: 'Aisha Khan',      email: 'aisha@corp.local',   role: 'SOC Analyst',       status: 'in-sim',  sims: 12, score: 82 },
+        { id: 'mt', name: 'Marcus Thompson', email: 'marcus@corp.local',  role: 'Forensic Analyst',  status: 'online',  sims: 6,  score: 91 },
+        { id: 'sl', name: 'Sarah Lopez',     email: 'sarah@corp.local',   role: 'Network Analyst',   status: 'away',    sims: 4,  score: 75 },
+        { id: 'rn', name: 'Raj Nair',        email: 'raj@corp.local',     role: 'Trainee',           status: 'in-sim',  sims: 2,  score: 68 },
+    ];
+
+    var DEFAULT_TEAMS = [
+        { id: 'alpha', name: 'Blue Team Alpha',    color: 'var(--accent-blue)',   memberCount: 3, sims: 8 },
+        { id: 'beta',  name: 'Red Team Beta',      color: 'var(--accent-purple)', memberCount: 3, sims: 4 },
+        { id: 'soc',   name: 'SOC Training Group', color: 'var(--accent-green)',  memberCount: 5, sims: 2 },
+    ];
+
+    // ── State ────────────────────────────────────────────────
+    var saved = (function () {
+        try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null'); } catch (_) { return null; }
+    })();
+
+    var state = {
+        members:      (saved && Array.isArray(saved.members))  ? saved.members  : JSON.parse(JSON.stringify(DEFAULT_MEMBERS)),
+        teams:        (saved && Array.isArray(saved.teams))    ? saved.teams    : JSON.parse(JSON.stringify(DEFAULT_TEAMS)),
+        roleToggles:  (saved && saved.roleToggles && typeof saved.roleToggles === 'object') ? saved.roleToggles : {
+            'IR Lead': true, 'SOC Analyst': true, 'Forensic Analyst': true, 'Network Analyst': true, 'Trainee': false,
+        },
+        selectedId:   null,
+        searchQuery:  '',
+        activeFilter: 'all',
+    };
+
+    function persist() {
+        try {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify({
+                members:     state.members,
+                teams:       state.teams,
+                roleToggles: state.roleToggles,
+            }));
+        } catch (_) {}
+    }
+
+    // ── Helpers ──────────────────────────────────────────────
+    function esc(v) {
+        return String(v == null ? '' : v)
+            .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+    }
+
+    function initials(name) {
+        return String(name || '').trim().split(/\s+/).map(function (w) { return w[0] || ''; }).slice(0, 2).join('').toUpperCase() || '??';
+    }
+
+    function genId() {
+        return Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+    }
+
+    function scoreColor(n) {
+        n = Number(n);
+        if (n >= 80) return 'var(--accent-green)';
+        if (n >= 65) return 'var(--accent-yellow)';
+        return 'var(--accent-red)';
+    }
+
+    function scoreLabel(n) {
+        n = Number(n);
+        if (n >= 90) return 'Excellent';
+        if (n >= 80) return 'Good';
+        if (n >= 65) return 'Developing';
+        return 'Needs Improvement';
+    }
+
+    function icons() {
+        if (window.lucide && typeof window.lucide.createIcons === 'function') {
+            window.lucide.createIcons();
+        }
+    }
+
+    // ── Stats ────────────────────────────────────────────────
+    function updateStats() {
+        var total  = state.members.length;
+        var online = state.members.filter(function (m) { return m.status === 'online'; }).length;
+        var inSim  = state.members.filter(function (m) { return m.status === 'in-sim'; }).length;
+        document.getElementById('stat-total').textContent  = total;
+        document.getElementById('stat-online').textContent = online;
+        document.getElementById('stat-insim').textContent  = inSim;
+    }
+
+    // ── Roster ───────────────────────────────────────────────
+    function filteredMembers() {
+        var q = state.searchQuery.toLowerCase();
+        return state.members.filter(function (m) {
+            var matchSearch = !q ||
+                m.name.toLowerCase().indexOf(q)  !== -1 ||
+                m.email.toLowerCase().indexOf(q) !== -1 ||
+                m.role.toLowerCase().indexOf(q)  !== -1;
+            var matchFilter = state.activeFilter === 'all' || m.status === state.activeFilter;
+            return matchSearch && matchFilter;
+        });
+    }
+
+    function renderRoster() {
+        var tbody    = document.getElementById('roster-tbody');
+        var emptyEl  = document.getElementById('roster-empty');
+        var list     = filteredMembers();
+
+        if (!list.length) {
+            tbody.innerHTML = '';
+            emptyEl.removeAttribute('hidden');
+            icons();
+            return;
+        }
+        emptyEl.setAttribute('hidden', '');
+
+        tbody.innerHTML = list.map(function (m) {
+            var color     = ROLE_COLORS[m.role] || 'var(--accent-blue)';
+            var txtColor  = LIGHT_ACCENT_ROLES.indexOf(m.role) !== -1 ? '#04101d' : 'white';
+            var badge     = STATUS_BADGE[m.status]  || 'blue';
+            var label     = STATUS_LABEL[m.status]  || m.status;
+            var isSelected = m.id === state.selectedId;
+            return (
+                '<tr data-mid="' + esc(m.id) + '" class="is-selectable-row' + (isSelected ? ' selected' : '') + '" tabindex="0" aria-selected="' + (isSelected ? 'true' : 'false') + '">' +
+                '<td style="display:flex;align-items:center;gap:10px;">' +
+                  '<div class="avatar" style="background:' + color + ';color:' + txtColor + ';">' + esc(initials(m.name)) + '</div>' +
+                  '<div><div style="font-weight:600;">' + esc(m.name) + '</div>' +
+                  '<div class="surface-note" style="font-size:0.78rem;">' + esc(m.email) + '</div></div>' +
+                '</td>' +
+                '<td>' + esc(m.role) + '</td>' +
+                '<td><span class="status-badge ' + badge + '">' + esc(label) + '</span></td>' +
+                '<td>' + esc(String(m.sims)) + '</td>' +
+                '<td style="color:' + scoreColor(m.score) + ';font-weight:600;">' + esc(String(m.score)) + '%</td>' +
+                '<td><div class="row-actions">' +
+                  '<button class="icon-btn" data-edit="' + esc(m.id) + '" title="Edit" aria-label="Edit ' + esc(m.name) + '"><i data-lucide="pencil"></i></button>' +
+                  '<button class="icon-btn" data-del="' + esc(m.id) + '" title="Remove" aria-label="Remove ' + esc(m.name) + '" style="color:var(--accent-red);"><i data-lucide="trash-2"></i></button>' +
+                '</div></td>' +
+                '</tr>'
+            );
+        }).join('');
+
+        tbody.querySelectorAll('tr[data-mid]').forEach(function (row) {
+            row.addEventListener('click', function (e) {
+                if (e.target.closest('[data-edit]') || e.target.closest('[data-del]')) return;
+                var id = row.dataset.mid;
+                state.selectedId = state.selectedId === id ? null : id;
+                renderRoster();
+                renderDetail();
+            });
+            row.addEventListener('keydown', function (e) {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    row.click();
+                }
+            });
+        });
+
+        tbody.querySelectorAll('[data-edit]').forEach(function (btn) {
+            btn.addEventListener('click', function (e) {
+                e.stopPropagation();
+                openEditModal(btn.dataset.edit);
+            });
+        });
+
+        tbody.querySelectorAll('[data-del]').forEach(function (btn) {
+            btn.addEventListener('click', function (e) {
+                e.stopPropagation();
+                deleteMember(btn.dataset.del);
+            });
+        });
+
+        icons();
+    }
+
+    // ── Member Detail Panel ──────────────────────────────────
+    function renderDetail() {
+        var panel  = document.getElementById('member-detail');
+        var member = state.members.find(function (m) { return m.id === state.selectedId; });
+
+        if (!member) {
+            panel.setAttribute('hidden', '');
+            return;
+        }
+        panel.removeAttribute('hidden');
+
+        var color    = ROLE_COLORS[member.role] || 'var(--accent-blue)';
+        var txtColor = LIGHT_ACCENT_ROLES.indexOf(member.role) !== -1 ? '#04101d' : 'white';
+        var badge    = STATUS_BADGE[member.status]  || 'blue';
+        var label    = STATUS_LABEL[member.status]  || member.status;
+
+        var av = document.getElementById('detail-avatar');
+        av.textContent  = initials(member.name);
+        av.style.background = color;
+        av.style.color      = txtColor;
+
+        document.getElementById('detail-name').textContent  = member.name;
+        document.getElementById('detail-email').textContent = member.email;
+        document.getElementById('detail-role').textContent  = member.role;
+
+        var scoreEl = document.getElementById('detail-score');
+        scoreEl.textContent  = member.score + '%';
+        scoreEl.style.color  = scoreColor(member.score);
+
+        var statusEl = document.getElementById('detail-status-badge');
+        statusEl.textContent = label;
+        statusEl.className   = 'status-badge ' + badge;
+
+        document.getElementById('detail-sims').textContent = member.sims;
+        document.getElementById('detail-perf').textContent = scoreLabel(member.score);
+
+        icons();
+    }
+
+    // ── Teams ────────────────────────────────────────────────
+    function renderTeams() {
+        var container = document.getElementById('teams-list');
+
+        if (!state.teams.length) {
+            container.innerHTML = '<p class="surface-note" style="padding:0.35rem 0 0.9rem;">No teams yet. Create one below.</p>';
+            return;
+        }
+
+        container.innerHTML = state.teams.map(function (t) {
+            return (
+                '<div class="alert-item info team-item" style="border-left-color:' + t.color + ';margin-bottom:0.65rem;">' +
+                  '<div class="alert-info">' +
+                    '<h4>' + esc(t.name) + '</h4>' +
+                    '<p>' + esc(String(t.memberCount)) + ' members &middot; ' + esc(String(t.sims)) + ' simulations completed</p>' +
+                  '</div>' +
+                  '<button class="icon-btn" data-del-team="' + esc(t.id) + '" title="Delete team" aria-label="Delete ' + esc(t.name) + '" style="color:var(--accent-red);flex-shrink:0;"><i data-lucide="trash-2"></i></button>' +
+                '</div>'
+            );
+        }).join('');
+
+        container.querySelectorAll('[data-del-team]').forEach(function (btn) {
+            btn.addEventListener('click', function (e) {
+                e.stopPropagation();
+                deleteTeam(btn.dataset.delTeam);
+            });
+        });
+
+        icons();
+    }
+
+    // ── Role Permissions ─────────────────────────────────────
+    function renderPermissions() {
+        var container = document.getElementById('permissions-list');
+
+        container.innerHTML = Object.keys(ROLE_PERMISSIONS).map(function (role) {
+            var perm    = ROLE_PERMISSIONS[role];
+            var enabled = state.roleToggles[role] !== false;
+            return (
+                '<div class="toggle-row">' +
+                  '<div>' +
+                    '<span style="font-weight:600;">' + esc(role) + '</span>' +
+                    '<div class="surface-note" style="font-size:0.76rem;margin-top:0.1rem;">' + esc(perm) + '</div>' +
+                  '</div>' +
+                  '<div class="toggle' + (enabled ? ' on' : '') + '" role="switch" aria-checked="' + enabled + '" tabindex="0" data-perm-role="' + esc(role) + '" aria-label="Toggle ' + esc(role) + ' access"></div>' +
+                '</div>'
+            );
+        }).join('');
+
+        container.querySelectorAll('[data-perm-role]').forEach(function (toggle) {
+            var flip = function () {
+                var role  = toggle.dataset.permRole;
+                var next  = !toggle.classList.contains('on');
+                toggle.classList.toggle('on', next);
+                toggle.setAttribute('aria-checked', String(next));
+                state.roleToggles[role] = next;
+                persist();
+                showToast(esc(role) + ' access ' + (next ? 'enabled' : 'disabled') + '.', next ? 'success' : 'error');
+            };
+            toggle.addEventListener('click', flip);
+            toggle.addEventListener('keydown', function (e) {
+                if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); flip(); }
+            });
+        });
+    }
+
+    // ── Member Modal ─────────────────────────────────────────
+    function clearMemberError() {
+        var el = document.getElementById('member-form-error');
+        el.setAttribute('hidden', '');
+        el.textContent = '';
+    }
+
+    function showMemberError(msg) {
+        var el = document.getElementById('member-form-error');
+        el.textContent = msg;
+        el.removeAttribute('hidden');
+    }
+
+    function openAddModal() {
+        document.getElementById('member-modal-title').textContent = 'Add Member';
+        document.getElementById('member-edit-id').value = '';
+        document.getElementById('member-form').reset();
+        clearMemberError();
+        document.getElementById('member-modal').removeAttribute('hidden');
+        document.getElementById('member-name').focus();
+    }
+
+    function openEditModal(id) {
+        var m = state.members.find(function (x) { return x.id === id; });
+        if (!m) return;
+        document.getElementById('member-modal-title').textContent = 'Edit Member';
+        document.getElementById('member-edit-id').value   = id;
+        document.getElementById('member-name').value      = m.name;
+        document.getElementById('member-email').value     = m.email;
+        document.getElementById('member-role').value      = m.role;
+        document.getElementById('member-status').value    = m.status;
+        document.getElementById('member-sims').value      = m.sims;
+        document.getElementById('member-score').value     = m.score;
+        clearMemberError();
+        document.getElementById('member-modal').removeAttribute('hidden');
+        document.getElementById('member-name').focus();
+    }
+
+    function closeMemberModal() {
+        document.getElementById('member-modal').setAttribute('hidden', '');
+    }
+
+    function saveMember() {
+        var name   = document.getElementById('member-name').value.trim();
+        var email  = document.getElementById('member-email').value.trim();
+        var role   = document.getElementById('member-role').value;
+        var status = document.getElementById('member-status').value;
+        var sims   = Math.max(0, parseInt(document.getElementById('member-sims').value, 10) || 0);
+        var score  = Math.min(100, Math.max(0, parseInt(document.getElementById('member-score').value, 10) || 0));
+        var editId = document.getElementById('member-edit-id').value;
+
+        if (!name) {
+            showMemberError('Full name is required.');
+            document.getElementById('member-name').focus();
+            return;
+        }
+        if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+            showMemberError('A valid email address is required.');
+            document.getElementById('member-email').focus();
+            return;
+        }
+        if (!role) {
+            showMemberError('Please select a role.');
+            document.getElementById('member-role').focus();
+            return;
+        }
+
+        var dup = state.members.find(function (m) {
+            return m.email.toLowerCase() === email.toLowerCase() && m.id !== editId;
+        });
+        if (dup) {
+            showMemberError('A member with this email already exists.');
+            document.getElementById('member-email').focus();
+            return;
+        }
+
+        if (editId) {
+            var idx = state.members.findIndex(function (m) { return m.id === editId; });
+            if (idx !== -1) {
+                state.members[idx] = { id: editId, name: name, email: email, role: role, status: status, sims: sims, score: score };
+                showToast(name + ' updated.');
+            }
+        } else {
+            state.members.push({ id: genId(), name: name, email: email, role: role, status: status, sims: sims, score: score });
+            showToast(name + ' added to the roster.');
+        }
+
+        persist();
+        closeMemberModal();
+        renderAll();
+    }
+
+    function deleteMember(id) {
+        var m = state.members.find(function (x) { return x.id === id; });
+        if (!m) return;
+        if (!confirm('Remove ' + m.name + ' from the roster?')) return;
+        state.members = state.members.filter(function (x) { return x.id !== id; });
+        if (state.selectedId === id) state.selectedId = null;
+        persist();
+        showToast(m.name + ' removed from roster.');
+        renderAll();
+    }
+
+    // ── Team Modal ───────────────────────────────────────────
+    function clearTeamError() {
+        var el = document.getElementById('team-form-error');
+        el.setAttribute('hidden', '');
+        el.textContent = '';
+    }
+
+    function showTeamError(msg) {
+        var el = document.getElementById('team-form-error');
+        el.textContent = msg;
+        el.removeAttribute('hidden');
+    }
+
+    function openTeamModal() {
+        document.getElementById('team-form').reset();
+        clearTeamError();
+        document.getElementById('team-modal').removeAttribute('hidden');
+        document.getElementById('team-name').focus();
+    }
+
+    function closeTeamModal() {
+        document.getElementById('team-modal').setAttribute('hidden', '');
+    }
+
+    function saveTeam() {
+        var name  = document.getElementById('team-name').value.trim();
+        var color = document.getElementById('team-color').value;
+
+        if (!name) {
+            showTeamError('Team name is required.');
+            document.getElementById('team-name').focus();
+            return;
+        }
+        var dup = state.teams.find(function (t) { return t.name.toLowerCase() === name.toLowerCase(); });
+        if (dup) {
+            showTeamError('A team with this name already exists.');
+            document.getElementById('team-name').focus();
+            return;
+        }
+
+        state.teams.push({ id: genId(), name: name, color: color, memberCount: 0, sims: 0 });
+        persist();
+        closeTeamModal();
+        renderTeams();
+        showToast('Team "' + name + '" created.');
+    }
+
+    function deleteTeam(id) {
+        var t = state.teams.find(function (x) { return x.id === id; });
+        if (!t) return;
+        if (!confirm('Delete the team "' + t.name + '"?')) return;
+        state.teams = state.teams.filter(function (x) { return x.id !== id; });
+        persist();
+        renderTeams();
+        showToast('Team "' + t.name + '" deleted.');
+    }
+
+    // ── Toast ────────────────────────────────────────────────
+    var toastTimer = null;
+
+    function showToast(msg, type) {
+        type = type || 'success';
+        var toast   = document.getElementById('toast');
+        var iconEl  = document.getElementById('toast-icon');
+        var msgEl   = document.getElementById('toast-msg');
+
+        msgEl.textContent = msg;
+        toast.className   = 'toast ' + type;
+        iconEl.setAttribute('data-lucide', type === 'success' ? 'check-circle' : 'alert-circle');
+        toast.removeAttribute('hidden');
+        icons();
+
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(function () {
+            toast.setAttribute('hidden', '');
+        }, 3200);
+    }
+
+    // ── Render All ───────────────────────────────────────────
+    function renderAll() {
+        updateStats();
+        renderRoster();
+        renderDetail();
+        renderTeams();
+        renderPermissions();
+    }
+
+    // ── Event Bindings ───────────────────────────────────────
+    document.getElementById('add-member-btn').addEventListener('click', openAddModal);
+    document.getElementById('close-member-modal').addEventListener('click', closeMemberModal);
+    document.getElementById('cancel-member-btn').addEventListener('click', closeMemberModal);
+    document.getElementById('save-member-btn').addEventListener('click', saveMember);
+
+    document.getElementById('create-team-btn').addEventListener('click', openTeamModal);
+    document.getElementById('close-team-modal').addEventListener('click', closeTeamModal);
+    document.getElementById('cancel-team-btn').addEventListener('click', closeTeamModal);
+    document.getElementById('save-team-btn').addEventListener('click', saveTeam);
+
+    document.getElementById('member-form').addEventListener('submit', function (e) { e.preventDefault(); saveMember(); });
+    document.getElementById('team-form').addEventListener('submit', function (e) { e.preventDefault(); saveTeam(); });
+
+    document.getElementById('member-modal').addEventListener('click', function (e) {
+        if (e.target === document.getElementById('member-modal')) closeMemberModal();
+    });
+    document.getElementById('team-modal').addEventListener('click', function (e) {
+        if (e.target === document.getElementById('team-modal')) closeTeamModal();
+    });
+
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') {
+            if (!document.getElementById('member-modal').hasAttribute('hidden')) { closeMemberModal(); return; }
+            if (!document.getElementById('team-modal').hasAttribute('hidden'))   { closeTeamModal();   return; }
+        }
+    });
+
+    document.getElementById('roster-search').addEventListener('input', function (e) {
+        state.searchQuery = e.target.value;
+        renderRoster();
+    });
+
+    document.querySelectorAll('.filter-chip').forEach(function (chip) {
+        chip.addEventListener('click', function () {
+            document.querySelectorAll('.filter-chip').forEach(function (c) { c.classList.remove('active'); });
+            chip.classList.add('active');
+            state.activeFilter = chip.dataset.filter;
+            renderRoster();
+        });
+    });
+
+    // ── Init ─────────────────────────────────────────────────
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', renderAll);
+    } else {
+        renderAll();
+    }
+})();
+</script>
 </body>
 </html>

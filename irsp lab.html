@@ -3,11 +3,28 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="IRSP Linux Lab Launcher - Incident Response Simulation Platform">
     <title>IRSP Direct Lab Launcher</title>
 
     <style>
-        * {
+        *, *::before, *::after {
             box-sizing: border-box;
+        }
+
+        :root {
+            --blue-600: #2563eb;
+            --blue-700: #1d4ed8;
+            --blue-400: #60a5fa;
+            --green-400: #4ade80;
+            --green-500: #22c55e;
+            --yellow-400: #facc15;
+            --red-400: #f87171;
+            --red-500: #ef4444;
+            --gray-300: #d1d5db;
+            --gray-400: #9ca3af;
+            --gray-500: #6b7280;
+            --surface: rgba(30, 41, 59, 0.96);
+            --border: rgba(255, 255, 255, 0.08);
         }
 
         html, body {
@@ -16,7 +33,7 @@
             width: 100%;
             min-height: 100%;
             font-family: Arial, Helvetica, sans-serif;
-            background: linear-gradient(135deg, #0f172a, #1e293b);
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
             color: white;
         }
 
@@ -25,91 +42,519 @@
             display: flex;
             justify-content: center;
             align-items: center;
+            padding: 24px;
         }
 
+        /* ── Card ── */
         .launcher-card {
-            width: 90%;
+            width: 100%;
             max-width: 560px;
-            background: rgba(30, 41, 59, 0.96);
+            background: var(--surface);
             border-radius: 20px;
             padding: 42px 34px;
             text-align: center;
             box-shadow: 0 20px 45px rgba(0, 0, 0, 0.4);
-            border: 1px solid rgba(255, 255, 255, 0.08);
+            border: 1px solid var(--border);
+            animation: fadeUp 0.4s ease both;
         }
 
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(16px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ── Badge ── */
         .badge {
             display: inline-block;
             background: rgba(37, 99, 235, 0.18);
             color: #93c5fd;
             padding: 8px 14px;
             border-radius: 999px;
-            font-size: 14px;
+            font-size: 13px;
+            letter-spacing: 0.4px;
             margin-bottom: 18px;
         }
 
+        /* ── Title ── */
         h1 {
             margin: 0 0 14px 0;
             font-size: 34px;
             letter-spacing: 0.5px;
         }
 
-        p {
+        .subtitle {
             margin: 0 auto 28px auto;
-            color: #d1d5db;
+            color: var(--gray-300);
             font-size: 16px;
             line-height: 1.6;
             max-width: 460px;
         }
 
+        /* ── Status Banner ── */
+        .status-banner {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 12px 16px;
+            margin-bottom: 24px;
+            text-align: left;
+            min-height: 52px;
+            transition: border-color 0.3s;
+        }
+
+        .status-banner.online  { border-color: rgba(74, 222, 128, 0.35); }
+        .status-banner.offline { border-color: rgba(248, 113, 113, 0.35); }
+        .status-banner.unknown { border-color: var(--border); }
+
+        .status-left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex: 1;
+            min-width: 0;
+        }
+
+        /* Animated dot */
+        .status-dot {
+            width: 11px;
+            height: 11px;
+            border-radius: 50%;
+            flex-shrink: 0;
+            background: var(--gray-500);
+            transition: background 0.3s;
+        }
+        .status-dot.checking {
+            background: var(--yellow-400);
+            animation: pulse 1s ease-in-out infinite;
+        }
+        .status-dot.online  { background: var(--green-500); animation: none; }
+        .status-dot.offline { background: var(--red-500);   animation: none; }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50%       { opacity: 0.5; transform: scale(0.85); }
+        }
+
+        .status-text {
+            font-size: 14px;
+            color: var(--gray-300);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .status-text strong {
+            color: white;
+            display: block;
+            font-size: 13px;
+            margin-bottom: 1px;
+        }
+
+        /* Recheck button */
+        .btn-recheck {
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.14);
+            color: var(--gray-400);
+            border-radius: 8px;
+            padding: 6px 11px;
+            font-size: 12px;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: background 0.15s, color 0.15s, border-color 0.15s;
+            flex-shrink: 0;
+        }
+        .btn-recheck:hover:not(:disabled) {
+            background: rgba(255,255,255,0.08);
+            color: white;
+            border-color: rgba(255,255,255,0.28);
+        }
+        .btn-recheck:disabled {
+            opacity: 0.45;
+            cursor: default;
+        }
+
+        /* ── Launch Button ── */
         .launch-button {
-            display: inline-block;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
             text-decoration: none;
-            background: #2563eb;
+            background: var(--blue-600);
             color: white;
             padding: 16px 34px;
             border-radius: 12px;
             font-size: 18px;
             font-weight: bold;
-            transition: 0.2s ease;
+            border: none;
+            cursor: pointer;
+            width: 100%;
+            transition: background 0.15s, transform 0.15s, opacity 0.15s;
+            position: relative;
+            overflow: hidden;
         }
 
-        .launch-button:hover {
-            background: #1d4ed8;
+        .launch-button:hover:not(.disabled) {
+            background: var(--blue-700);
             transform: translateY(-2px);
         }
 
-        .note {
-            margin-top: 24px;
-            color: #9ca3af;
+        .launch-button:active:not(.disabled) {
+            transform: translateY(0);
+        }
+
+        .launch-button:focus-visible {
+            outline: 3px solid var(--blue-400);
+            outline-offset: 3px;
+        }
+
+        .launch-button.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .launch-button.launched {
+            background: #15803d;
+        }
+
+        .btn-icon {
+            font-size: 20px;
+            line-height: 1;
+        }
+
+        /* ── URL Row ── */
+        .url-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(0,0,0,0.25);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 9px 12px;
+            margin-top: 20px;
+            text-align: left;
+        }
+
+        .url-text {
+            flex: 1;
+            font-size: 11.5px;
+            color: var(--gray-400);
+            font-family: 'Courier New', monospace;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            user-select: all;
+        }
+
+        .btn-copy {
+            background: transparent;
+            border: 1px solid rgba(255,255,255,0.12);
+            color: var(--gray-400);
+            border-radius: 6px;
+            padding: 4px 9px;
+            font-size: 11px;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: background 0.15s, color 0.15s;
+            flex-shrink: 0;
+        }
+        .btn-copy:hover {
+            background: rgba(255,255,255,0.08);
+            color: white;
+        }
+        .btn-copy.copied {
+            color: var(--green-400);
+            border-color: rgba(74,222,128,0.35);
+        }
+
+        /* ── Footer Note ── */
+        .footer-note {
+            margin-top: 20px;
+            color: var(--gray-500);
+            font-size: 12px;
+            line-height: 1.55;
+        }
+
+        /* ── Offline warning overlay inside button ── */
+        .offline-warning {
+            display: none;
+            margin-top: 10px;
+            background: rgba(248, 113, 113, 0.12);
+            border: 1px solid rgba(248, 113, 113, 0.3);
+            border-radius: 10px;
+            padding: 10px 14px;
             font-size: 13px;
+            color: #fca5a5;
             line-height: 1.5;
         }
+        .offline-warning.visible { display: block; }
     </style>
 </head>
 
 <body>
-<main class="launcher-card">
-    <div class="badge">Incident Response Simulation Platform</div>
+<main class="launcher-card" role="main" aria-labelledby="page-title">
 
-    <h1>IRSP Linux Lab</h1>
+    <div class="badge" aria-label="Platform name">Incident Response Simulation Platform</div>
 
-    <p>
-        Click the button below to open the Linux VM desktop directly in your web browser.
+    <h1 id="page-title">IRSP Linux Lab</h1>
+
+    <p class="subtitle">
+        Click the button below to open the Linux VM desktop directly in your web browser
+        via Apache Guacamole.
     </p>
 
+    <!-- Status Banner -->
+    <div class="status-banner unknown" id="statusBanner" role="status" aria-live="polite" aria-label="Server status">
+        <div class="status-left">
+            <span class="status-dot checking" id="statusDot" aria-hidden="true"></span>
+            <div class="status-text">
+                <strong id="statusTitle">Checking server…</strong>
+                <span id="statusDetail">Verifying Guacamole is reachable</span>
+            </div>
+        </div>
+        <button class="btn-recheck" id="btnRecheck" disabled aria-label="Re-check server status">
+            Re-check
+        </button>
+    </div>
+
+    <!-- Offline warning (shown only when server is unreachable) -->
+    <div class="offline-warning" id="offlineWarning" role="alert">
+        &#9888; The Guacamole server appears to be offline or unreachable. Ensure the
+        Azure VM and containers are started before launching the lab. You can still
+        attempt to launch, but the connection will likely fail.
+    </div>
+
+    <!-- Launch Button -->
     <a
-            class="launch-button"
-            href="http://20.151.96.46:8080/guacamole/#/client/MQBjAHBvc3RncmVzcWw="
-            target="_blank"
-            rel="noopener noreferrer"
+        class="launch-button disabled"
+        id="launchBtn"
+        href="http://20.151.96.46:8080/guacamole/#/client/MQBjAHBvc3RncmVzcWw="
+        target="_blank"
+        rel="noopener noreferrer"
+        role="button"
+        aria-disabled="true"
+        tabindex="0"
     >
-        Launch Direct Lab
+        <span class="btn-icon" aria-hidden="true">&#9654;</span>
+        <span id="launchBtnText">Launch Direct Lab</span>
     </a>
 
-    <div class="note">
-        The Azure VM and Guacamole containers must be running before launching the lab.
+    <!-- Raw URL row -->
+    <div class="url-row" aria-label="Direct lab URL">
+        <span class="url-text" id="rawUrl" title="http://20.151.96.46:8080/guacamole/#/client/MQBjAHBvc3RncmVzcWw=">
+            http://20.151.96.46:8080/guacamole/#/client/MQBjAHBvc3RncmVzcWw=
+        </span>
+        <button class="btn-copy" id="btnCopy" aria-label="Copy URL to clipboard">Copy</button>
     </div>
+
+    <p class="footer-note">
+        The Azure VM and Guacamole containers must be running before launching.
+        Last checked: <span id="lastChecked">—</span>
+    </p>
+
 </main>
+
+<script>
+(function () {
+    'use strict';
+
+    // ── Config ──────────────────────────────────────────────────────────────
+    const LAB_URL   = 'http://20.151.96.46:8080/guacamole/#/client/MQBjAHBvc3RncmVzcWw=';
+    const CHECK_URL = 'http://20.151.96.46:8080/guacamole/';
+    const TIMEOUT_MS = 6000;
+    const AUTO_RECHECK_MS = 60000; // re-check every 60 s while page is open
+
+    // ── DOM refs ─────────────────────────────────────────────────────────────
+    const statusBanner  = document.getElementById('statusBanner');
+    const statusDot     = document.getElementById('statusDot');
+    const statusTitle   = document.getElementById('statusTitle');
+    const statusDetail  = document.getElementById('statusDetail');
+    const btnRecheck    = document.getElementById('btnRecheck');
+    const offlineWarn   = document.getElementById('offlineWarning');
+    const launchBtn     = document.getElementById('launchBtn');
+    const launchBtnText = document.getElementById('launchBtnText');
+    const btnCopy       = document.getElementById('btnCopy');
+    const lastChecked   = document.getElementById('lastChecked');
+
+    // ── State ────────────────────────────────────────────────────────────────
+    let checking   = false;
+    let serverState = 'unknown'; // 'unknown' | 'online' | 'offline'
+    let recheckTimer = null;
+
+    // ── Status check ─────────────────────────────────────────────────────────
+    function setChecking() {
+        checking = true;
+        statusBanner.className = 'status-banner unknown';
+        statusDot.className    = 'status-dot checking';
+        statusTitle.textContent  = 'Checking server…';
+        statusDetail.textContent = 'Verifying Guacamole is reachable';
+        btnRecheck.disabled = true;
+        offlineWarn.classList.remove('visible');
+        setLaunchDisabled(true, 'Checking…');
+    }
+
+    function setOnline() {
+        serverState = 'online';
+        checking    = false;
+        statusBanner.className = 'status-banner online';
+        statusDot.className    = 'status-dot online';
+        statusTitle.textContent  = 'Server Online';
+        statusDetail.textContent = 'Guacamole is reachable — ready to launch';
+        btnRecheck.disabled = false;
+        offlineWarn.classList.remove('visible');
+        setLaunchDisabled(false, 'Launch Direct Lab');
+        updateLastChecked();
+    }
+
+    function setOffline(reason) {
+        serverState = 'offline';
+        checking    = false;
+        statusBanner.className = 'status-banner offline';
+        statusDot.className    = 'status-dot offline';
+        statusTitle.textContent  = 'Server Unreachable';
+        statusDetail.textContent = reason || 'Could not connect to Guacamole';
+        btnRecheck.disabled = false;
+        offlineWarn.classList.add('visible');
+        setLaunchDisabled(false, 'Launch Anyway');
+        updateLastChecked();
+    }
+
+    function setLaunchDisabled(disabled, text) {
+        launchBtnText.textContent = text;
+        if (disabled) {
+            launchBtn.classList.add('disabled');
+            launchBtn.setAttribute('aria-disabled', 'true');
+            launchBtn.setAttribute('tabindex', '-1');
+        } else {
+            launchBtn.classList.remove('disabled');
+            launchBtn.setAttribute('aria-disabled', 'false');
+            launchBtn.setAttribute('tabindex', '0');
+        }
+    }
+
+    function updateLastChecked() {
+        try {
+            const now = new Date();
+            lastChecked.textContent = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+        } catch (_) {
+            lastChecked.textContent = 'just now';
+        }
+    }
+
+    async function checkServer() {
+        if (checking) return;
+        setChecking();
+
+        // Use an AbortController to enforce a timeout
+        const controller = new AbortController();
+        const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
+
+        try {
+            // mode:'no-cors' gives an opaque response (type='opaque') but won't throw
+            // on a successful network round-trip. A network error still throws.
+            await fetch(CHECK_URL, {
+                method: 'HEAD',
+                mode: 'no-cors',
+                cache: 'no-store',
+                signal: controller.signal,
+            });
+            clearTimeout(timer);
+            setOnline();
+        } catch (err) {
+            clearTimeout(timer);
+            if (err && err.name === 'AbortError') {
+                setOffline('Connection timed out after ' + (TIMEOUT_MS / 1000) + 's');
+            } else {
+                setOffline('Network error — server may be offline');
+            }
+        }
+
+        // Schedule next auto-check
+        scheduleRecheck();
+    }
+
+    function scheduleRecheck() {
+        if (recheckTimer) clearTimeout(recheckTimer);
+        recheckTimer = setTimeout(checkServer, AUTO_RECHECK_MS);
+    }
+
+    // ── Launch button handler ─────────────────────────────────────────────────
+    launchBtn.addEventListener('click', function (e) {
+        if (launchBtn.classList.contains('disabled')) {
+            e.preventDefault();
+            return;
+        }
+        // Brief visual confirmation
+        const originalText = launchBtnText.textContent;
+        launchBtn.classList.add('launched');
+        launchBtnText.textContent = 'Launched ✓';
+        setTimeout(function () {
+            launchBtn.classList.remove('launched');
+            launchBtnText.textContent = originalText;
+        }, 2000);
+    });
+
+    // Keyboard activation for <a> acting as button
+    launchBtn.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            launchBtn.click();
+        }
+    });
+
+    // ── Re-check button ───────────────────────────────────────────────────────
+    btnRecheck.addEventListener('click', function () {
+        if (recheckTimer) clearTimeout(recheckTimer);
+        checkServer();
+    });
+
+    // ── Copy URL ──────────────────────────────────────────────────────────────
+    btnCopy.addEventListener('click', function () {
+        const url = LAB_URL;
+
+        function markCopied() {
+            btnCopy.textContent = 'Copied!';
+            btnCopy.classList.add('copied');
+            setTimeout(function () {
+                btnCopy.textContent = 'Copy';
+                btnCopy.classList.remove('copied');
+            }, 2000);
+        }
+
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(url).then(markCopied).catch(function () {
+                fallbackCopy(url, markCopied);
+            });
+        } else {
+            fallbackCopy(url, markCopied);
+        }
+    });
+
+    function fallbackCopy(text, cb) {
+        try {
+            const ta = document.createElement('textarea');
+            ta.value = text;
+            ta.style.cssText = 'position:fixed;top:-9999px;left:-9999px;opacity:0';
+            document.body.appendChild(ta);
+            ta.focus();
+            ta.select();
+            document.execCommand('copy');
+            document.body.removeChild(ta);
+            cb();
+        } catch (_) {
+            btnCopy.textContent = 'Failed';
+            setTimeout(function () { btnCopy.textContent = 'Copy'; }, 2000);
+        }
+    }
+
+    // ── Init ──────────────────────────────────────────────────────────────────
+    checkServer();
+
+})();
+</script>
 </body>
 </html>

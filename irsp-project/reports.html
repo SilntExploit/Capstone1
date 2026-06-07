@@ -41,17 +41,17 @@
     <section class="metric-strip section-space" style="grid-template-columns:repeat(3, minmax(0, 1fr));">
         <div class="metric-tile">
             <div class="label">Completed Runs</div>
-            <div class="value" id="stat-sims" style="color:var(--accent-green);">12</div>
+            <div class="value" id="stat-sims" style="color:var(--accent-green);">–</div>
             <div class="subtext">Visible records in the current filtered reporting set</div>
         </div>
         <div class="metric-tile">
             <div class="label">Average Response Time</div>
-            <div class="value" id="stat-response" style="color:var(--accent-blue);">18:42</div>
+            <div class="value" id="stat-response" style="color:var(--accent-blue);">–</div>
             <div class="subtext">Mean completion duration across the active selection</div>
         </div>
         <div class="metric-tile">
             <div class="label">Average Score</div>
-            <div class="value" id="stat-score" style="color:var(--accent-yellow);">78%</div>
+            <div class="value" id="stat-score" style="color:var(--accent-yellow);">–</div>
             <div class="subtext">Composite scoring benchmark for recent IR performance</div>
         </div>
     </section>
@@ -254,25 +254,25 @@
                     <div style="margin-bottom:1rem;">
                         <div class="toolbar" style="margin-bottom:0.35rem;">
                             <span>Average Team Score</span>
-                            <span>78%</span>
+                            <span id="comp-avg-value">78%</span>
                         </div>
-                        <div class="progress-bar"><div class="progress-fill" style="width:78%;"></div></div>
+                        <div class="progress-bar"><div class="progress-fill" id="comp-avg-bar" style="width:78%;"></div></div>
                     </div>
 
                     <div style="margin-bottom:1rem;">
                         <div class="toolbar" style="margin-bottom:0.35rem;">
                             <span>Best Recent Run</span>
-                            <span>91%</span>
+                            <span id="comp-best-value">91%</span>
                         </div>
-                        <div class="progress-bar"><div class="progress-fill" style="width:91%;"></div></div>
+                        <div class="progress-bar"><div class="progress-fill" id="comp-best-bar" style="width:91%;"></div></div>
                     </div>
 
                     <div>
                         <div class="toolbar" style="margin-bottom:0.35rem;">
                             <span>Improvement Opportunity</span>
-                            <span>22%</span>
+                            <span id="comp-impr-value">22%</span>
                         </div>
-                        <div class="progress-bar"><div class="progress-fill" style="width:22%;"></div></div>
+                        <div class="progress-bar"><div class="progress-fill" id="comp-impr-bar" style="width:22%;"></div></div>
                     </div>
                 </div>
 

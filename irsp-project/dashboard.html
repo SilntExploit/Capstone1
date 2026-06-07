@@ -51,7 +51,7 @@
             <span class="status-badge red">5 Notable</span>
             <span class="status-badge yellow">2 Escalated</span>
             <button class="btn btn-secondary" id="dashboard-run-search"><i data-lucide="play"></i> Run Search</button>
-            <button class="btn"><i data-lucide="shield-ban"></i> Start Containment</button>
+            <button class="btn" id="dashboard-start-containment"><i data-lucide="shield-ban"></i> Start Containment</button>
         </div>
         <div class="command-chips" style="grid-column:1 / -1;margin-top:0;">
             <button class="chip-btn active" type="button" data-query-preset='host in ("container-01", "docker-host-02") and severity in ("high", "critical")'>Containment Path</button>
@@ -129,19 +129,19 @@
                             <td>T1071</td>
                             <td><button class="btn btn-secondary" data-action="contain">Contain</button></td>
                         </tr>
-                        <tr class="queue-row high">
+                        <tr class="queue-row high" data-alert-id="privesc" data-alert-severity="warning">
                             <td><span class="status-badge yellow">High</span></td>
                             <td>Unexpected sudo escalation under svc-backup</td>
                             <td class="mono">docker-host-02</td>
                             <td>T1548</td>
-                            <td><button class="btn btn-secondary">Pivot</button></td>
+                            <td><button class="btn btn-secondary" data-action="investigate">Pivot</button></td>
                         </tr>
-                        <tr class="queue-row medium">
+                        <tr class="queue-row medium" data-alert-id="rename" data-alert-severity="info">
                             <td><span class="status-badge blue">Medium</span></td>
                             <td>File rename burst detected in /srv/shared</td>
                             <td class="mono">container-01</td>
                             <td>T1486</td>
-                            <td><button class="btn btn-secondary">Review</button></td>
+                            <td><button class="btn btn-secondary" data-action="investigate">Review</button></td>
                         </tr>
                         </tbody>
                     </table>
@@ -441,9 +441,11 @@ risk_score: 82</pre>
             <section class="card" aria-labelledby="mitre-title">
                 <div class="card-title" id="mitre-title"><i data-lucide="shield"></i> MITRE ATT&amp;CK Coverage</div>
                 <div class="inline-badges">
-                    <span class="mitre-tag">Reconnaissance</span>
-                    <span class="mitre-tag active">Initial Access</span>
-                    <span class="mitre-tag active">Execution</span>
+                    <span class="mitre-tag" data-mitre-tag="reconnaissance">Reconnaissance</span>
+                    <span class="mitre-tag active" data-mitre-tag="initial-access">Initial Access</span>
+                    <span class="mitre-tag active" data-mitre-tag="execution">Execution</span>
+                    <span class="mitre-tag" data-mitre-tag="lateral-movement">Lateral Movement</span>
+                    <span class="mitre-tag" data-mitre-tag="privilege-escalation">Privilege Escalation</span>
                     <span class="mitre-tag" data-mitre-tag="command-and-control">Command and Control</span>
                     <span class="mitre-tag" data-mitre-tag="credential-access">Credential Access</span>
                     <span class="mitre-tag" data-mitre-tag="impact">Impact</span>

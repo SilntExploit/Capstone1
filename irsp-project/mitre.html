@@ -58,7 +58,7 @@
             border-radius: 8px;
             text-align: center;
             cursor: pointer;
-            transition: 0.2s;
+            transition: opacity 0.2s, border-color 0.2s, transform 0.2s;
             line-height: 1.35;
             min-height: 78px;
             display: flex;
@@ -74,40 +74,45 @@
         .matrix-cell.covered {
             background: rgba(59, 130, 246, 0.15);
             border-color: var(--accent-blue);
-            color: #bfdbfe;
+            color: #1e40af;
             font-weight: 600;
         }
 
         .matrix-cell.critical {
             background: rgba(239, 68, 68, 0.14);
             border-color: var(--accent-red);
-            color: #fecaca;
+            color: #b91c1c;
             font-weight: 600;
         }
 
         .matrix-cell.trained {
             background: rgba(34, 197, 94, 0.14);
             border-color: var(--accent-green);
-            color: #bbf7d0;
+            color: #15803d;
             font-weight: 600;
         }
 
         .matrix-cell.planned {
             background: rgba(245, 158, 11, 0.12);
             border-color: var(--accent-yellow);
-            color: #fde68a;
+            color: #b45309;
             font-weight: 600;
         }
 
         .matrix-cell.empty {
             color: var(--text-dim);
             cursor: default;
-            background: rgba(15, 23, 42, 0.45);
+            background: rgba(15, 23, 42, 0.045);
         }
 
         .matrix-cell.empty:hover {
             border-color: var(--border);
             transform: none;
+        }
+
+        .matrix-cell.active-selection {
+            outline: 2px solid var(--accent-primary);
+            outline-offset: 1px;
         }
 
         .legend {
@@ -128,6 +133,41 @@
             width: 12px;
             height: 12px;
             border-radius: 3px;
+        }
+
+        .coverage-stats {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 0.75rem;
+            margin-bottom: 1.25rem;
+        }
+
+        .cov-tile {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: 0.7rem 0.9rem;
+        }
+
+        .cov-tile .cov-label {
+            color: var(--text-dim);
+            font-size: 0.68rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            font-weight: 700;
+        }
+
+        .cov-tile .cov-value {
+            font-size: 1.45rem;
+            font-weight: 700;
+            margin-top: 0.1rem;
+            line-height: 1;
+        }
+
+        .cov-tile .cov-sub {
+            color: var(--text-dim);
+            font-size: 0.72rem;
+            margin-top: 0.2rem;
         }
 
         .summary-grid {
@@ -155,10 +195,13 @@
             font-size: 0.78rem;
             border: 1px solid var(--border);
             cursor: pointer;
+            transition: border-color 0.18s, background 0.18s;
+            user-select: none;
         }
 
         .technique-chip:hover {
             border-color: var(--accent-blue);
+            background: rgba(14, 165, 233, 0.12);
         }
 
         .scenario-tags {
@@ -175,6 +218,16 @@
             border: 1px solid var(--border);
             color: var(--text-main);
             background: rgba(51, 65, 85, 0.4);
+            transition: border-color 0.18s, background 0.18s;
+        }
+
+        .scenario-tag.clickable {
+            cursor: pointer;
+        }
+
+        .scenario-tag.clickable:hover {
+            border-color: var(--accent-blue);
+            background: rgba(14, 165, 233, 0.1);
         }
 
         .detail-meta {
@@ -193,14 +246,41 @@
             background: rgba(51, 65, 85, 0.35);
         }
 
+        .detail-meta span.badge-critical { border-color: var(--accent-red); background: rgba(239,68,68,0.1); color: #b91c1c; }
+        .detail-meta span.badge-covered  { border-color: var(--accent-blue); background: rgba(14,165,233,0.1); color: #0369a1; }
+        .detail-meta span.badge-trained  { border-color: var(--accent-green); background: rgba(34,197,94,0.1); color: #15803d; }
+        .detail-meta span.badge-planned  { border-color: var(--accent-yellow); background: rgba(245,158,11,0.1); color: #b45309; }
+
         .muted-note {
             color: var(--text-dim);
             font-size: 0.85rem;
         }
 
+        .chip-label {
+            font-size: 0.7rem;
+            color: var(--text-dim);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            margin-top: 0.9rem;
+            margin-bottom: 0.3rem;
+        }
+
         @media (max-width: 1100px) {
             .summary-grid {
                 grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 800px) {
+            .coverage-stats {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+
+        @media (max-width: 480px) {
+            .coverage-stats {
+                grid-template-columns: 1fr 1fr;
             }
         }
     </style>
@@ -259,6 +339,30 @@
         </div>
     </div>
 
+    <!-- Live coverage stats strip — updated by filter JS -->
+    <div class="coverage-stats" id="coverage-stats">
+        <div class="cov-tile">
+            <div class="cov-label">Visible Techniques</div>
+            <div class="cov-value" id="stat-visible">—</div>
+            <div class="cov-sub">matching current filter</div>
+        </div>
+        <div class="cov-tile">
+            <div class="cov-label">Critical</div>
+            <div class="cov-value" style="color:var(--accent-red);" id="stat-critical">—</div>
+            <div class="cov-sub">in active scenarios</div>
+        </div>
+        <div class="cov-tile">
+            <div class="cov-label">Covered</div>
+            <div class="cov-value" style="color:var(--accent-blue);" id="stat-covered">—</div>
+            <div class="cov-sub">confirmed + practiced</div>
+        </div>
+        <div class="cov-tile">
+            <div class="cov-label">Planned</div>
+            <div class="cov-value" style="color:var(--accent-yellow);" id="stat-planned">—</div>
+            <div class="cov-sub">roadmap items</div>
+        </div>
+    </div>
+
     <section class="card" style="margin-bottom:1.5rem;">
         <div class="matrix-toolbar">
             <div class="filters">
@@ -276,16 +380,17 @@
                     <select id="coverage-filter" class="form-input" style="margin-bottom:0;">
                         <option value="all" selected>Show All</option>
                         <option value="critical">Critical Only</option>
-                        <option value="covered">Covered Only</option>
+                        <option value="covered">Any Covered State</option>
                         <option value="planned">Planned Only</option>
                     </select>
                 </div>
             </div>
-            <div class="muted-note" id="matrix-summary">Showing official tactic layout with scenario technique mappings.</div>
+            <div class="muted-note" id="matrix-summary">Loading technique data…</div>
         </div>
 
         <div class="matrix-wrapper">
             <div class="matrix-grid" id="matrix-grid">
+                <!-- Row 1: one technique per tactic column -->
                 <div class="matrix-col-header">Reconnaissance</div>
                 <div class="matrix-col-header">Resource Development</div>
                 <div class="matrix-col-header">Initial Access</div>
@@ -301,6 +406,7 @@
                 <div class="matrix-col-header">Exfiltration</div>
                 <div class="matrix-col-header">Impact</div>
 
+                <!-- Recon -->
                 <div class="matrix-cell planned technique-cell"
                      data-technique-id="T1598"
                      data-status="planned"
@@ -308,8 +414,10 @@
                     T1598<br>Phishing for Information
                 </div>
 
-                <div class="matrix-cell empty">Not Yet Mapped</div>
+                <!-- Resource Dev -->
+                <div class="matrix-cell empty" aria-label="Not yet mapped">Not Yet Mapped</div>
 
+                <!-- Initial Access -->
                 <div class="matrix-cell critical technique-cell"
                      data-technique-id="T1566"
                      data-status="critical"
@@ -317,6 +425,7 @@
                     T1566<br>Phishing
                 </div>
 
+                <!-- Execution -->
                 <div class="matrix-cell covered technique-cell"
                      data-technique-id="T1059"
                      data-status="covered"
@@ -324,6 +433,7 @@
                     T1059<br>Command &amp; Scripting
                 </div>
 
+                <!-- Persistence -->
                 <div class="matrix-cell covered technique-cell"
                      data-technique-id="T1053"
                      data-status="covered"
@@ -331,10 +441,13 @@
                     T1053<br>Scheduled Task/Job
                 </div>
 
-                <div class="matrix-cell empty">Not Yet Mapped</div>
+                <!-- Priv Esc -->
+                <div class="matrix-cell empty" aria-label="Not yet mapped">Not Yet Mapped</div>
 
-                <div class="matrix-cell empty">Not Yet Mapped</div>
+                <!-- Defense Evasion -->
+                <div class="matrix-cell empty" aria-label="Not yet mapped">Not Yet Mapped</div>
 
+                <!-- Credential Access -->
                 <div class="matrix-cell critical technique-cell"
                      data-technique-id="T1003.001"
                      data-status="critical"
@@ -342,6 +455,7 @@
                     T1003.001<br>LSASS Memory
                 </div>
 
+                <!-- Discovery -->
                 <div class="matrix-cell covered technique-cell"
                      data-technique-id="T1082"
                      data-status="covered"
@@ -349,6 +463,7 @@
                     T1082<br>System Information Discovery
                 </div>
 
+                <!-- Lateral Movement -->
                 <div class="matrix-cell covered technique-cell"
                      data-technique-id="T1021"
                      data-status="covered"
@@ -356,8 +471,10 @@
                     T1021<br>Remote Services
                 </div>
 
-                <div class="matrix-cell empty">Not Yet Mapped</div>
+                <!-- Collection -->
+                <div class="matrix-cell empty" aria-label="Not yet mapped">Not Yet Mapped</div>
 
+                <!-- C2 -->
                 <div class="matrix-cell critical technique-cell"
                      data-technique-id="T1071"
                      data-status="critical"
@@ -365,6 +482,7 @@
                     T1071<br>Application Layer Protocol
                 </div>
 
+                <!-- Exfiltration -->
                 <div class="matrix-cell planned technique-cell"
                      data-technique-id="T1041"
                      data-status="planned"
@@ -372,6 +490,7 @@
                     T1041<br>Exfiltration Over C2 Channel
                 </div>
 
+                <!-- Impact -->
                 <div class="matrix-cell critical technique-cell"
                      data-technique-id="T1486"
                      data-status="critical"
@@ -379,9 +498,9 @@
                     T1486<br>Data Encrypted for Impact
                 </div>
 
-                <div class="matrix-cell empty">Not Yet Mapped</div>
-
-                <div class="matrix-cell empty">Not Yet Mapped</div>
+                <!-- Row 2 -->
+                <div class="matrix-cell empty" aria-label="Not yet mapped">Not Yet Mapped</div>
+                <div class="matrix-cell empty" aria-label="Not yet mapped">Not Yet Mapped</div>
 
                 <div class="matrix-cell covered technique-cell"
                      data-technique-id="T1566.001"
@@ -397,11 +516,9 @@
                     T1204<br>User Execution
                 </div>
 
-                <div class="matrix-cell empty">Not Yet Mapped</div>
-
-                <div class="matrix-cell empty">Not Yet Mapped</div>
-
-                <div class="matrix-cell empty">Not Yet Mapped</div>
+                <div class="matrix-cell empty" aria-label="Not yet mapped">Not Yet Mapped</div>
+                <div class="matrix-cell empty" aria-label="Not yet mapped">Not Yet Mapped</div>
+                <div class="matrix-cell empty" aria-label="Not yet mapped">Not Yet Mapped</div>
 
                 <div class="matrix-cell covered technique-cell"
                      data-technique-id="T1110"
@@ -424,7 +541,7 @@
                     T1021.004<br>SSH
                 </div>
 
-                <div class="matrix-cell empty">Not Yet Mapped</div>
+                <div class="matrix-cell empty" aria-label="Not yet mapped">Not Yet Mapped</div>
 
                 <div class="matrix-cell covered technique-cell"
                      data-technique-id="T1071.004"
@@ -433,7 +550,7 @@
                     T1071.004<br>DNS
                 </div>
 
-                <div class="matrix-cell empty">Not Yet Mapped</div>
+                <div class="matrix-cell empty" aria-label="Not yet mapped">Not Yet Mapped</div>
 
                 <div class="matrix-cell covered technique-cell"
                      data-technique-id="T1489"
@@ -442,9 +559,9 @@
                     T1489<br>Service Stop
                 </div>
 
-                <div class="matrix-cell empty">Not Yet Mapped</div>
-
-                <div class="matrix-cell empty">Not Yet Mapped</div>
+                <!-- Row 3 -->
+                <div class="matrix-cell empty" aria-label="Not yet mapped">Not Yet Mapped</div>
+                <div class="matrix-cell empty" aria-label="Not yet mapped">Not Yet Mapped</div>
 
                 <div class="matrix-cell planned technique-cell"
                      data-technique-id="T1566.004"
@@ -467,11 +584,9 @@
                     T1053.005<br>Scheduled Task
                 </div>
 
-                <div class="matrix-cell empty">Not Yet Mapped</div>
-
-                <div class="matrix-cell empty">Not Yet Mapped</div>
-
-                <div class="matrix-cell empty">Not Yet Mapped</div>
+                <div class="matrix-cell empty" aria-label="Not yet mapped">Not Yet Mapped</div>
+                <div class="matrix-cell empty" aria-label="Not yet mapped">Not Yet Mapped</div>
+                <div class="matrix-cell empty" aria-label="Not yet mapped">Not Yet Mapped</div>
 
                 <div class="matrix-cell covered technique-cell"
                      data-technique-id="T1046"
@@ -487,7 +602,7 @@
                     T1021.001<br>RDP
                 </div>
 
-                <div class="matrix-cell empty">Not Yet Mapped</div>
+                <div class="matrix-cell empty" aria-label="Not yet mapped">Not Yet Mapped</div>
 
                 <div class="matrix-cell covered technique-cell"
                      data-technique-id="T1071.001"
@@ -496,7 +611,7 @@
                     T1071.001<br>Web Protocols
                 </div>
 
-                <div class="matrix-cell empty">Not Yet Mapped</div>
+                <div class="matrix-cell empty" aria-label="Not yet mapped">Not Yet Mapped</div>
 
                 <div class="matrix-cell planned technique-cell"
                      data-technique-id="T1498"
@@ -520,33 +635,35 @@
         <div class="stack">
             <div class="card">
                 <div class="card-title"><i data-lucide="layers-3"></i> Scenario Alignment</div>
+                <p class="muted-note" style="margin-bottom:0.5rem;font-size:0.78rem;">Click a technique ID to view its details.</p>
                 <div>
                     <div style="font-weight:600;font-size:0.9rem;">Scenario A — Ransomware Containment</div>
                     <div class="scenario-tags">
-                        <span class="scenario-tag">T1110</span>
-                        <span class="scenario-tag">T1021.004</span>
-                        <span class="scenario-tag">T1071.001</span>
-                        <span class="scenario-tag">T1486</span>
-                        <span class="scenario-tag">T1489</span>
+                        <span class="scenario-tag clickable" data-technique-id="T1110">T1110</span>
+                        <span class="scenario-tag clickable" data-technique-id="T1021.004">T1021.004</span>
+                        <span class="scenario-tag clickable" data-technique-id="T1071.001">T1071.001</span>
+                        <span class="scenario-tag clickable" data-technique-id="T1486">T1486</span>
+                        <span class="scenario-tag clickable" data-technique-id="T1489">T1489</span>
                     </div>
                 </div>
                 <div style="margin-top:1rem;">
                     <div style="font-weight:600;font-size:0.9rem;">Scenario B — Compromised System</div>
                     <div class="scenario-tags">
-                        <span class="scenario-tag">T1566</span>
-                        <span class="scenario-tag">T1566.001</span>
-                        <span class="scenario-tag">T1003.001</span>
-                        <span class="scenario-tag">T1053.005</span>
-                        <span class="scenario-tag">T1071.004</span>
+                        <span class="scenario-tag clickable" data-technique-id="T1566">T1566</span>
+                        <span class="scenario-tag clickable" data-technique-id="T1566.001">T1566.001</span>
+                        <span class="scenario-tag clickable" data-technique-id="T1204">T1204</span>
+                        <span class="scenario-tag clickable" data-technique-id="T1003.001">T1003.001</span>
+                        <span class="scenario-tag clickable" data-technique-id="T1053.005">T1053.005</span>
+                        <span class="scenario-tag clickable" data-technique-id="T1071.004">T1071.004</span>
                     </div>
                 </div>
                 <div style="margin-top:1rem;">
                     <div style="font-weight:600;font-size:0.9rem;">Planned Scenarios</div>
                     <div class="scenario-tags">
-                        <span class="scenario-tag">T1566.004</span>
-                        <span class="scenario-tag">T1498</span>
-                        <span class="scenario-tag">T1598</span>
-                        <span class="scenario-tag">T1041</span>
+                        <span class="scenario-tag clickable" data-technique-id="T1566.004">T1566.004</span>
+                        <span class="scenario-tag clickable" data-technique-id="T1498">T1498</span>
+                        <span class="scenario-tag clickable" data-technique-id="T1598">T1598</span>
+                        <span class="scenario-tag clickable" data-technique-id="T1041">T1041</span>
                     </div>
                 </div>
             </div>
@@ -556,7 +673,7 @@
                 <ul class="list-clean" style="font-size:0.9rem;">
                     <li>Tactic headers follow the official ATT&amp;CK Enterprise matrix order.</li>
                     <li>Techniques are mapped to current project scenarios and future roadmap items.</li>
-                    <li>You can extend this page later by linking each technique to deeper scenario-specific evidence views.</li>
+                    <li>"Any Covered State" filter includes Critical, Covered, and Hands-on Practiced cells.</li>
                 </ul>
             </div>
         </div>

@@ -5,7 +5,639 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ResponseGrid - Settings</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/lucide/0.263.0/lucide.min.js"></script>
-    <link rel="stylesheet" href="css/shared.css">
+    <style>
+/* ── Google Fonts ─────────────────────────── */
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap');
+
+/* ── CSS Variables ────────────────────────── */
+:root {
+    --bg-dark: #f5f7fa;
+    --bg-elev: #ffffff;
+    --bg-surface: rgba(255,255,255,0.96);
+    --card-bg: rgba(255,255,255,0.98);
+    --card-bg-soft: rgba(248,250,252,0.96);
+    --sidebar-bg: rgba(57,62,70,0.99);
+    --accent-primary: #f97316;
+    --accent-primary-strong: #ea580c;
+    --accent-blue: #0ea5e9;
+    --accent-blue-strong: #0284c7;
+    --accent-teal: #0f766e;
+    --accent-red: #ef4444;
+    --accent-green: #22c55e;
+    --accent-yellow: #f59e0b;
+    --accent-purple: #7c3aed;
+    --text-main: #111827;
+    --text-soft: #334155;
+    --text-dim: #64748b;
+    --border: rgba(15,23,42,0.1);
+    --border-strong: rgba(249,115,22,0.28);
+    --shadow-lg: 0 14px 28px rgba(15,23,42,0.08);
+    --shadow-md: 0 4px 12px rgba(15,23,42,0.06);
+    --radius-xl: 14px;
+    --radius-lg: 10px;
+    --radius-md: 8px;
+    --radius-sm: 6px;
+}
+
+body.dark-mode {
+    --bg-dark: #0d1117;
+    --bg-elev: #161b22;
+    --bg-surface: rgba(22,27,34,0.96);
+    --card-bg: rgba(22,27,34,0.98);
+    --card-bg-soft: rgba(28,34,43,0.96);
+    --sidebar-bg: rgba(12,16,21,0.99);
+    --accent-blue: #38bdf8;
+    --accent-blue-strong: #0284c7;
+    --accent-teal: #14b8a6;
+    --text-main: #f3f4f6;
+    --text-soft: #d1d5db;
+    --text-dim: #9ca3af;
+    --border: rgba(255,255,255,0.08);
+    --shadow-lg: 0 10px 24px rgba(0,0,0,0.26);
+    --shadow-md: 0 4px 12px rgba(0,0,0,0.2);
+}
+
+/* ── Reset ────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+
+body {
+    background: var(--bg-dark);
+    color: var(--text-main);
+    display: flex;
+    min-height: 100vh;
+    overflow-x: hidden;
+    font-family: 'IBM Plex Sans', 'Helvetica Neue', sans-serif;
+    line-height: 1.5;
+    position: relative;
+    transition: background-color 0.25s ease, color 0.25s ease;
+}
+
+body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+        linear-gradient(rgba(249,115,22,0.008), rgba(249,115,22,0.008)),
+        repeating-linear-gradient(180deg, transparent 0, transparent 28px, rgba(15,23,42,0.018) 29px);
+    opacity: 0.18;
+    pointer-events: none;
+    z-index: 0;
+}
+
+a { color: inherit; }
+button, input, select, textarea { font: inherit; }
+button { cursor: pointer; }
+img, svg { max-width: 100%; }
+
+.sr-only {
+    position: absolute; width: 1px; height: 1px; padding: 0;
+    margin: -1px; overflow: hidden; clip: rect(0,0,0,0);
+    white-space: nowrap; border: 0;
+}
+
+/* ── Sidebar ──────────────────────────────── */
+nav {
+    width: 248px;
+    min-width: 248px;
+    background: var(--sidebar-bg);
+    border-right: 1px solid rgba(255,255,255,0.08);
+    display: flex;
+    flex-direction: column;
+    padding: 0.85rem 0.65rem 0.65rem;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    z-index: 4;
+    backdrop-filter: blur(10px);
+    box-shadow: inset -1px 0 0 rgba(255,255,255,0.03);
+}
+
+nav::before {
+    content: 'ResponseGrid Platform';
+    font-size: 0.68rem;
+    font-weight: 600;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    margin: 0.25rem 0 1rem;
+    padding: 0 0.85rem;
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    text-decoration: none;
+    color: #f8fafc;
+    padding: 0.7rem 0.8rem 1.55rem;
+    margin-bottom: 0.7rem;
+    border-radius: 8px;
+    border: 1px solid rgba(255,255,255,0.1);
+    background: rgba(255,255,255,0.04);
+    position: relative;
+    overflow: hidden;
+    font-size: 1rem;
+    font-weight: 700;
+}
+
+.logo::after {
+    content: 'Incident Simulation';
+    position: absolute;
+    left: 3.35rem;
+    bottom: 0.32rem;
+    font-size: 0.67rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: rgba(241,245,249,0.65);
+    font-weight: 600;
+}
+
+.logo i, .logo svg { width: 1rem; height: 1rem; color: var(--accent-primary); flex-shrink: 0; }
+
+.nav-item {
+    padding: 0.6rem 0.72rem;
+    color: rgba(226,232,240,0.74);
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    border-radius: 7px;
+    transition: background-color 0.18s ease, color 0.18s ease, border-color 0.18s ease;
+    margin-bottom: 0.3rem;
+    font-size: 0.86rem;
+    border: 1px solid transparent;
+    position: relative;
+}
+
+.nav-item i, .nav-item svg { width: 1rem; height: 1rem; flex-shrink: 0; }
+
+.nav-item:hover, .nav-item.active {
+    background: rgba(255,255,255,0.08);
+    color: #f8fafc;
+    border-color: rgba(255,255,255,0.05);
+}
+
+.nav-item.active::before {
+    content: '';
+    position: absolute;
+    left: -0.12rem;
+    top: 0.52rem;
+    bottom: 0.52rem;
+    width: 3px;
+    border-radius: 999px;
+    background: var(--accent-primary);
+}
+
+.nav-bottom {
+    margin-top: auto;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border);
+}
+
+.nav-bottom::before {
+    content: 'Admin';
+    display: block;
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    padding: 0 0.9rem 0.55rem;
+}
+
+/* ── Compact Sidebar ──────────────────────── */
+body.compact-sidebar nav { width: 92px; min-width: 92px; padding-left: 0.7rem; padding-right: 0.7rem; }
+body.compact-sidebar nav::before,
+body.compact-sidebar .nav-bottom::before,
+body.compact-sidebar .nav-label,
+body.compact-sidebar .logo::after { display: none; }
+body.compact-sidebar .logo,
+body.compact-sidebar .nav-item { justify-content: center; }
+body.compact-sidebar .nav-item { padding-left: 0.6rem; padding-right: 0.6rem; }
+body.compact-sidebar .nav-item.active::before {
+    left: 50%; top: auto; bottom: -0.25rem;
+    transform: translateX(-50%); width: 28px; height: 3px;
+}
+
+/* ── Mobile Nav ───────────────────────────── */
+.shell-toggle, .nav-scrim { display: none; }
+
+/* ── Main Content ─────────────────────────── */
+main {
+    flex: 1;
+    overflow-y: auto;
+    padding: 1.25rem clamp(1rem, 1.6vw, 1.4rem) 1.75rem;
+    position: relative;
+    z-index: 1;
+}
+main > * { position: relative; }
+
+/* ── Header ───────────────────────────────── */
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1rem;
+    margin-bottom: 1rem;
+    padding: 0.85rem 0.95rem;
+    border-radius: var(--radius-xl);
+    border: 1px solid var(--border);
+    background: #ffffff;
+    backdrop-filter: blur(8px);
+    overflow: hidden;
+    position: relative;
+}
+
+body.dark-mode header { background: var(--bg-elev); }
+
+header::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, rgba(249,115,22,0.06), transparent 18%);
+}
+
+header::after {
+    content: '';
+    position: absolute;
+    left: 0; right: 0; top: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--accent-primary), transparent 40%);
+    pointer-events: none;
+}
+
+header > * { position: relative; z-index: 1; }
+
+header h1 {
+    font-size: clamp(1.35rem, 2vw, 1.8rem);
+    line-height: 1.18;
+    margin-bottom: 0.3rem;
+    max-width: 14ch;
+}
+
+header .subtitle { color: var(--text-dim); font-size: 0.84rem; max-width: 72ch; }
+
+header > div:last-child {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+}
+
+/* ── Status Badge ─────────────────────────── */
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.34rem 0.62rem;
+    border-radius: 999px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    border: 1px solid transparent;
+    white-space: nowrap;
+}
+
+.status-badge.blue {
+    background: rgba(56,189,248,0.12);
+    color: var(--accent-blue);
+    border-color: rgba(56,189,248,0.24);
+}
+
+/* ── Cards ────────────────────────────────── */
+.card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 1rem;
+    backdrop-filter: blur(6px);
+    position: relative;
+    overflow: hidden;
+}
+
+.card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, rgba(255,255,255,0.01), transparent 16%);
+    pointer-events: none;
+}
+
+.card > * { position: relative; z-index: 1; }
+
+.card-title {
+    font-size: 0.9rem;
+    font-weight: 700;
+    margin-bottom: 0.85rem;
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    color: var(--text-soft);
+    letter-spacing: 0.01em;
+}
+
+.card-title i, .card-title svg { width: 1rem; height: 1rem; color: var(--accent-primary); }
+
+/* ── Grid Layouts ─────────────────────────── */
+.grid-2 {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+}
+
+/* ── Buttons ──────────────────────────────── */
+.btn {
+    background: linear-gradient(180deg, var(--accent-primary) 0%, var(--accent-primary-strong) 100%);
+    color: white;
+    border: 1px solid rgba(249,115,22,0.24);
+    padding: 0.62rem 0.9rem;
+    border-radius: 7px;
+    font-weight: 700;
+    font-size: 0.86rem;
+    transition: opacity 0.18s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    text-decoration: none;
+}
+
+.btn:hover { opacity: 0.92; }
+.btn:disabled { opacity: 0.55; cursor: not-allowed; }
+
+.btn-secondary {
+    background: #f8fafc;
+    border-color: var(--border);
+    color: var(--text-main);
+}
+
+body.dark-mode .btn-secondary {
+    background: var(--bg-elev);
+    color: var(--text-main);
+}
+
+.btn-success {
+    background: linear-gradient(180deg, #22c55e 0%, #16a34a 100%);
+    border-color: rgba(34,197,94,0.22);
+    color: #04101d;
+}
+
+/* ── Form Controls ────────────────────────── */
+.form-label {
+    display: block;
+    color: var(--text-dim);
+    font-size: 0.78rem;
+    margin-bottom: 0.5rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+}
+
+.form-input {
+    width: 100%;
+    padding: 0.72rem 0.82rem;
+    background: #ffffff;
+    border: 1px solid var(--border);
+    color: var(--text-main);
+    border-radius: 7px;
+    font-size: 0.92rem;
+    margin-bottom: 1rem;
+    transition: border-color 0.18s ease, box-shadow 0.18s ease, background-color 0.18s ease;
+}
+
+body.dark-mode .form-input {
+    background: var(--bg-elev);
+    color: var(--text-main);
+    border-color: var(--border);
+}
+
+body.dark-mode .form-input::placeholder {
+    color: var(--text-dim);
+}
+
+.form-input::placeholder { color: color-mix(in srgb, var(--text-dim) 90%, transparent); }
+
+.form-input:focus {
+    outline: none;
+    border-color: var(--border-strong);
+    box-shadow: 0 0 0 3px rgba(249,115,22,0.1);
+}
+
+body.dark-mode .form-input:focus {
+    background: var(--bg-elev);
+}
+
+select.form-input { appearance: none; cursor: pointer; }
+
+.form-input.input-error {
+    border-color: var(--accent-red) !important;
+    box-shadow: 0 0 0 3px rgba(239,68,68,0.12) !important;
+}
+
+/* ── Toggle Row & Switch ──────────────────── */
+.toggle-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.95rem 0;
+    border-bottom: 1px solid rgba(132,159,197,0.11);
+}
+
+.toggle-row:last-child { border-bottom: none; }
+
+.toggle {
+    width: 48px;
+    height: 28px;
+    background: rgba(141,159,190,0.18);
+    border-radius: 999px;
+    position: relative;
+    cursor: pointer;
+    transition: background 0.2s ease;
+    flex-shrink: 0;
+    border: 1px solid var(--border);
+    -webkit-tap-highlight-color: transparent;
+}
+
+.toggle:focus-visible { outline: 2px solid var(--accent-primary); outline-offset: 2px; }
+
+.toggle.on {
+    background: linear-gradient(180deg, var(--accent-primary) 0%, var(--accent-primary-strong) 100%);
+    border-color: rgba(249,115,22,0.3);
+}
+
+.toggle::after {
+    content: '';
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    background: white;
+    border-radius: 50%;
+    top: 3px;
+    left: 3px;
+    transition: transform 0.2s ease;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.22);
+}
+
+.toggle.on::after { transform: translateX(19px); }
+
+/* ── Tabs ─────────────────────────────────── */
+.tabs {
+    display: inline-flex;
+    gap: 0.2rem;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0.22rem;
+    margin-bottom: 1rem;
+    background: #f8fafc;
+    flex-wrap: wrap;
+}
+
+body.dark-mode .tabs { background: var(--bg-elev); }
+
+.tab {
+    padding: 0.52rem 0.8rem;
+    color: var(--text-dim);
+    cursor: pointer;
+    border: 1px solid transparent;
+    transition: 0.2s ease;
+    font-size: 0.84rem;
+    font-weight: 700;
+    border-radius: 8px;
+    user-select: none;
+}
+
+.tab:hover { color: var(--text-main); }
+
+.tab.active {
+    color: var(--text-main);
+    border-color: rgba(249,115,22,0.22);
+    background: rgba(249,115,22,0.12);
+}
+
+.tab-content { display: none; }
+
+.tab-content.active {
+    display: block;
+    animation: riseIn 0.24s ease;
+}
+
+/* ── Utilities ────────────────────────────── */
+.section-space { margin-bottom: 1rem; }
+.surface-note { color: var(--text-dim); font-size: 0.78rem; }
+body.hide-header-timers .header-timer { display: none; }
+
+/* ── Status Card ──────────────────────────── */
+#settings-status-card {
+    transition: opacity 0.3s ease;
+}
+
+/* ── Password input wrapper ───────────────── */
+.pw-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.pw-wrapper .form-input {
+    margin-bottom: 0;
+    padding-right: 2.75rem;
+}
+
+.pw-toggle-btn {
+    position: absolute;
+    right: 0.65rem;
+    background: none;
+    border: none;
+    color: var(--text-dim);
+    cursor: pointer;
+    padding: 0.3rem;
+    display: flex;
+    align-items: center;
+    border-radius: 4px;
+    transition: color 0.18s ease;
+}
+
+.pw-toggle-btn:hover { color: var(--text-main); }
+.pw-toggle-btn:focus-visible { outline: 2px solid var(--accent-primary); outline-offset: 1px; }
+.pw-toggle-btn i, .pw-toggle-btn svg { width: 16px; height: 16px; }
+
+/* ── Animations ───────────────────────────── */
+@keyframes riseIn {
+    from { opacity: 0; transform: translateY(6px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeOut {
+    from { opacity: 1; }
+    to   { opacity: 0; }
+}
+
+/* ── Responsive ───────────────────────────── */
+@media (max-width: 960px) {
+    body { display: block; }
+
+    nav {
+        position: fixed;
+        inset: 0 auto 0 0;
+        transform: translateX(-100%);
+        transition: transform 0.24s ease;
+        width: min(86vw, 320px);
+        min-width: min(86vw, 320px);
+        box-shadow: var(--shadow-lg);
+    }
+
+    body.nav-open nav { transform: translateX(0); }
+
+    .shell-toggle {
+        display: inline-flex;
+        position: fixed;
+        top: 1rem;
+        right: 1rem;
+        z-index: 7;
+        width: 46px;
+        height: 46px;
+        border-radius: 7px;
+        border: 1px solid var(--border);
+        background: rgba(255,255,255,0.98);
+        color: var(--text-main);
+        align-items: center;
+        justify-content: center;
+        backdrop-filter: blur(8px);
+    }
+
+    .nav-scrim {
+        display: block;
+        position: fixed;
+        inset: 0;
+        background: rgba(2,6,14,0.65);
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.24s ease;
+        z-index: 3;
+    }
+
+    body.nav-open .nav-scrim { opacity: 1; pointer-events: auto; }
+
+    main { padding: 0.85rem 0.85rem 1.25rem; }
+    header { padding: 0.9rem 0.95rem; }
+    header > div:last-child { width: 100%; justify-content: flex-start; }
+
+    .grid-2 { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 640px) {
+    header h1 { max-width: none; }
+    .card { padding: 0.9rem; }
+    .tabs { width: 100%; border-radius: 8px; }
+    .tab { width: 100%; text-align: center; }
+    .logo { padding-bottom: 1rem; }
+}
+    </style>
 </head>
 <body>
 
@@ -38,33 +670,39 @@
         </div>
     </header>
 
-    <div class="card section-space" style="display:none;" id="settings-status-card">
+    <!-- Status card: hidden until a save/reset/password action fires -->
+    <div class="card section-space"
+         style="display:none;"
+         id="settings-status-card"
+         role="alert"
+         aria-live="assertive">
         <div class="card-title"><i data-lucide="info"></i> Status</div>
         <p id="settings-status-text" class="surface-note" style="margin:0;">Settings ready.</p>
     </div>
 
-    <section>
+    <section aria-label="Settings panels">
         <div class="tabs" role="tablist" aria-label="Settings sections">
-            <div class="tab active" data-tab="tab-general" role="tab" aria-selected="true">General</div>
-            <div class="tab" data-tab="tab-environment" role="tab" aria-selected="false">Lab Environment</div>
-            <div class="tab" data-tab="tab-notifications" role="tab" aria-selected="false">Notifications</div>
-            <div class="tab" data-tab="tab-security" role="tab" aria-selected="false">Security</div>
+            <div class="tab active" data-tab="tab-general"       role="tab" aria-selected="true"  tabindex="0">General</div>
+            <div class="tab"        data-tab="tab-environment"   role="tab" aria-selected="false" tabindex="-1">Lab Environment</div>
+            <div class="tab"        data-tab="tab-notifications" role="tab" aria-selected="false" tabindex="-1">Notifications</div>
+            <div class="tab"        data-tab="tab-security"      role="tab" aria-selected="false" tabindex="-1">Security</div>
         </div>
 
+        <!-- ── General ────────────────────────────── -->
         <div class="tab-content active" id="tab-general">
             <div class="grid-2">
                 <div class="card">
                     <div class="card-title"><i data-lucide="user"></i> Profile Settings</div>
 
                     <label class="form-label" for="display-name">Display Name</label>
-                    <input type="text" class="form-input" id="display-name" value="Jordan Davis" maxlength="60">
+                    <input type="text" class="form-input" id="display-name" value="Jordan Davis" maxlength="60" autocomplete="name">
 
                     <label class="form-label" for="email">Email</label>
-                    <input type="email" class="form-input" id="email" value="jordan@corp.local" maxlength="120">
+                    <input type="email" class="form-input" id="email" value="jordan@corp.local" maxlength="120" autocomplete="email">
 
                     <label class="form-label" for="role">Role</label>
                     <select class="form-input" id="role">
-                        <option selected>IR Lead</option>
+                        <option>IR Lead</option>
                         <option>SOC Analyst</option>
                         <option>Forensic Analyst</option>
                         <option>Network Analyst</option>
@@ -105,6 +743,7 @@
             </div>
         </div>
 
+        <!-- ── Lab Environment ────────────────────── -->
         <div class="tab-content" id="tab-environment">
             <div class="grid-2">
                 <div class="card">
@@ -112,19 +751,19 @@
 
                     <label class="form-label" for="default-os">Default Container OS</label>
                     <select class="form-input" id="default-os">
-                        <option selected>Ubuntu 22.04 LTS</option>
+                        <option>Ubuntu 22.04 LTS</option>
                         <option>Debian 12</option>
                         <option>Alpine 3.18</option>
                         <option>Windows Server 2022</option>
                     </select>
 
                     <label class="form-label" for="max-containers">Max Containers per Simulation</label>
-                    <input type="number" class="form-input" id="max-containers" value="4" min="1" max="12">
+                    <input type="number" class="form-input" id="max-containers" value="4" min="1" max="12" step="1">
 
                     <label class="form-label" for="ram-limit">Container RAM Limit</label>
                     <select class="form-input" id="ram-limit">
                         <option>512 MB</option>
-                        <option selected>1 GB</option>
+                        <option>1 GB</option>
                         <option>2 GB</option>
                         <option>4 GB</option>
                     </select>
@@ -140,10 +779,10 @@
                     <div class="card-title"><i data-lucide="network"></i> Network Configuration</div>
 
                     <label class="form-label" for="lab-subnet">Lab Subnet</label>
-                    <input type="text" class="form-input" id="lab-subnet" value="192.168.100.0/24">
+                    <input type="text" class="form-input" id="lab-subnet" value="192.168.100.0/24" placeholder="e.g. 192.168.100.0/24">
 
                     <label class="form-label" for="dns-server">DNS Server</label>
-                    <input type="text" class="form-input" id="dns-server" value="192.168.100.1">
+                    <input type="text" class="form-input" id="dns-server" value="192.168.100.1" placeholder="e.g. 192.168.100.1">
 
                     <label class="form-label" style="margin-bottom:0.75rem;">Enable Internet Access for Containers</label>
                     <div class="toggle-row" style="border:none;padding:0;">
@@ -154,13 +793,14 @@
                     <label class="form-label" for="log-retention" style="margin-top:1rem;">SIEM Log Retention</label>
                     <select class="form-input" id="log-retention">
                         <option>7 days</option>
-                        <option selected>30 days</option>
+                        <option>30 days</option>
                         <option>90 days</option>
                     </select>
                 </div>
             </div>
         </div>
 
+        <!-- ── Notifications ──────────────────────── -->
         <div class="tab-content" id="tab-notifications">
             <div class="card" style="max-width:760px;">
                 <div class="card-title"><i data-lucide="bell"></i> Notification Preferences</div>
@@ -199,21 +839,31 @@
             </div>
         </div>
 
+        <!-- ── Security ───────────────────────────── -->
         <div class="tab-content" id="tab-security">
             <div class="grid-2">
                 <div class="card">
                     <div class="card-title"><i data-lucide="lock"></i> Authentication</div>
 
                     <label class="form-label" for="current-password">Current Password</label>
-                    <input type="password" class="form-input" id="current-password" placeholder="********">
+                    <input type="password" class="form-input" id="current-password" placeholder="Current password" autocomplete="current-password">
 
                     <label class="form-label" for="new-password">New Password</label>
-                    <input type="password" class="form-input" id="new-password" placeholder="Enter new password">
+                    <input type="password" class="form-input" id="new-password" placeholder="Min. 8 characters" autocomplete="new-password">
 
                     <label class="form-label" for="confirm-password">Confirm Password</label>
-                    <input type="password" class="form-input" id="confirm-password" placeholder="Confirm new password">
+                    <input type="password" class="form-input" id="confirm-password" placeholder="Repeat new password" autocomplete="new-password">
 
-                    <button class="btn" id="update-password-btn" type="button" style="margin-top:0.5rem;">Update Password</button>
+                    <div id="password-strength-bar" style="display:none;margin-top:-0.5rem;margin-bottom:1rem;">
+                        <div style="height:4px;background:rgba(141,159,190,0.18);border-radius:999px;overflow:hidden;">
+                            <div id="password-strength-fill" style="height:100%;width:0;border-radius:999px;transition:width 0.3s ease,background 0.3s ease;"></div>
+                        </div>
+                        <div id="password-strength-label" style="font-size:0.72rem;color:var(--text-dim);margin-top:0.3rem;"></div>
+                    </div>
+
+                    <button class="btn" id="update-password-btn" type="button" style="margin-top:0.25rem;">
+                        <i data-lucide="key-round"></i> Update Password
+                    </button>
                 </div>
 
                 <div class="card">
@@ -248,7 +898,643 @@
     </section>
 </main>
 
-<script src="js/shared.js"></script>
-<script src="js/pages/settings.js"></script>
+<script>
+/* ============================================================
+   ResponseGrid – Settings Page (self-contained)
+   Includes: trimmed IRSP core + full settings logic
+   ============================================================ */
+(function () {
+    'use strict';
+
+    /* ── Utilities ───────────────────────────── */
+    function safeReadJSON(key, fallback) {
+        try {
+            const raw = localStorage.getItem(key);
+            return raw ? JSON.parse(raw) : fallback;
+        } catch { return fallback; }
+    }
+
+    function deepClone(obj) {
+        try {
+            return (typeof structuredClone === 'function')
+                ? structuredClone(obj)
+                : JSON.parse(JSON.stringify(obj));
+        } catch { return JSON.parse(JSON.stringify(obj)); }
+    }
+
+    /* ── IRSP Core (trimmed for settings page) ─ */
+    const IRSP = {
+        settingsStorageKey: 'irsp-settings-v2',
+
+        init() {
+            this.enhanceNavMarkup();
+            this.initShell();
+            this.applyStoredAppearance();
+            this.initIcons();
+            this.initNavHighlight();
+            this.initTabs();
+            this.initGenericToggles();
+        },
+
+        enhanceNavMarkup() {
+            document.querySelectorAll('.logo, .nav-item').forEach(link => {
+                if (link.querySelector('.nav-label')) return;
+                const label = document.createElement('span');
+                label.className = 'nav-label';
+                const textNodes = Array.from(link.childNodes).filter(
+                    n => n.nodeType === Node.TEXT_NODE && n.textContent.trim()
+                );
+                const text = textNodes.map(n => n.textContent.trim()).join(' ');
+                textNodes.forEach(n => n.remove());
+                if (text) { label.textContent = text; link.appendChild(label); }
+            });
+        },
+
+        initShell() {
+            const nav = document.querySelector('nav');
+            if (!nav || document.querySelector('.shell-toggle')) return;
+
+            const toggle = document.createElement('button');
+            toggle.type = 'button';
+            toggle.className = 'shell-toggle';
+            toggle.setAttribute('aria-label', 'Open navigation');
+            toggle.setAttribute('aria-expanded', 'false');
+            toggle.innerHTML = '<i data-lucide="menu"></i>';
+
+            const scrim = document.createElement('div');
+            scrim.className = 'nav-scrim';
+            scrim.setAttribute('aria-hidden', 'true');
+
+            const closeDrawer = () => {
+                document.body.classList.remove('nav-open');
+                toggle.setAttribute('aria-expanded', 'false');
+            };
+
+            toggle.addEventListener('click', () => {
+                const next = !document.body.classList.contains('nav-open');
+                document.body.classList.toggle('nav-open', next);
+                toggle.setAttribute('aria-expanded', next ? 'true' : 'false');
+            });
+
+            scrim.addEventListener('click', closeDrawer);
+
+            nav.querySelectorAll('a').forEach(link => {
+                link.addEventListener('click', () => {
+                    if (window.innerWidth <= 960) closeDrawer();
+                });
+            });
+
+            window.addEventListener('resize', () => {
+                if (window.innerWidth > 960) closeDrawer();
+            });
+
+            document.addEventListener('keydown', e => {
+                if (e.key === 'Escape') closeDrawer();
+            });
+
+            document.body.appendChild(toggle);
+            document.body.appendChild(scrim);
+            this.initIcons();
+        },
+
+        initIcons() {
+            if (window.lucide && typeof window.lucide.createIcons === 'function') {
+                window.lucide.createIcons();
+            }
+        },
+
+        initNavHighlight() {
+            const page = (window.location.pathname.split('/').pop() || 'dashboard.html').toLowerCase();
+            const current = (page.startsWith('scenario-') || page === 'scenario-generic.html')
+                ? 'active-lab.html' : page;
+
+            document.querySelectorAll('.nav-item').forEach(item => {
+                const href = (item.getAttribute('href') || '').toLowerCase();
+                const match = href === current;
+                item.classList.toggle('active', match);
+                match
+                    ? item.setAttribute('aria-current', 'page')
+                    : item.removeAttribute('aria-current');
+            });
+        },
+
+        initTabs() {
+            document.querySelectorAll('.tabs').forEach(tabGroup => {
+                const tabs = Array.from(tabGroup.querySelectorAll('.tab'));
+                const container = tabGroup.parentElement || document;
+                const contents = Array.from(container.querySelectorAll('.tab-content'));
+
+                const activate = (tab) => {
+                    const tabId = tab.dataset.tab;
+                    if (!tabId) return;
+                    tabs.forEach(t => {
+                        t.classList.remove('active');
+                        t.setAttribute('aria-selected', 'false');
+                        t.setAttribute('tabindex', '-1');
+                    });
+                    tab.classList.add('active');
+                    tab.setAttribute('aria-selected', 'true');
+                    tab.setAttribute('tabindex', '0');
+                    contents.forEach(c => {
+                        const isActive = c.id === tabId;
+                        c.classList.toggle('active', isActive);
+                        c.toggleAttribute('hidden', !isActive);
+                    });
+                };
+
+                tabs.forEach(tab => {
+                    tab.addEventListener('click', () => activate(tab));
+                    tab.addEventListener('keydown', e => {
+                        const i = tabs.indexOf(tab);
+                        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); activate(tab); }
+                        if (e.key === 'ArrowRight') { e.preventDefault(); tabs[(i + 1) % tabs.length].focus(); }
+                        if (e.key === 'ArrowLeft')  { e.preventDefault(); tabs[(i - 1 + tabs.length) % tabs.length].focus(); }
+                    });
+                });
+
+                contents.forEach(c => c.toggleAttribute('hidden', !c.classList.contains('active')));
+            });
+        },
+
+        initGenericToggles() {
+            document.querySelectorAll('.toggle:not([data-irsp-bound])').forEach(toggle => {
+                toggle.dataset.irspBound = 'true';
+                if (!toggle.hasAttribute('role')) toggle.setAttribute('role', 'switch');
+                if (!toggle.hasAttribute('tabindex')) toggle.setAttribute('tabindex', '0');
+                toggle.setAttribute('aria-checked', toggle.classList.contains('on') ? 'true' : 'false');
+
+                const flip = () => {
+                    toggle.classList.toggle('on');
+                    toggle.setAttribute('aria-checked', toggle.classList.contains('on') ? 'true' : 'false');
+                };
+                toggle.addEventListener('click', flip);
+                toggle.addEventListener('keydown', e => {
+                    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); flip(); }
+                });
+            });
+        },
+
+        getSavedSettings() {
+            return safeReadJSON(this.settingsStorageKey, null);
+        },
+
+        applyStoredAppearance() {
+            const s = this.getSavedSettings();
+            if (s) this.applyAppearanceSettings(s);
+        },
+
+        applyAppearanceSettings(settings) {
+            const a = settings.appearance || settings;
+            if (!a) return;
+            document.body.classList.toggle('compact-sidebar', !!a.compactSidebar);
+            document.body.classList.toggle('hide-header-timers', a.showTimer === false);
+            document.body.classList.toggle('dark-mode', a.darkMode === true);
+            document.documentElement.style.colorScheme = a.darkMode ? 'dark' : 'light';
+        }
+    };
+
+    window.IRSP = IRSP;
+
+    /* ── Settings Logic ──────────────────────── */
+    const STORAGE_KEY = 'irsp-settings-v2';
+
+    const DEFAULTS = {
+        profile:       { displayName: 'Jordan Davis', email: 'jordan@corp.local', role: 'IR Lead', organization: 'ResponseGrid Training Lab' },
+        appearance:    { darkMode: false, compactSidebar: false, showTimer: true },
+        environment:   { defaultOS: 'Ubuntu 22.04 LTS', maxContainers: 4, ramLimit: '1 GB', autoDestroy: true, labSubnet: '192.168.100.0/24', dnsServer: '192.168.100.1', internetAccess: false, logRetention: '30 days' },
+        notifications: { emailAlerts: true, inAppAlerts: true, teamActivity: false, weeklySummary: true },
+        security:      { twoFactor: false, sessionTimeout: true, auditLogging: true }
+    };
+
+    /* element cache – populated after DOM ready */
+    let els, toggleMap;
+
+    /* ── Status Banner ───────────────────────── */
+    let _statusTimer = null;
+
+    function showStatus(message, type) {
+        els.statusCard.style.display = 'block';
+        els.statusCard.style.opacity = '1';
+        els.statusText.textContent = message;
+        els.statusText.style.color =
+            type === 'error'   ? 'var(--accent-red)'   :
+            type === 'success' ? 'var(--accent-green)'  :
+                                 'var(--text-dim)';
+
+        /* Scroll the card into view from any tab */
+        els.statusCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+        /* Auto-dismiss after 5 s */
+        clearTimeout(_statusTimer);
+        _statusTimer = setTimeout(() => {
+            els.statusCard.style.animation = 'fadeOut 0.4s ease forwards';
+            setTimeout(() => {
+                els.statusCard.style.display = 'none';
+                els.statusCard.style.animation = '';
+            }, 400);
+        }, 5000);
+    }
+
+    /* ── Toggle helpers ──────────────────────── */
+    function setToggleState(toggle, enabled) {
+        toggle.classList.toggle('on', !!enabled);
+        toggle.setAttribute('aria-checked', enabled ? 'true' : 'false');
+    }
+
+    function getToggleState(toggle) { return toggle.classList.contains('on'); }
+
+    /* ── Select helper (safe set) ────────────── */
+    function setSelectValue(selectEl, value) {
+        const opts = Array.from(selectEl.options);
+        const match = opts.find(o => o.value === value || o.text === value);
+        if (match) selectEl.value = match.value || match.text;
+    }
+
+    /* ── Invalid-field highlighting ──────────── */
+    function markInvalid(el) {
+        el.classList.add('input-error');
+        try { el.focus(); } catch (_) { /* non-critical */ }
+    }
+
+    function clearInvalid(el) { el.classList.remove('input-error'); }
+
+    /* ── Settings merge / load ───────────────── */
+    function mergeSettings(base, incoming) {
+        return {
+            profile:       { ...base.profile,       ...(incoming.profile       || {}) },
+            appearance:    { ...base.appearance,    ...(incoming.appearance    || {}) },
+            environment:   { ...base.environment,   ...(incoming.environment   || {}) },
+            notifications: { ...base.notifications, ...(incoming.notifications || {}) },
+            security:      { ...base.security,      ...(incoming.security      || {}) }
+        };
+    }
+
+    function loadSavedSettings() {
+        try {
+            const raw = localStorage.getItem(STORAGE_KEY);
+            const saved = raw ? JSON.parse(raw) : null;
+            return saved ? mergeSettings(deepClone(DEFAULTS), saved) : deepClone(DEFAULTS);
+        } catch { return deepClone(DEFAULTS); }
+    }
+
+    /* ── Apply saved settings to DOM ─────────── */
+    function applySettings(s) {
+        els.displayName.value  = s.profile.displayName;
+        els.email.value        = s.profile.email;
+        els.organization.value = s.profile.organization;
+        setSelectValue(els.role,         s.profile.role);
+        setSelectValue(els.defaultOS,    s.environment.defaultOS);
+        setSelectValue(els.ramLimit,     s.environment.ramLimit);
+        setSelectValue(els.logRetention, s.environment.logRetention);
+
+        els.maxContainers.value = s.environment.maxContainers;
+        els.labSubnet.value     = s.environment.labSubnet;
+        els.dnsServer.value     = s.environment.dnsServer;
+
+        /* Toggles – grouped by their settings section */
+        const sectionMap = {
+            darkMode:      ['appearance',    s.appearance.darkMode],
+            compactSidebar:['appearance',    s.appearance.compactSidebar],
+            showTimer:     ['appearance',    s.appearance.showTimer],
+            autoDestroy:   ['environment',   s.environment.autoDestroy],
+            internetAccess:['environment',   s.environment.internetAccess],
+            emailAlerts:   ['notifications', s.notifications.emailAlerts],
+            inAppAlerts:   ['notifications', s.notifications.inAppAlerts],
+            teamActivity:  ['notifications', s.notifications.teamActivity],
+            weeklySummary: ['notifications', s.notifications.weeklySummary],
+            twoFactor:     ['security',      s.security.twoFactor],
+            sessionTimeout:['security',      s.security.sessionTimeout],
+            auditLogging:  ['security',      s.security.auditLogging]
+        };
+
+        Object.entries(sectionMap).forEach(([key, [, val]]) => {
+            if (toggleMap[key]) setToggleState(toggleMap[key], val);
+        });
+
+        applyAppearance(s);
+    }
+
+    /* ── Collect current DOM state ───────────── */
+    function collectSettings() {
+        return {
+            profile: {
+                displayName:  els.displayName.value.trim(),
+                email:        els.email.value.trim(),
+                role:         els.role.value,
+                organization: els.organization.value.trim()
+            },
+            appearance: {
+                darkMode:       getToggleState(toggleMap.darkMode),
+                compactSidebar: getToggleState(toggleMap.compactSidebar),
+                showTimer:      getToggleState(toggleMap.showTimer)
+            },
+            environment: {
+                defaultOS:      els.defaultOS.value,
+                maxContainers:  parseInt(els.maxContainers.value, 10),
+                ramLimit:       els.ramLimit.value,
+                autoDestroy:    getToggleState(toggleMap.autoDestroy),
+                labSubnet:      els.labSubnet.value.trim(),
+                dnsServer:      els.dnsServer.value.trim(),
+                internetAccess: getToggleState(toggleMap.internetAccess),
+                logRetention:   els.logRetention.value
+            },
+            notifications: {
+                emailAlerts:   getToggleState(toggleMap.emailAlerts),
+                inAppAlerts:   getToggleState(toggleMap.inAppAlerts),
+                teamActivity:  getToggleState(toggleMap.teamActivity),
+                weeklySummary: getToggleState(toggleMap.weeklySummary)
+            },
+            security: {
+                twoFactor:      getToggleState(toggleMap.twoFactor),
+                sessionTimeout: getToggleState(toggleMap.sessionTimeout),
+                auditLogging:   getToggleState(toggleMap.auditLogging)
+            }
+        };
+    }
+
+    /* ── Validation ──────────────────────────── */
+    function validateEmail(email) {
+        /* Strict RFC-like check — does not accept bare `.local` strings without an @ */
+        return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+    }
+
+    function validateIPv4(value) {
+        const parts = value.trim().split('.');
+        if (parts.length !== 4) return false;
+        return parts.every(p => /^\d{1,3}$/.test(p) && Number(p) <= 255);
+    }
+
+    function validateSubnet(value) {
+        const [ip, prefix] = value.trim().split('/');
+        if (!ip || prefix === undefined) return false;
+        const n = Number(prefix);
+        return validateIPv4(ip) && Number.isInteger(n) && n >= 0 && n <= 32;
+    }
+
+    const validatableFields = () => [
+        els.displayName, els.email, els.organization,
+        els.maxContainers, els.labSubnet, els.dnsServer
+    ];
+
+    function validateSettings(s) {
+        validatableFields().forEach(clearInvalid);
+
+        if (!s.profile.displayName) {
+            markInvalid(els.displayName);
+            return 'Display name is required.';
+        }
+        if (!s.profile.organization) {
+            markInvalid(els.organization);
+            return 'Organization is required.';
+        }
+        if (!validateEmail(s.profile.email)) {
+            markInvalid(els.email);
+            return 'Enter a valid email address (e.g. user@domain.com).';
+        }
+        const mc = s.environment.maxContainers;
+        if (!Number.isInteger(mc) || mc < 1 || mc > 12) {
+            markInvalid(els.maxContainers);
+            return 'Max containers must be a whole number between 1 and 12.';
+        }
+        if (!validateSubnet(s.environment.labSubnet)) {
+            markInvalid(els.labSubnet);
+            return 'Lab subnet must be valid CIDR notation (e.g. 192.168.100.0/24).';
+        }
+        if (!validateIPv4(s.environment.dnsServer)) {
+            markInvalid(els.dnsServer);
+            return 'DNS server must be a valid IPv4 address.';
+        }
+        return '';
+    }
+
+    /* ── Appearance live-apply ───────────────── */
+    function applyAppearance(settings) {
+        IRSP.applyAppearanceSettings(settings);
+    }
+
+    /* ── Save ────────────────────────────────── */
+    function saveSettings() {
+        const s = collectSettings();
+        const err = validateSettings(s);
+        if (err) { showStatus(err, 'error'); return; }
+
+        try {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(s));
+            applyAppearance(s);
+            showStatus('Settings saved successfully.', 'success');
+        } catch {
+            showStatus('Unable to save — storage quota may be exceeded.', 'error');
+        }
+    }
+
+    /* ── Reset ───────────────────────────────── */
+    function resetSettings() {
+        if (!window.confirm('Reset all settings to defaults? Unsaved changes will be lost.')) return;
+        try { localStorage.removeItem(STORAGE_KEY); } catch { /* non-fatal */ }
+        const d = deepClone(DEFAULTS);
+        applySettings(d);
+        els.currentPassword.value = '';
+        els.newPassword.value     = '';
+        els.confirmPassword.value = '';
+        validatableFields().forEach(clearInvalid);
+        updatePasswordStrength('');
+        showStatus('Settings reset to defaults.', 'success');
+    }
+
+    /* ── Password strength indicator ─────────── */
+    function passwordStrength(pw) {
+        let score = 0;
+        if (pw.length >= 8)  score++;
+        if (pw.length >= 12) score++;
+        if (/[A-Z]/.test(pw)) score++;
+        if (/[0-9]/.test(pw)) score++;
+        if (/[^A-Za-z0-9]/.test(pw)) score++;
+        return score; /* 0-5 */
+    }
+
+    function updatePasswordStrength(pw) {
+        const bar   = document.getElementById('password-strength-bar');
+        const fill  = document.getElementById('password-strength-fill');
+        const label = document.getElementById('password-strength-label');
+        if (!bar || !fill || !label) return;
+
+        if (!pw) { bar.style.display = 'none'; return; }
+        bar.style.display = 'block';
+
+        const score = passwordStrength(pw);
+        const pct   = (score / 5) * 100;
+        const color =
+            score <= 1 ? '#ef4444' :
+            score <= 2 ? '#f59e0b' :
+            score <= 3 ? '#f97316' :
+            score <= 4 ? '#22c55e' : '#16a34a';
+        const text =
+            score <= 1 ? 'Very weak'  :
+            score <= 2 ? 'Weak'       :
+            score <= 3 ? 'Fair'       :
+            score <= 4 ? 'Strong'     : 'Very strong';
+
+        fill.style.width      = pct + '%';
+        fill.style.background = color;
+        label.textContent     = text;
+        label.style.color     = color;
+    }
+
+    /* ── Update Password ─────────────────────── */
+    function updatePassword() {
+        const cur  = els.currentPassword.value;
+        const nw   = els.newPassword.value;
+        const conf = els.confirmPassword.value;
+
+        [els.currentPassword, els.newPassword, els.confirmPassword].forEach(clearInvalid);
+
+        if (!cur) {
+            markInvalid(els.currentPassword);
+            showStatus('Current password is required.', 'error');
+            return;
+        }
+        if (!nw) {
+            markInvalid(els.newPassword);
+            showStatus('New password is required.', 'error');
+            return;
+        }
+        if (nw.length < 8) {
+            markInvalid(els.newPassword);
+            showStatus('New password must be at least 8 characters.', 'error');
+            return;
+        }
+        if (nw !== conf) {
+            markInvalid(els.confirmPassword);
+            showStatus('New password and confirmation do not match.', 'error');
+            return;
+        }
+
+        els.currentPassword.value = '';
+        els.newPassword.value     = '';
+        els.confirmPassword.value = '';
+        updatePasswordStrength('');
+        showStatus('Password updated successfully.', 'success');
+    }
+
+    /* ── Password show/hide helper ───────────── */
+    function wrapPasswordInput(inputEl) {
+        /* Insert a wrapper div around the input for relative positioning */
+        const wrapper = document.createElement('div');
+        wrapper.className = 'pw-wrapper';
+        inputEl.parentNode.insertBefore(wrapper, inputEl);
+        wrapper.appendChild(inputEl);
+        inputEl.classList.add('form-input');
+        inputEl.style.marginBottom = '0'; /* spacing comes from wrapper class */
+
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'pw-toggle-btn';
+        btn.setAttribute('aria-label', 'Show password');
+        btn.innerHTML = '<i data-lucide="eye"></i>';
+
+        let visible = false;
+        btn.addEventListener('click', () => {
+            visible = !visible;
+            inputEl.type = visible ? 'text' : 'password';
+            btn.innerHTML = visible
+                ? '<i data-lucide="eye-off"></i>'
+                : '<i data-lucide="eye"></i>';
+            btn.setAttribute('aria-label', visible ? 'Hide password' : 'Show password');
+            IRSP.initIcons();
+        });
+
+        wrapper.appendChild(btn);
+    }
+
+    /* ── Boot ────────────────────────────────── */
+    document.addEventListener('DOMContentLoaded', () => {
+
+        /* 1. IRSP core (nav, tabs, toggles, icons, appearance) */
+        IRSP.init();
+
+        /* 2. Cache DOM elements */
+        els = {
+            displayName:     document.getElementById('display-name'),
+            email:           document.getElementById('email'),
+            role:            document.getElementById('role'),
+            organization:    document.getElementById('organization'),
+            defaultOS:       document.getElementById('default-os'),
+            maxContainers:   document.getElementById('max-containers'),
+            ramLimit:        document.getElementById('ram-limit'),
+            labSubnet:       document.getElementById('lab-subnet'),
+            dnsServer:       document.getElementById('dns-server'),
+            logRetention:    document.getElementById('log-retention'),
+            currentPassword: document.getElementById('current-password'),
+            newPassword:     document.getElementById('new-password'),
+            confirmPassword: document.getElementById('confirm-password'),
+            saveBtn:         document.getElementById('save-settings-btn'),
+            resetBtn:        document.getElementById('reset-settings-btn'),
+            updatePasswordBtn: document.getElementById('update-password-btn'),
+            statusCard:      document.getElementById('settings-status-card'),
+            statusText:      document.getElementById('settings-status-text')
+        };
+
+        toggleMap = {
+            darkMode:       document.querySelector('[data-setting="darkMode"]'),
+            compactSidebar: document.querySelector('[data-setting="compactSidebar"]'),
+            showTimer:      document.querySelector('[data-setting="showTimer"]'),
+            autoDestroy:    document.querySelector('[data-setting="autoDestroy"]'),
+            internetAccess: document.querySelector('[data-setting="internetAccess"]'),
+            emailAlerts:    document.querySelector('[data-setting="emailAlerts"]'),
+            inAppAlerts:    document.querySelector('[data-setting="inAppAlerts"]'),
+            teamActivity:   document.querySelector('[data-setting="teamActivity"]'),
+            weeklySummary:  document.querySelector('[data-setting="weeklySummary"]'),
+            twoFactor:      document.querySelector('[data-setting="twoFactor"]'),
+            sessionTimeout: document.querySelector('[data-setting="sessionTimeout"]'),
+            auditLogging:   document.querySelector('[data-setting="auditLogging"]')
+        };
+
+        /* 3. Password show/hide wrappers */
+        wrapPasswordInput(els.currentPassword);
+        wrapPasswordInput(els.newPassword);
+        wrapPasswordInput(els.confirmPassword);
+        IRSP.initIcons(); /* re-render after injecting eye icons */
+
+        /* 4. Load & apply saved settings */
+        applySettings(loadSavedSettings());
+
+        /* 5. Live appearance preview on toggle click */
+        [toggleMap.darkMode, toggleMap.compactSidebar, toggleMap.showTimer].forEach(t => {
+            t.addEventListener('click', () => {
+                /* shared.js already flipped the class synchronously; read it next tick */
+                setTimeout(() => applyAppearance(collectSettings()), 0);
+            });
+            t.addEventListener('keydown', e => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    setTimeout(() => applyAppearance(collectSettings()), 0);
+                }
+            });
+        });
+
+        /* 6. Clear invalid highlights as user edits */
+        validatableFields().forEach(el => {
+            el.addEventListener('input', () => clearInvalid(el));
+        });
+
+        /* 7. Password strength meter */
+        els.newPassword.addEventListener('input', () => {
+            updatePasswordStrength(els.newPassword.value);
+        });
+
+        /* 8. Button bindings */
+        els.saveBtn.addEventListener('click', saveSettings);
+        els.resetBtn.addEventListener('click', resetSettings);
+        els.updatePasswordBtn.addEventListener('click', updatePassword);
+
+        /* 9. Enter-key submit in password fields */
+        [els.currentPassword, els.newPassword, els.confirmPassword].forEach(el => {
+            el.addEventListener('keydown', e => {
+                if (e.key === 'Enter') { e.preventDefault(); updatePassword(); }
+            });
+        });
+    });
+
+})();
+</script>
 </body>
 </html>
