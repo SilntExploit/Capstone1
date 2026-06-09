@@ -1,0 +1,13 @@
+{
+  "name": "irsp-project",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Incident Response Simulation Platform mock backend and frontend",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "mongodb": "^6.17.0"
+  }
+}
