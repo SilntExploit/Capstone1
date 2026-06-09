@@ -146,6 +146,15 @@
         }
     }
 
+    function escapeHtmlLocal(value) {
+        return String(value || '')
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+    }
+
     function appendTimelinePlayback(item) {
         const timeline = document.getElementById('incident-timeline');
         if (!timeline || !item) return;
@@ -153,8 +162,8 @@
         const entry = document.createElement('div');
         entry.className = 'timeline-item';
         entry.innerHTML = `
-            <span class="time">${formatClock(item.timestamp)}</span>
-            <p class="desc">${item.message}</p>
+            <span class="time">${escapeHtmlLocal(formatClock(item.timestamp))}</span>
+            <p class="desc">${escapeHtmlLocal(item.message)}</p>
         `;
         timeline.appendChild(entry);
     }
@@ -165,7 +174,7 @@
 
         const entry = document.createElement('div');
         entry.className = 'msg';
-        entry.innerHTML = `<span class="msg-sender">${item.source || 'System'}:</span> ${item.message}`;
+        entry.innerHTML = `<span class="msg-sender">${escapeHtmlLocal(item.source || 'System')}:</span> ${escapeHtmlLocal(item.message)}`;
         comms.appendChild(entry);
         comms.scrollTop = comms.scrollHeight;
     }

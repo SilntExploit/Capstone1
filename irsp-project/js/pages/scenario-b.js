@@ -5,6 +5,78 @@
     const STATE_KEY = 'irsp-scenario-b-state';
     const REPORT_KEY = 'irsp-scenario-b-report';
 
+    // Embedded fallback ensures the page works without a local server (file://)
+    const FALLBACK_DATA = {
+        meta: {
+            subtitle: 'Sanitized Windows endpoint exports drive this exercise. No VM is required: trainees investigate a downloaded evidence pack built from realistic Sysmon, PowerShell, Security, Task Scheduler, proxy, and DNS telemetry.',
+            workspace_note: 'Evidence-pack workflow using sanitized Windows Server and workstation exports instead of a live VM.',
+            environment_copy: 'Offline Windows endpoint evidence pack',
+            services_copy: 'Query shell, IOC evidence board, timeline review, host logs, and local run scoring.',
+            target_value: 'LSASS',
+            target_note: 'Credential dumping via procdump.exe remains the clearest escalation clue in the case file.',
+            ioc_note: 'Four seeded indicators came from sanitized host, email, DNS, and proxy exports.'
+        },
+        alerts: [
+            { id: 'dns-alert', level: 'warning', title: 'Suspicious outbound DNS queries', description: 'WS-FINANCE-03 queried dns-tunnel.malware.io 1,200 times per minute.', action: 'Investigate', action_type: 'investigate' },
+            { id: 'lsass-alert', level: 'critical', title: 'Credential dump detected (LSASS)', description: 'procdump.exe accessed lsass.exe on WS-FINANCE-03 with memory-read permissions.', action: 'Contain', action_type: 'contain' },
+            { id: 'task-alert', level: 'info', title: 'New scheduled task created', description: 'WindowsUpdate_svc was registered with SYSTEM privileges and an AtLogon trigger.', action: 'Review', action_type: 'remove_persistence' }
+        ],
+        queries: [
+            {
+                id: 'credential-dumping', label: 'Credential Dumping',
+                query: 'host == "WS-FINANCE-03" and ("procdump.exe" or "dns-tunnel.malware.io")',
+                search: 'ResponseGridLogs\n| where host == "WS-FINANCE-03" and ("procdump.exe" or "dns-tunnel.malware.io")\n| summarize earliest = min(timestamp), latest = max(timestamp) by host, process_name, parent_process, user, dest_domain, task_name\n\n09:14:25 powershell.exe WINWORD.EXE finance-user dns-tunnel.malware.io -\n09:31:42 procdump.exe cmd.exe finance-user - -\n09:45:14 schtasks.exe cmd.exe SYSTEM - WindowsUpdate_svc\n\ncorrelation: phishing > PowerShell > LSASS dump > scheduled task persistence',
+                raw: '09:31:42 WS-FINANCE-03 sysmon:process Image=C:\\Tools\\procdump.exe TargetImage=C:\\Windows\\System32\\lsass.exe GrantedAccess=0x1010\n09:45:14 WS-FINANCE-03 windows:taskscheduler TaskName=WindowsUpdate_svc Author=SYSTEM Trigger=AtLogon\n09:18:11 proxy-01 web:proxy dest_ip=203.0.113.42 sni=update-win365.net action=allowed',
+                timeline: '09:12 phishing email delivered\n09:14 macro execution and PowerShell launcher\n09:18 outbound C2 established\n09:31 LSASS access observed\n09:45 scheduled task persistence registered',
+                status: 'Correlation view loaded for the active investigation chain.'
+            },
+            {
+                id: 'initial-access', label: 'Initial Access',
+                query: 'host == "WS-FINANCE-03" and ("phish-invoice.docm" or "powershell.exe")',
+                search: 'ResponseGridLogs\n| where host == "WS-FINANCE-03" and ("phish-invoice.docm" or "powershell.exe")\n| project timestamp, process_name, parent_process, user, file_name, command_line\n\n09:14:22 WINWORD.EXE explorer.exe finance-user phish-invoice.docm macro enabled\n09:14:25 powershell.exe WINWORD.EXE finance-user - encoded command executed\n\nlaunch chain confirms phishing-led initial access.',
+                raw: '09:14:25 WS-FINANCE-03 powershell:operational ParentImage=WINWORD.EXE CommandLine=powershell.exe -enc SQBFAFgA...\n09:12:03 mail-gw-01 o365:message_trace sender=billing@invoice-sync.net subject="Invoice review" attachment=phish-invoice.docm',
+                timeline: '09:12 email delivered\n09:14 document opened\n09:14 macro launched PowerShell',
+                status: 'Initial access query completed. Document-to-PowerShell chain confirmed.'
+            },
+            {
+                id: 'persistence', label: 'Persistence',
+                query: 'host == "WS-FINANCE-03" and ("WindowsUpdate_svc" or "schtasks.exe")',
+                search: 'ResponseGridLogs\n| where host == "WS-FINANCE-03" and ("WindowsUpdate_svc" or "schtasks.exe")\n| project timestamp, process_name, parent_process, user, task_name, trigger\n\n09:45:14 schtasks.exe cmd.exe SYSTEM WindowsUpdate_svc AtLogon\n09:45:17 taskeng.exe services.exe SYSTEM WindowsUpdate_svc Registered\n\npersistence is active at user logon with SYSTEM privileges.',
+                raw: '09:45:14 WS-FINANCE-03 windows:taskscheduler TaskName=WindowsUpdate_svc Trigger=AtLogon Author=SYSTEM\n09:45:18 WS-FINANCE-03 security EventID=4698 TaskName=WindowsUpdate_svc SubjectUserName=SYSTEM',
+                timeline: '09:31 credential access\n09:45 scheduled task created\n09:46 persistence checkpoint reached',
+                status: 'Persistence query completed. Scheduled task remains the active foothold.'
+            }
+        ],
+        evidence: [
+            { record_id: 'ioc-domain', indicator: 'dns-tunnel.malware.io', type: 'Domain', severity: 'Critical', status: 'Confirmed IOC', summary: 'High-volume DNS tunneling aligned with beaconing from the compromised workstation.', json: '{\n  "indicator": "dns-tunnel.malware.io",\n  "type": "domain",\n  "host": "WS-FINANCE-03",\n  "query_volume_per_min": 1200,\n  "first_seen": "2026-03-24T09:18:02Z",\n  "classification": "dns-tunneling",\n  "confidence": "high"\n}', note: 'Pivot to proxy and DNS telemetry. This IOC is the strongest command-and-control signal in the run.' },
+            { record_id: 'ioc-ip', indicator: '203.0.113.42', type: 'IP Address', severity: 'Critical', status: 'C2 Server', summary: 'Outbound TLS sessions from the workstation and proxy tier resolve to the active attacker node.', json: '{\n  "indicator": "203.0.113.42",\n  "type": "ip",\n  "dest_port": 443,\n  "sni": "update-win365.net",\n  "host": "WS-FINANCE-03",\n  "first_seen": "2026-03-24T09:18:05Z",\n  "classification": "c2",\n  "confidence": "high"\n}', note: 'Use this IOC for network block simulation and for validating proxy-enforced containment.' },
+            { record_id: 'ioc-tool', indicator: 'procdump.exe', type: 'Tool', severity: 'High', status: 'Under Review', summary: 'Credential dumping utility executed against LSASS with memory-read permissions.', json: '{\n  "indicator": "procdump.exe",\n  "type": "tool",\n  "host": "WS-FINANCE-03",\n  "target_process": "lsass.exe",\n  "parent_process": "cmd.exe",\n  "user": "finance-user",\n  "classification": "credential_dumping",\n  "confidence": "medium-high"\n}', note: 'This artifact should drive both the credential-access finding and the host containment recommendation.' },
+            { record_id: 'ioc-file', indicator: 'phish-invoice.docm', type: 'File', severity: 'High', status: 'Initial Vector', summary: 'Macro-enabled document delivered through phishing and linked to the first PowerShell execution.', json: '{\n  "indicator": "phish-invoice.docm",\n  "type": "file",\n  "sender": "billing@invoice-sync.net",\n  "recipient": "finance-user@corp.local",\n  "macro_enabled": true,\n  "child_process": "powershell.exe",\n  "classification": "initial_access",\n  "confidence": "high"\n}', note: 'Keep this selected during stakeholder demos to show clear mapping from phishing artifact to host compromise.' }
+        ],
+        timeline: [
+            { time: '09:12:00', desc: 'Phishing email received by finance-user@corp.local with a macro-enabled attachment.' },
+            { time: '09:14:22', desc: 'User opens phish-invoice.docm and the macro launches a PowerShell dropper.' },
+            { time: '09:18:05', desc: 'Reverse shell established from WS-FINANCE-03 to 203.0.113.42:443.' },
+            { time: '09:31:40', desc: 'Credentials dumped from lsass.exe using procdump.exe.' },
+            { time: '09:45:12', desc: 'Persistence established via scheduled task WindowsUpdate_svc.' }
+        ],
+        logs: [
+            { time: '09:12:03', host: 'mail-gw-01', sourcetype: 'o365:message_trace', event: 'Message delivered from billing@invoice-sync.net with attachment phish-invoice.docm' },
+            { time: '09:14:25', host: 'WS-FINANCE-03', sourcetype: 'powershell:operational', event: 'Encoded command executed from WINWORD.EXE child process' },
+            { time: '09:18:11', host: 'proxy-01', sourcetype: 'web:proxy', event: 'TLS session established to 203.0.113.42 SNI=update-win365.net' },
+            { time: '09:31:42', host: 'WS-FINANCE-03', sourcetype: 'sysmon:process', event: 'procdump.exe opened lsass.exe with PROCESS_VM_READ access' },
+            { time: '09:45:14', host: 'WS-FINANCE-03', sourcetype: 'windows:taskscheduler', event: 'Task registration name=WindowsUpdate_svc author=SYSTEM trigger=AtLogon' }
+        ],
+        comms: {
+            base: [
+                { sender: 'System', message: 'Scenario B loaded from a sanitized Windows endpoint evidence pack.' },
+                { sender: 'IR Lead', message: 'Start with the email and PowerShell chain to lock down initial access.' },
+                { sender: 'Forensics', message: 'LSASS access is confirmed. Preserve that evidence before cleanup.' },
+                { sender: 'SOC', message: 'The suspicious domain appears in both DNS and proxy exports.' }
+            ]
+        }
+    };
+
     const workspaceState = safeWorkspaceState();
     startTimer('timer', 1800, { storageKey: 'irsp-scenario-b-timer' });
 
@@ -29,6 +101,7 @@
     const timelineList = document.getElementById('scenario-b-timeline-list');
     const logsBody = document.getElementById('scenario-b-logs-body');
     const commsBox = document.getElementById('scenario-b-comms-box');
+    const commsInput = document.getElementById('scenario-b-comms-input');
 
     const queryInput = document.getElementById('scenario-b-query-input');
     const runQueryButton = document.getElementById('scenario-b-run-query');
@@ -70,28 +143,27 @@
 
     function safeReadState() {
         try {
-            return JSON.parse(localStorage.getItem(STATE_KEY)) || {
-                viewedEvidence: [],
-                activeQueryId: 'credential-dumping',
-                initialVectorConfirmed: false,
-                timelineBuilt: false,
-                hostContained: false,
-                persistenceRemoved: false
-            };
+            return JSON.parse(localStorage.getItem(STATE_KEY)) || defaultState();
         } catch (error) {
-            return {
-                viewedEvidence: [],
-                activeQueryId: 'credential-dumping',
-                initialVectorConfirmed: false,
-                timelineBuilt: false,
-                hostContained: false,
-                persistenceRemoved: false
-            };
+            return defaultState();
         }
     }
 
+    function defaultState() {
+        return {
+            viewedEvidence: [],
+            activeQueryId: 'credential-dumping',
+            initialVectorConfirmed: false,
+            timelineBuilt: false,
+            hostContained: false,
+            persistenceRemoved: false
+        };
+    }
+
     function persistState() {
-        localStorage.setItem(STATE_KEY, JSON.stringify(investigationState));
+        try {
+            localStorage.setItem(STATE_KEY, JSON.stringify(investigationState));
+        } catch (e) { /* storage unavailable */ }
     }
 
     function escapeHtml(value) {
@@ -106,7 +178,7 @@
     function formatWorkspaceStart(value) {
         const date = new Date(value);
         if (Number.isNaN(date.getTime())) return 'Evidence pack loaded locally';
-        return `Loaded ${date.toLocaleString()}`;
+        return 'Loaded ' + date.toLocaleString();
     }
 
     function severityBadgeClass(severity) {
@@ -133,6 +205,8 @@
     }
 
     function buildReport() {
+        if (!dataset) return null;
+
         const evidenceCount = Array.isArray(dataset.evidence) ? dataset.evidence.length : 0;
         const mappedAll = evidenceCount > 0 && investigationState.viewedEvidence.length >= evidenceCount;
         const completionMap = {
@@ -179,14 +253,22 @@
             investigation: completionMap.timeline ? 94 : completionMap.entry ? 78 : 56,
             comms: completionMap.map ? 86 : 70,
             feedback: {
-                title: `Latest Feedback – Scenario B (${new Date().toLocaleDateString()})`,
+                title: 'Latest Feedback – Scenario B (' + new Date().toLocaleDateString() + ')',
                 positives: [
-                    completionMap.entry ? 'Initial access was quickly tied to the phishing document and PowerShell child process.' : 'The entry chain still needs clearer validation from the phishing artifact.',
-                    completionMap.timeline ? 'Timeline reconstruction was coherent and followed the host compromise sequence cleanly.' : 'Timeline work needs one more correlation pass across the host and proxy artifacts.'
+                    completionMap.entry
+                        ? 'Initial access was quickly tied to the phishing document and PowerShell child process.'
+                        : 'The entry chain still needs clearer validation from the phishing artifact.',
+                    completionMap.timeline
+                        ? 'Timeline reconstruction was coherent and followed the host compromise sequence cleanly.'
+                        : 'Timeline work needs one more correlation pass across the host and proxy artifacts.'
                 ],
                 improvements: [
-                    completionMap.contain ? 'Containment was applied cleanly without losing the evidence pack context.' : 'Contain the compromised host earlier once the credential dumping event is confirmed.',
-                    completionMap.remove ? 'Persistence removal sequencing is now aligned with the evidence trail.' : 'Remove the WindowsUpdate_svc persistence item after preserving the scheduled task evidence.'
+                    completionMap.contain
+                        ? 'Containment was applied cleanly without losing the evidence pack context.'
+                        : 'Contain the compromised host earlier once the credential dumping event is confirmed.',
+                    completionMap.remove
+                        ? 'Persistence removal sequencing is now aligned with the evidence trail.'
+                        : 'Remove the WindowsUpdate_svc persistence item after preserving the scheduled task evidence.'
                 ],
                 checklist: [
                     { title: 'Validate phishing-to-PowerShell chain', note: 'Confirm the initial access path from email to execution.', done: completionMap.entry },
@@ -203,14 +285,21 @@
     }
 
     function persistReport() {
-        localStorage.setItem(REPORT_KEY, JSON.stringify(buildReport()));
+        try {
+            const report = buildReport();
+            if (report) {
+                localStorage.setItem(REPORT_KEY, JSON.stringify(report));
+            }
+        } catch (e) { /* storage unavailable */ }
     }
 
     function resetScenario() {
-        localStorage.removeItem(STATE_KEY);
-        localStorage.removeItem(REPORT_KEY);
-        localStorage.removeItem('irsp-scenario-b-evidence');
-        localStorage.removeItem('irsp-scenario-b-timer');
+        try {
+            localStorage.removeItem(STATE_KEY);
+            localStorage.removeItem(REPORT_KEY);
+            localStorage.removeItem('irsp-scenario-b-evidence');
+            localStorage.removeItem('irsp-scenario-b-timer');
+        } catch (e) { /* storage unavailable */ }
         window.location.reload();
     }
 
@@ -221,10 +310,11 @@
         const elapsed = Math.max(0, 1800 - ((parts[0] * 3600) + (parts[1] * 60) + parts[2]));
         const minutes = String(Math.floor(elapsed / 60)).padStart(2, '0');
         const seconds = String(elapsed % 60).padStart(2, '0');
-        return `${minutes}:${seconds}`;
+        return minutes + ':' + seconds;
     }
 
     function renderWorkspace() {
+        if (!dataset) return;
         if (subtitle) subtitle.textContent = dataset.meta.subtitle;
         if (workspaceNote) workspaceNote.textContent = dataset.meta.workspace_note;
         if (environmentCopy) environmentCopy.textContent = dataset.meta.environment_copy;
@@ -251,6 +341,8 @@
     }
 
     function renderAlerts() {
+        if (!dataset || !alertsContainer) return;
+
         alertsContainer.innerHTML = dataset.alerts.map(function (alert) {
             const completed = (alert.action_type === 'contain' && investigationState.hostContained)
                 || (alert.action_type === 'remove_persistence' && investigationState.persistenceRemoved)
@@ -260,17 +352,16 @@
                 ? (alert.action_type === 'contain' ? 'Contained' : alert.action_type === 'remove_persistence' ? 'Reviewed' : 'Investigated')
                 : alert.action;
 
-            const levelClass = alert.level === 'critical' ? '' : alert.level;
+            // 'critical' has no extra class (the default alert-item border is red); other levels use their name
+            const levelClass = alert.level !== 'critical' ? alert.level : '';
 
-            return `
-                <div class="alert-item ${levelClass}">
-                    <div class="alert-info">
-                        <h4>${escapeHtml(alert.title)}</h4>
-                        <p>${escapeHtml(alert.description)}</p>
-                    </div>
-                    <button class="${actionButtonClass(alert.action_type, completed)}" type="button" data-alert-action="${escapeHtml(alert.action_type)}" ${completed ? 'disabled' : ''}>${escapeHtml(label)}</button>
-                </div>
-            `;
+            return '<div class="alert-item' + (levelClass ? ' ' + levelClass : '') + '">'
+                + '<div class="alert-info">'
+                + '<h4>' + escapeHtml(alert.title) + '</h4>'
+                + '<p>' + escapeHtml(alert.description) + '</p>'
+                + '</div>'
+                + '<button class="' + actionButtonClass(alert.action_type, completed) + '" type="button" data-alert-action="' + escapeHtml(alert.action_type) + '"' + (completed ? ' disabled' : '') + '>' + escapeHtml(label) + '</button>'
+                + '</div>';
         }).join('');
 
         Array.from(alertsContainer.querySelectorAll('[data-alert-action]')).forEach(function (button) {
@@ -281,29 +372,39 @@
     }
 
     function renderEvidence() {
+        if (!dataset || !evidenceBody) return;
+
         evidenceBody.innerHTML = dataset.evidence.map(function (item) {
-            return `
-                <tr data-record-id="${escapeHtml(item.record_id)}" data-indicator="${escapeHtml(item.indicator)}" data-type="${escapeHtml(item.type)}" data-severity="${escapeHtml(item.severity)}" data-status="${escapeHtml(item.status)}" data-summary="${escapeHtml(item.summary)}" data-json="${escapeHtml(item.json)}" data-note="${escapeHtml(item.note)}" tabindex="0">
-                    <td>${escapeHtml(item.indicator)}</td>
-                    <td>${escapeHtml(item.type)}</td>
-                    <td><span class="status-badge ${severityBadgeClass(item.severity)}">${escapeHtml(item.severity)}</span></td>
-                    <td>${escapeHtml(item.status)}</td>
-                </tr>
-            `;
+            return '<tr data-record-id="' + escapeHtml(item.record_id) + '"'
+                + ' data-indicator="' + escapeHtml(item.indicator) + '"'
+                + ' data-type="' + escapeHtml(item.type) + '"'
+                + ' data-severity="' + escapeHtml(item.severity) + '"'
+                + ' data-status="' + escapeHtml(item.status) + '"'
+                + ' data-summary="' + escapeHtml(item.summary) + '"'
+                + ' data-json="' + escapeHtml(item.json) + '"'
+                + ' data-note="' + escapeHtml(item.note) + '"'
+                + ' tabindex="0">'
+                + '<td>' + escapeHtml(item.indicator) + '</td>'
+                + '<td>' + escapeHtml(item.type) + '</td>'
+                + '<td><span class="status-badge ' + severityBadgeClass(item.severity) + '">' + escapeHtml(item.severity) + '</span></td>'
+                + '<td>' + escapeHtml(item.status) + '</td>'
+                + '</tr>';
         }).join('');
 
         initRecordExplorer({
             rowsSelector: '#scenario-b-evidence-board tbody tr',
             storageKey: 'irsp-scenario-b-evidence',
-            onSelect(row) {
-                detailIndicator.textContent = row.dataset.indicator || '--';
-                detailType.textContent = row.dataset.type || '--';
-                detailSeverity.textContent = row.dataset.severity || '--';
-                detailStatus.textContent = row.dataset.status || '--';
-                detailSummary.textContent = row.dataset.summary || '';
-                detailJson.textContent = row.dataset.json || '';
-                detailNote.textContent = row.dataset.note || '';
-                detailSeverity.style.color = row.dataset.severity === 'Critical' ? 'var(--accent-red)' : 'var(--accent-yellow)';
+            onSelect: function (row) {
+                if (detailIndicator) detailIndicator.textContent = row.dataset.indicator || '--';
+                if (detailType) detailType.textContent = row.dataset.type || '--';
+                if (detailSeverity) {
+                    detailSeverity.textContent = row.dataset.severity || '--';
+                    detailSeverity.style.color = row.dataset.severity === 'Critical' ? 'var(--accent-red)' : 'var(--accent-yellow)';
+                }
+                if (detailStatus) detailStatus.textContent = row.dataset.status || '--';
+                if (detailSummary) detailSummary.textContent = row.dataset.summary || '';
+                if (detailJson) detailJson.textContent = row.dataset.json || '';
+                if (detailNote) detailNote.textContent = row.dataset.note || '';
 
                 if (!investigationState.viewedEvidence.includes(row.dataset.recordId)) {
                     investigationState.viewedEvidence.push(row.dataset.recordId);
@@ -311,7 +412,7 @@
                 if (row.dataset.recordId === 'ioc-file') {
                     investigationState.initialVectorConfirmed = true;
                 }
-                evidenceNote.textContent = `${row.dataset.indicator} selected for deeper review.`;
+                if (evidenceNote) evidenceNote.textContent = row.dataset.indicator + ' selected for deeper review.';
                 persistState();
                 renderDerivedState();
             }
@@ -319,30 +420,32 @@
     }
 
     function renderTimeline() {
+        if (!dataset || !timelineList) return;
+
         timelineList.innerHTML = dataset.timeline.map(function (item) {
-            return `
-                <div class="timeline-item">
-                    <span class="time">${escapeHtml(item.time)}</span>
-                    <p class="desc">${escapeHtml(item.desc)}</p>
-                </div>
-            `;
+            return '<div class="timeline-item">'
+                + '<span class="time">' + escapeHtml(item.time) + '</span>'
+                + '<p class="desc">' + escapeHtml(item.desc) + '</p>'
+                + '</div>';
         }).join('');
     }
 
     function renderLogs() {
+        if (!dataset || !logsBody) return;
+
         logsBody.innerHTML = dataset.logs.map(function (item) {
-            return `
-                <tr>
-                    <td>${escapeHtml(item.time)}</td>
-                    <td>${escapeHtml(item.host)}</td>
-                    <td>${escapeHtml(item.sourcetype)}</td>
-                    <td>${escapeHtml(item.event)}</td>
-                </tr>
-            `;
+            return '<tr>'
+                + '<td>' + escapeHtml(item.time) + '</td>'
+                + '<td>' + escapeHtml(item.host) + '</td>'
+                + '<td>' + escapeHtml(item.sourcetype) + '</td>'
+                + '<td>' + escapeHtml(item.event) + '</td>'
+                + '</tr>';
         }).join('');
     }
 
     function renderComms() {
+        if (!dataset || !commsBox) return;
+
         const messages = dataset.comms.base.slice();
 
         if (investigationState.hostContained) {
@@ -356,11 +459,15 @@
         }
 
         commsBox.innerHTML = messages.map(function (item) {
-            return `<div class="msg"><span class="msg-sender">${escapeHtml(item.sender)}:</span> ${escapeHtml(item.message)}</div>`;
+            return '<div class="msg"><span class="msg-sender">' + escapeHtml(item.sender) + ':</span> ' + escapeHtml(item.message) + '</div>';
         }).join('');
+
+        commsBox.scrollTop = commsBox.scrollHeight;
     }
 
     function renderQuery(queryId) {
+        if (!dataset || !Array.isArray(dataset.queries) || !dataset.queries.length) return;
+
         const profile = dataset.queries.find(function (item) {
             return item.id === queryId;
         }) || dataset.queries[0];
@@ -373,11 +480,11 @@
             investigationState.timelineBuilt = true;
         }
 
-        queryInput.value = profile.query;
-        searchPanel.textContent = profile.search;
-        rawPanel.textContent = profile.raw;
-        timelinePanel.textContent = profile.timeline;
-        queryStatus.textContent = profile.status;
+        if (queryInput) queryInput.value = profile.query;
+        if (searchPanel) searchPanel.textContent = profile.search;
+        if (rawPanel) rawPanel.textContent = profile.raw;
+        if (timelinePanel) timelinePanel.textContent = profile.timeline;
+        if (queryStatus) queryStatus.textContent = profile.status;
 
         queryButtons.forEach(function (button, index) {
             const linkedProfile = dataset.queries[index];
@@ -397,12 +504,8 @@
         return String(query || '')
             .toLowerCase()
             .split(/[^a-z0-9_.-]+/i)
-            .map(function (token) {
-                return token.trim();
-            })
-            .filter(function (token) {
-                return token.length >= 2;
-            });
+            .map(function (token) { return token.trim(); })
+            .filter(function (token) { return token.length >= 2; });
     }
 
     function scoreText(text, tokens) {
@@ -413,43 +516,42 @@
     }
 
     function buildAdhocQueryResult(query) {
+        if (!dataset) return null;
+
         const tokens = tokenizeQuery(query);
-        if (!tokens.length) {
-            return null;
-        }
+        if (!tokens.length) return null;
 
         const matchedLogs = dataset.logs.filter(function (item) {
-            const text = `${item.time} ${item.host} ${item.sourcetype} ${item.event}`;
-            return scoreText(text, tokens) > 0;
+            return scoreText(item.time + ' ' + item.host + ' ' + item.sourcetype + ' ' + item.event, tokens) > 0;
         });
 
         const matchedEvidence = dataset.evidence.filter(function (item) {
-            const text = `${item.indicator} ${item.type} ${item.status} ${item.summary} ${item.note}`;
-            return scoreText(text, tokens) > 0;
+            return scoreText(item.indicator + ' ' + item.type + ' ' + item.status + ' ' + item.summary + ' ' + item.note, tokens) > 0;
         });
 
         const matchedTimeline = dataset.timeline.filter(function (item) {
-            return scoreText(`${item.time} ${item.desc}`, tokens) > 0;
+            return scoreText(item.time + ' ' + item.desc, tokens) > 0;
         });
 
         const combined = matchedLogs.length + matchedEvidence.length + matchedTimeline.length;
+
         if (!combined) {
             return {
-                search: `ResponseGridLogs\n| search ${query}\n\nNo matching evidence was found in the local Scenario B pack for that query.`,
+                search: 'ResponseGridLogs\n| search ' + query + '\n\nNo matching evidence was found in the local Scenario B pack for that query.',
                 raw: 'No matching raw records found.',
                 timeline: 'No matching timeline checkpoints found.',
-                status: `Query executed at ${IRSP.getTimestamp()}. No matches were found for: ${query}`
+                status: 'Query executed at ' + IRSP.getTimestamp() + '. No matches were found for: ' + query
             };
         }
 
         const searchLines = matchedLogs.slice(0, 6).map(function (item) {
-            return `${item.time} ${item.host} ${item.sourcetype} ${item.event}`;
+            return item.time + ' ' + item.host + ' ' + item.sourcetype + ' ' + item.event;
         });
         const rawLines = matchedEvidence.slice(0, 4).map(function (item) {
-            return `${item.indicator} | ${item.type} | ${item.status} | ${item.summary}`;
+            return item.indicator + ' | ' + item.type + ' | ' + item.status + ' | ' + item.summary;
         });
         const timelineLines = matchedTimeline.slice(0, 5).map(function (item) {
-            return `${item.time} ${item.desc}`;
+            return item.time + ' ' + item.desc;
         });
 
         if (!investigationState.timelineBuilt && matchedLogs.some(function (item) {
@@ -468,15 +570,15 @@
         renderDerivedState();
 
         return {
-            search: `ResponseGridLogs\n| search ${query}\n\n${searchLines.join('\n') || 'No matching log lines.'}`,
+            search: 'ResponseGridLogs\n| search ' + query + '\n\n' + (searchLines.join('\n') || 'No matching log lines.'),
             raw: rawLines.join('\n') || 'No matching evidence records.',
             timeline: timelineLines.join('\n') || 'No matching timeline checkpoints.',
-            status: `Query executed at ${IRSP.getTimestamp()}. Found ${combined} matching record${combined === 1 ? '' : 's'} for: ${query}`
+            status: 'Query executed at ' + IRSP.getTimestamp() + '. Found ' + combined + ' matching record' + (combined === 1 ? '' : 's') + ' for: ' + query
         };
     }
 
     function focusQueryShell(message) {
-        if (message) {
+        if (message && queryStatus) {
             queryStatus.textContent = message;
         }
 
@@ -496,18 +598,9 @@
         if (!dataset || !Array.isArray(dataset.queries) || !dataset.queries.length) {
             return 'credential-dumping';
         }
-
-        if (!investigationState.initialVectorConfirmed) {
-            return 'initial-access';
-        }
-
-        if (!investigationState.timelineBuilt) {
-            return 'credential-dumping';
-        }
-
-        if (!investigationState.persistenceRemoved) {
-            return 'persistence';
-        }
+        if (!investigationState.initialVectorConfirmed) return 'initial-access';
+        if (!investigationState.timelineBuilt) return 'credential-dumping';
+        if (!investigationState.persistenceRemoved) return 'persistence';
 
         const currentIndex = dataset.queries.findIndex(function (item) {
             return item.id === investigationState.activeQueryId;
@@ -517,6 +610,8 @@
     }
 
     function renderDerivedState() {
+        if (!dataset) return;
+
         const evidenceCount = dataset.evidence.length;
         const mappedAll = investigationState.viewedEvidence.length >= evidenceCount;
         const completionMap = {
@@ -535,24 +630,37 @@
         markObjective('contain', completionMap.contain);
         markObjective('remove', completionMap.remove);
 
-        completionValue.textContent = `${percent}%`;
-        completionNote.textContent = completionMap.remove
-            ? 'Endpoint compromise chain is documented, contained, and remediated from the evidence pack.'
-            : 'Work through evidence mapping, timeline correlation, host containment, and persistence removal.';
-        progressText.textContent = `Completion: ${percent}%`;
-        progressFill.style.width = `${percent}%`;
-        iocCount.textContent = String(dataset.evidence.length).padStart(2, '0');
+        if (completionValue) completionValue.textContent = percent + '%';
+        if (completionNote) {
+            completionNote.textContent = completionMap.remove
+                ? 'Endpoint compromise chain is documented, contained, and remediated from the evidence pack.'
+                : 'Work through evidence mapping, timeline correlation, host containment, and persistence removal.';
+        }
+        if (progressText) progressText.textContent = 'Completion: ' + percent + '%';
+        if (progressFill) progressFill.style.width = percent + '%';
+        if (iocCount) iocCount.textContent = String(dataset.evidence.length).padStart(2, '0');
 
-        containButton.disabled = completionMap.contain;
-        containButton.textContent = completionMap.contain ? 'Host Isolated' : 'Isolate WS-FINANCE-03';
-        removeButton.disabled = completionMap.remove;
-        removeButton.textContent = completionMap.remove ? 'Scheduled Task Removed' : 'Remove Scheduled Task';
+        // Use innerHTML to preserve lucide icon elements inside the buttons
+        if (containButton) {
+            containButton.disabled = completionMap.contain;
+            containButton.innerHTML = completionMap.contain
+                ? '<i data-lucide="shield-check"></i> Host Isolated'
+                : '<i data-lucide="plug-zap"></i> Isolate WS-FINANCE-03';
+        }
+        if (removeButton) {
+            removeButton.disabled = completionMap.remove;
+            removeButton.innerHTML = completionMap.remove
+                ? '<i data-lucide="check-circle"></i> Scheduled Task Removed'
+                : '<i data-lucide="trash-2"></i> Remove Scheduled Task';
+        }
 
         persistReport();
         IRSP.refreshIcons();
     }
 
     function applyAction(action) {
+        if (!dataset) return;
+
         if (action === 'investigate') {
             renderQuery('initial-access');
             return;
@@ -573,8 +681,41 @@
         renderDerivedState();
     }
 
+    // Bind comms input: append user messages and simulate a system reply
+    if (commsInput && commsBox) {
+        commsInput.addEventListener('keydown', function (event) {
+            if (event.key !== 'Enter') return;
+            const value = commsInput.value.trim();
+            if (!value) return;
+
+            const userMsg = document.createElement('div');
+            userMsg.className = 'msg';
+            userMsg.innerHTML = '<span class="msg-sender">You:</span> ' + escapeHtml(value);
+            commsBox.appendChild(userMsg);
+            commsBox.scrollTop = commsBox.scrollHeight;
+            commsInput.value = '';
+
+            window.setTimeout(function () {
+                const sysMsg = document.createElement('div');
+                sysMsg.className = 'msg';
+                sysMsg.innerHTML = '<span class="msg-sender">System:</span> Message logged to the incident channel.';
+                commsBox.appendChild(sysMsg);
+                commsBox.scrollTop = commsBox.scrollHeight;
+            }, 300);
+        });
+    }
+
     async function loadData() {
-        dataset = await IRSP.fetchJSON(DATA_URL);
+        try {
+            dataset = await IRSP.fetchJSON(DATA_URL);
+        } catch (error) {
+            // Fall back to embedded data so all event handlers remain functional
+            dataset = FALLBACK_DATA;
+            if (queryStatus) {
+                queryStatus.textContent = 'Evidence pack loaded from local cache.';
+            }
+        }
+
         renderWorkspace();
         renderAlerts();
         renderEvidence();
@@ -585,79 +726,90 @@
         renderDerivedState();
     }
 
-    runQueryButton.addEventListener('click', function () {
-        const query = queryInput.value.trim();
-        const match = dataset.queries.find(function (item) {
-            return item.query === query;
+    if (runQueryButton) {
+        runQueryButton.addEventListener('click', function () {
+            if (!dataset) return;
+
+            const query = queryInput ? queryInput.value.trim() : '';
+            const match = dataset.queries.find(function (item) {
+                return item.query === query;
+            });
+
+            if (match) {
+                renderQuery(match.id);
+                focusQueryShell('Preset query executed at ' + IRSP.getTimestamp() + ': ' + match.label);
+                return;
+            }
+
+            const adHoc = buildAdhocQueryResult(query);
+            if (!adHoc) {
+                focusQueryShell('Enter a keyword like powershell, lsass, invoice, schtasks, or 203.0.113.42.');
+                return;
+            }
+
+            if (searchPanel) searchPanel.textContent = adHoc.search;
+            if (rawPanel) rawPanel.textContent = adHoc.raw;
+            if (timelinePanel) timelinePanel.textContent = adHoc.timeline;
+            if (queryStatus) queryStatus.textContent = adHoc.status;
+            queryButtons.forEach(function (button) { button.classList.remove('active'); });
+            focusQueryShell(adHoc.status);
         });
+    }
 
-        if (match) {
-            renderQuery(match.id);
-            focusQueryShell(`Preset query executed at ${IRSP.getTimestamp()}: ${match.label}`);
-            return;
-        }
-
-        const adHoc = buildAdhocQueryResult(query);
-        if (!adHoc) {
-            focusQueryShell('Enter a keyword like powershell, lsass, invoice, schtasks, or 203.0.113.42.');
-            return;
-        }
-
-        searchPanel.textContent = adHoc.search;
-        rawPanel.textContent = adHoc.raw;
-        timelinePanel.textContent = adHoc.timeline;
-        queryStatus.textContent = adHoc.status;
-        queryButtons.forEach(function (button) {
-            button.classList.remove('active');
+    if (queryInput) {
+        queryInput.addEventListener('keydown', function (event) {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                if (runQueryButton) runQueryButton.click();
+            }
         });
-        focusQueryShell(adHoc.status);
-    });
-
-    queryInput.addEventListener('keydown', function (event) {
-        if (event.key === 'Enter') {
-            event.preventDefault();
-            runQueryButton.click();
-        }
-    });
+    }
 
     queryButtons.forEach(function (button, index) {
         button.addEventListener('click', function () {
+            if (!dataset || !dataset.queries) return;
             const profile = dataset.queries[index];
             if (!profile) return;
             renderQuery(profile.id);
         });
     });
 
-    containButton.addEventListener('click', function () {
-        applyAction('contain');
-        renderAlerts();
-        renderComms();
-    });
+    if (containButton) {
+        containButton.addEventListener('click', function () {
+            applyAction('contain');
+            renderAlerts();
+            renderComms();
+        });
+    }
 
-    queryButton.addEventListener('click', function () {
-        const nextId = nextQuickQueryId();
-        renderQuery(nextId);
+    if (queryButton) {
+        queryButton.addEventListener('click', function () {
+            const nextId = nextQuickQueryId();
+            renderQuery(nextId);
 
-        const labelMap = {
-            'initial-access': 'Query shell pivoted to initial access evidence.',
-            'credential-dumping': 'Query shell pivoted to credential dumping correlation.',
-            'persistence': 'Query shell pivoted to persistence review.'
-        };
+            const labelMap = {
+                'initial-access': 'Query shell pivoted to initial access evidence.',
+                'credential-dumping': 'Query shell pivoted to credential dumping correlation.',
+                'persistence': 'Query shell pivoted to persistence review.'
+            };
 
-        focusQueryShell(labelMap[nextId] || 'Query shell updated.');
-    });
+            focusQueryShell(labelMap[nextId] || 'Query shell updated.');
+        });
+    }
 
-    removeButton.addEventListener('click', function () {
-        applyAction('remove_persistence');
-        renderAlerts();
-        renderComms();
-    });
+    if (removeButton) {
+        removeButton.addEventListener('click', function () {
+            applyAction('remove_persistence');
+            renderAlerts();
+            renderComms();
+        });
+    }
 
-    resetButton.addEventListener('click', function () {
-        resetScenario();
-    });
+    if (resetButton) {
+        resetButton.addEventListener('click', function () {
+            resetScenario();
+        });
+    }
 
-    loadData().catch(function (error) {
-        queryStatus.textContent = error.message || 'Unable to load the Windows evidence pack.';
-    });
+    loadData();
 })();

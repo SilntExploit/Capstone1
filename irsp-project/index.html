@@ -6,6 +6,57 @@
     <title>ResponseGrid - Enterprise Security MVP</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/lucide/0.263.0/lucide.min.js"></script>
     <link rel="stylesheet" href="css/shared.css">
+    <style>
+        /* ── Auth-page enhancements ───────────────────────── */
+        .auth-form-error {
+            display: none;
+            font-size: 0.78rem;
+            color: var(--accent-red);
+            margin-top: -0.6rem;
+            margin-bottom: 0.8rem;
+            padding: 0.55rem 0.7rem;
+            background: rgba(239, 68, 68, 0.08);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            border-radius: 6px;
+        }
+        .auth-form-error.visible {
+            display: block;
+        }
+        .form-input.input-error {
+            border-color: var(--accent-red);
+            box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+        }
+        .auth-submit-btn {
+            width: 100%;
+            justify-content: center;
+        }
+        .auth-submit-btn[data-loading="true"] {
+            opacity: 0.7;
+            pointer-events: none;
+        }
+        .auth-submit-btn .btn-spinner {
+            display: none;
+            width: 14px;
+            height: 14px;
+            border: 2px solid rgba(255,255,255,0.4);
+            border-top-color: #fff;
+            border-radius: 50%;
+            animation: spin 0.7s linear infinite;
+        }
+        .auth-submit-btn[data-loading="true"] .btn-spinner {
+            display: inline-block;
+        }
+        .auth-submit-btn[data-loading="true"] .btn-icon-default {
+            display: none;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        /* Remove bottom margin from last form-input before auth-meta */
+        .auth-card form .form-input:last-of-type {
+            margin-bottom: 0;
+        }
+    </style>
 </head>
 <body class="auth-layout">
 
@@ -48,32 +99,70 @@
         <h2>Sign in to ResponseGrid</h2>
         <p>Use the demo workspace to review dashboards, active simulations, and seeded telemetry without backend connectivity.</p>
 
-        <label class="form-label" for="workspace">Workspace</label>
-        <input id="workspace" class="form-input" type="text" value="acme-security-lab">
+        <form id="demo-login-form" novalidate>
+            <label class="form-label" for="workspace">Workspace</label>
+            <input
+                id="workspace"
+                class="form-input"
+                type="text"
+                value="acme-security-lab"
+                autocomplete="organization"
+                required
+                aria-required="true"
+            >
 
-        <label class="form-label" for="email">Email</label>
-        <input id="email" class="form-input" type="email" value="jordan.davis@acme.test">
+            <label class="form-label" for="email">Email</label>
+            <input
+                id="email"
+                class="form-input"
+                type="email"
+                value="jordan.davis@acme.test"
+                autocomplete="username email"
+                required
+                aria-required="true"
+                aria-describedby="email-error"
+            >
+            <div id="email-error" class="auth-form-error" role="alert" aria-live="polite"></div>
 
-        <label class="form-label" for="password">Password</label>
-        <input id="password" class="form-input" type="password" value="DemoAccess!">
+            <label class="form-label" for="password">Password</label>
+            <input
+                id="password"
+                class="form-input"
+                type="password"
+                value="DemoAccess!"
+                autocomplete="current-password"
+                required
+                aria-required="true"
+                aria-describedby="form-error"
+            >
+            <div id="form-error" class="auth-form-error" role="alert" aria-live="polite"></div>
 
-        <div class="auth-meta">
-            <div class="metric-tile">
-                <div class="label">Role</div>
-                <div class="value" style="font-size:1rem;">IR Lead</div>
-                <div class="subtext">Full demo access</div>
+            <div class="auth-meta">
+                <div class="metric-tile">
+                    <div class="label">Role</div>
+                    <div class="value" style="font-size:1rem;">IR Lead</div>
+                    <div class="subtext">Full demo access</div>
+                </div>
+                <div class="metric-tile">
+                    <div class="label">Dataset</div>
+                    <div class="value" style="font-size:1rem;">42k Events</div>
+                    <div class="subtext">Seeded prototype telemetry</div>
+                </div>
             </div>
-            <div class="metric-tile">
-                <div class="label">Dataset</div>
-                <div class="value" style="font-size:1rem;">42k Events</div>
-                <div class="subtext">Seeded prototype telemetry</div>
-            </div>
-        </div>
 
-        <div class="auth-links">
-            <a href="dashboard.html" class="btn btn-lg"><i data-lucide="log-in"></i> Enter Demo</a>
-            <a href="active-lab.html" class="btn btn-secondary btn-lg"><i data-lucide="play-circle"></i> View Scenarios</a>
-        </div>
+            <div class="auth-links">
+                <button
+                    type="submit"
+                    class="btn btn-lg auth-submit-btn"
+                    id="enter-demo-btn"
+                    data-target="dashboard.html"
+                >
+                    <span class="btn-spinner" aria-hidden="true"></span>
+                    <span class="btn-icon-default"><i data-lucide="log-in"></i> Enter Demo</span>
+                </button>
+                <a href="active-lab.html" class="btn btn-secondary btn-lg"><i data-lucide="play-circle"></i> View Scenarios</a>
+            </div>
+        </form>
 
         <div class="auth-note">
             Demo credentials are static for presentation use. In a real MVP this page would authenticate against your identity provider and issue a session token to the frontend.
@@ -82,5 +171,114 @@
 </section>
 
 <script src="js/shared.js"></script>
+<script>
+(function () {
+    'use strict';
+
+    var form        = document.getElementById('demo-login-form');
+    var workspaceEl = document.getElementById('workspace');
+    var emailEl     = document.getElementById('email');
+    var passwordEl  = document.getElementById('password');
+    var submitBtn   = document.getElementById('enter-demo-btn');
+    var emailError  = document.getElementById('email-error');
+    var formError   = document.getElementById('form-error');
+
+    function clearErrors() {
+        emailError.textContent = '';
+        emailError.classList.remove('visible');
+        formError.textContent = '';
+        formError.classList.remove('visible');
+        [workspaceEl, emailEl, passwordEl].forEach(function (el) {
+            el.classList.remove('input-error');
+        });
+    }
+
+    function showError(element, errorBox, message) {
+        element.classList.add('input-error');
+        errorBox.textContent = message;
+        errorBox.classList.add('visible');
+        element.focus();
+    }
+
+    function isValidEmail(value) {
+        return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(value || '').trim());
+    }
+
+    function validate() {
+        clearErrors();
+
+        var workspace = (workspaceEl.value || '').trim();
+        var email     = (emailEl.value || '').trim();
+        var password  = (passwordEl.value || '').trim();
+
+        if (!workspace) {
+            showError(workspaceEl, formError, 'Workspace name is required.');
+            return false;
+        }
+
+        if (!email) {
+            showError(emailEl, emailError, 'Email address is required.');
+            return false;
+        }
+
+        if (!isValidEmail(email)) {
+            showError(emailEl, emailError, 'Enter a valid email address (e.g. user@domain.com).');
+            return false;
+        }
+
+        if (!password) {
+            showError(passwordEl, formError, 'Password is required.');
+            return false;
+        }
+
+        return true;
+    }
+
+    function setLoading(loading) {
+        submitBtn.dataset.loading = loading ? 'true' : 'false';
+        submitBtn.setAttribute('aria-busy', loading ? 'true' : 'false');
+        submitBtn.disabled = loading;
+    }
+
+    form.addEventListener('submit', function (event) {
+        event.preventDefault();
+
+        if (!validate()) return;
+
+        setLoading(true);
+
+        /* Store demo session context for downstream pages */
+        try {
+            var ctx = {
+                workspace: (workspaceEl.value || '').trim(),
+                email:     (emailEl.value || '').trim(),
+                role:      'IR Lead',
+                loginAt:   new Date().toISOString()
+            };
+            localStorage.setItem('irsp-session', JSON.stringify(ctx));
+        } catch (_) { /* Storage unavailable — proceed anyway */ }
+
+        /* Brief loading pause for UX clarity, then navigate */
+        var target = submitBtn.dataset.target || 'dashboard.html';
+        window.setTimeout(function () {
+            window.location.href = target;
+        }, 380);
+    });
+
+    /* Clear inline errors on input so feedback is responsive */
+    [workspaceEl, emailEl, passwordEl].forEach(function (el) {
+        el.addEventListener('input', function () {
+            el.classList.remove('input-error');
+            if (el === emailEl) {
+                emailError.textContent = '';
+                emailError.classList.remove('visible');
+            } else {
+                formError.textContent = '';
+                formError.classList.remove('visible');
+            }
+        });
+    });
+})();
+</script>
 </body>
 </html>

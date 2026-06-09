@@ -655,13 +655,17 @@
         const objectiveMap = {
             encryption: 'investigation',
             c2: 'containment',
-            ssh: 'access'
+            ssh: 'access',
+            privesc: 'access',
+            rename: 'eradication'
         };
 
         const mitreMap = {
             encryption: 'impact',
             c2: 'command-and-control',
-            ssh: 'credential-access'
+            ssh: 'credential-access',
+            privesc: 'privilege-escalation',
+            rename: 'impact'
         };
 
         const searchProfiles = [
@@ -848,8 +852,8 @@ highest density is concentrated on container impact telemetry.`,
             const wrapper = document.createElement('div');
             wrapper.className = 'timeline-item';
             wrapper.innerHTML = `
-                <span class="time">${time}</span>
-                <p class="desc">${description}</p>
+                <span class="time">${escapeHtml(time)}</span>
+                <p class="desc">${escapeHtml(description)}</p>
             `;
             timeline.appendChild(wrapper);
 
@@ -864,7 +868,7 @@ highest density is concentrated on container impact telemetry.`,
 
             const wrapper = document.createElement('div');
             wrapper.className = 'msg';
-            wrapper.innerHTML = `<span class="msg-sender">${sender}:</span> ${message}`;
+            wrapper.innerHTML = `<span class="msg-sender">${escapeHtml(sender)}:</span> ${escapeHtml(message)}`;
             commsBox.appendChild(wrapper);
             commsBox.scrollTop = commsBox.scrollHeight;
 
@@ -984,6 +988,12 @@ highest density is concentrated on container impact telemetry.`,
             return searchProfiles.find(profile => profile.match(query)) || searchProfiles[searchProfiles.length - 1];
         }
 
+        function syncActiveChip(query) {
+            queryPresets.forEach(item => item.classList.remove('active'));
+            const match = queryPresets.find(item => item.dataset.queryPreset === query);
+            if (match) match.classList.add('active');
+        }
+
         async function runSearch(query, shouldPersist = true) {
             if (!searchInput) return;
 
@@ -991,6 +1001,7 @@ highest density is concentrated on container impact telemetry.`,
             const profile = getSearchProfile(normalizedQuery);
 
             searchInput.value = normalizedQuery || searchInput.value;
+            syncActiveChip(normalizedQuery);
 
             if (searchProvider) {
                 try {
@@ -1127,6 +1138,19 @@ highest density is concentrated on container impact telemetry.`,
                 runSearch('dest_ip == "203.0.113.42" and dest_port == 8443', true);
             }
 
+            if (alertId === 'privesc') {
+                appendTimelineItem(IRSP.getTimestamp(), 'Privilege escalation under svc-backup confirmed via sudo on docker-host-02.');
+                appendChatMessage('IR Lead', 'Escalation path confirmed. Reviewing lateral movement and access controls.');
+                activateMitreTag('lateral-movement');
+                runSearch('src_ip == "192.168.1.45" and (event has "ssh" or user == "svc-backup" or sourcetype == "okta:system")', true);
+            }
+
+            if (alertId === 'rename') {
+                appendTimelineItem(IRSP.getTimestamp(), 'File rename storm in /srv/shared confirmed as active ransomware impact phase.');
+                appendChatMessage('Forensics', 'Rename pattern consistent with ransomware encryption. Initiating eradication steps.');
+                runSearch('host == "container-01" and ("encrypt" or "rename" or "/srv/shared")', true);
+            }
+
             updateProgress();
             saveState();
         }
@@ -1171,6 +1195,29 @@ highest density is concentrated on container impact telemetry.`,
                 await handleAlert(alertElement, button.dataset.action || 'investigate');
             });
         });
+
+        const containmentBtn = document.getElementById('dashboard-start-containment');
+        if (containmentBtn) {
+            containmentBtn.addEventListener('click', () => {
+                if (containmentBtn.disabled) return;
+
+                appendTimelineItem(IRSP.getTimestamp(), 'Containment initiated: network isolation procedure started for container-01 and docker-host-02.');
+                appendChatMessage('IR Lead', 'Containment procedure started. Isolating affected hosts and blocking outbound paths.');
+                markObjectiveComplete('containment');
+                activateMitreTag('command-and-control');
+                updateProgress();
+                saveState();
+
+                containmentBtn.disabled = true;
+                containmentBtn.innerHTML = '<i data-lucide="shield-check"></i> Containment Active';
+                IRSP.refreshIcons();
+
+                if (searchStatus) {
+                    searchStatus.textContent = `Containment started at ${IRSP.getTimestamp()}`;
+                }
+            });
+        }
+
         bindSearchResultRows();
 
         if (searchRunButton && searchInput) {
@@ -1190,8 +1237,6 @@ highest density is concentrated on container impact telemetry.`,
 
         queryPresets.forEach(button => {
             button.addEventListener('click', () => {
-                queryPresets.forEach(item => item.classList.remove('active'));
-                button.classList.add('active');
                 runSearch(button.dataset.queryPreset || '', true);
             });
         });

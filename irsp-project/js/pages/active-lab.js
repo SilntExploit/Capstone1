@@ -1,6 +1,15 @@
 (function () {
     'use strict';
 
+    function escapeHtml(value) {
+        return String(value || '')
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+    }
+
     const scenarioGrid = document.getElementById('scenario-grid');
     const scenarioCards = Array.from(scenarioGrid.querySelectorAll('.scenario-card'));
     const searchInput = document.getElementById('scenario-search');
@@ -296,12 +305,15 @@
                 return `${card.dataset.scenarioId} status=${statusValue} owner=${metrics.owner || 'Prototype Team'} readiness=${readinessValue}`;
             });
 
-        readinessShell.innerHTML = `ResponseGridLabStatus
-| where scenario_id startswith "scenario-"
-| summarize status = take_any(status), owner = take_any(owner), readiness = max(readiness) by scenario_id
-| order by scenario_id asc
-
-${rows.join('\n')}`;
+        // Use textContent (not innerHTML) on <pre> to avoid XSS from any scenario metadata.
+        readinessShell.textContent = [
+            'ResponseGridLabStatus',
+            '| where scenario_id startswith "scenario-"',
+            '| summarize status = take_any(status), owner = take_any(owner), readiness = max(readiness) by scenario_id',
+            '| order by scenario_id asc',
+            '',
+            ...rows
+        ].join('\n');
     }
 
     function renderRunsTable(items) {
@@ -486,6 +498,12 @@ ${rows.join('\n')}`;
         const count = visibleCards.length;
         const pinnedVisible = visibleCards.filter(card => card.classList.contains('pinned')).length;
         resultsSummary.textContent = `Showing ${count} scenario${count === 1 ? '' : 's'}${pinnedVisible ? ` • ${pinnedVisible} pinned` : ''}`;
+
+        // Show empty state when no cards match the active filters.
+        const emptyState = document.getElementById('scenario-empty-state');
+        if (emptyState) {
+            emptyState.classList.toggle('visible', count === 0);
+        }
     }
 
     function normalize(value) {
@@ -529,43 +547,53 @@ ${rows.join('\n')}`;
         const isAvailable = card.dataset.status === 'available';
         const metrics = scenarioMetrics[card.dataset.scenarioId] || {};
         const isPinnedScenario = isPinned(card);
+        // Null-safe access: not all scenario cards have a <p> description.
+        const descEl = card.querySelector('p');
+        const description = descEl ? escapeHtml(descEl.textContent) : '';
+        const targetUrl = card.dataset.url || '#';
 
         scenarioDetails.innerHTML = `
-            <h3 style="margin-bottom:0.6rem;">${title}</h3>
+            <h3 style="margin-bottom:0.6rem;">${escapeHtml(title)}</h3>
             <div class="detail-pills">
-                <span class="status-badge ${isAvailable ? 'green' : 'blue'}">${status}</span>
-                <span class="status-badge yellow" style="border-color:var(--border);color:var(--text-dim);background:rgba(51,65,85,0.2);">${difficulty.charAt(0).toUpperCase() + difficulty.slice(1)}</span>
-                <span class="status-badge blue" style="border-color:var(--border);color:var(--text-dim);background:rgba(51,65,85,0.2);">${platform.charAt(0).toUpperCase() + platform.slice(1)}</span>
+                <span class="status-badge ${isAvailable ? 'green' : 'blue'}">${escapeHtml(status)}</span>
+                <span class="status-badge yellow" style="border-color:var(--border);color:var(--text-dim);background:rgba(51,65,85,0.2);">${escapeHtml(difficulty.charAt(0).toUpperCase() + difficulty.slice(1))}</span>
+                <span class="status-badge blue" style="border-color:var(--border);color:var(--text-dim);background:rgba(51,65,85,0.2);">${escapeHtml(platform.charAt(0).toUpperCase() + platform.slice(1))}</span>
                 <span class="status-badge ${isPinnedScenario ? 'yellow' : 'blue'}" style="border-color:var(--border);color:var(--text-dim);background:rgba(51,65,85,0.2);">${isPinnedScenario ? 'Pinned' : 'Previewed'}</span>
             </div>
-            <p class="surface-note" style="font-size:0.92rem;margin-bottom:1rem;color:var(--text-dim);">
-                ${card.querySelector('p').textContent}
-            </p>
+            <p class="surface-note" style="font-size:0.92rem;margin-bottom:1rem;color:var(--text-dim);">${description}</p>
             <div class="grid-3" style="gap:0.75rem;margin-bottom:1rem;">
                 <div class="metric-tile">
                     <div class="label">Readiness</div>
-                    <div class="value" style="font-size:1.1rem;">${metrics.readiness || '--'}</div>
+                    <div class="value" style="font-size:1.1rem;">${escapeHtml(metrics.readiness || '--')}</div>
                     <div class="subtext">Seeded for walkthrough</div>
                 </div>
                 <div class="metric-tile">
                     <div class="label">Telemetry</div>
-                    <div class="value" style="font-size:0.92rem;">${metrics.telemetry || '--'}</div>
+                    <div class="value" style="font-size:0.92rem;">${escapeHtml(metrics.telemetry || '--')}</div>
                     <div class="subtext">Dummy dataset scope</div>
                 </div>
                 <div class="metric-tile">
                     <div class="label">Focus</div>
-                    <div class="value" style="font-size:0.98rem;">${metrics.focus || '--'}</div>
+                    <div class="value" style="font-size:0.98rem;">${escapeHtml(metrics.focus || '--')}</div>
                     <div class="subtext">Primary analyst skill</div>
                 </div>
             </div>
             <div style="display:flex;gap:8px;flex-wrap:wrap;">
                 ${isAvailable
-                    ? `<button class="btn" type="button" onclick="window.location.href='${card.dataset.url}'">Open Scenario</button>`
+                    // Use data-open-url instead of inline onclick to avoid XSS from dataset values.
+                    ? `<button class="btn" type="button" data-open-url="${escapeHtml(targetUrl)}">Open Scenario</button>`
                     : `<button class="btn btn-secondary" type="button" disabled>Launch Unavailable</button>`
                 }
-                <button class="btn btn-secondary" type="button" data-preview-inline="${card.dataset.scenarioId}">View Preview</button>
+                <button class="btn btn-secondary" type="button" data-preview-inline="${escapeHtml(card.dataset.scenarioId)}">View Preview</button>
             </div>
         `;
+
+        const openBtn = scenarioDetails.querySelector('[data-open-url]');
+        if (openBtn) {
+            openBtn.addEventListener('click', function () {
+                window.location.href = this.dataset.openUrl;
+            });
+        }
 
         const inlinePreviewButton = scenarioDetails.querySelector('[data-preview-inline]');
         if (inlinePreviewButton) {
@@ -597,7 +625,15 @@ ${rows.join('\n')}`;
             const lastScenario = JSON.parse(localStorage.getItem(STORAGE_KEY));
             if (lastScenario && lastScenario.url && lastScenario.title) {
                 resumeLastBtn.style.display = 'inline-flex';
-                resumeLastBtn.innerHTML = `<i data-lucide="history" style="width:14px;display:inline;"></i> Resume ${lastScenario.title}`;
+                // Build innerHTML safely — icon via data attribute, title via textContent node.
+                resumeLastBtn.innerHTML = '';
+                const icon = document.createElement('i');
+                icon.setAttribute('data-lucide', 'history');
+                icon.style.cssText = 'width:14px;display:inline;';
+                const label = document.createElement('span');
+                label.textContent = ' Resume ' + lastScenario.title;
+                resumeLastBtn.appendChild(icon);
+                resumeLastBtn.appendChild(label);
                 resumeLastBtn.onclick = function () {
                     window.location.href = lastScenario.url;
                 };
@@ -611,10 +647,15 @@ ${rows.join('\n')}`;
     }
 
     function openModal(config) {
-        modal.style.display = 'flex';
-        modal.setAttribute('aria-hidden', 'false');
+        // Use CSS class toggle (opacity transition) instead of display toggling.
         document.body.style.overflow = 'hidden';
-        document.getElementById('lab-modal-title').innerHTML = `<i data-lucide="${config.icon || 'eye'}"></i> ${config.title}`;
+        modal.classList.add('modal-open');
+        modal.setAttribute('aria-hidden', 'false');
+
+        const titleEl = document.getElementById('lab-modal-title');
+        if (titleEl) {
+            titleEl.innerHTML = `<i data-lucide="${escapeHtml(config.icon || 'eye')}"></i> ${escapeHtml(config.title || '')}`;
+        }
         modalSubtitle.textContent = config.subtitle || '';
         modalBody.innerHTML = config.body || '';
         modalActions.innerHTML = config.actions || '';
@@ -635,7 +676,7 @@ ${rows.join('\n')}`;
     }
 
     function closePreview() {
-        modal.style.display = 'none';
+        modal.classList.remove('modal-open');
         modal.setAttribute('aria-hidden', 'true');
         document.body.style.overflow = '';
         modalActions.innerHTML = '';
@@ -792,7 +833,7 @@ ${rows.join('\n')}`;
         if (event.target === modal) closePreview();
     });
     document.addEventListener('keydown', function (event) {
-        if (event.key === 'Escape' && modal.style.display === 'flex') {
+        if (event.key === 'Escape' && modal.classList.contains('modal-open')) {
             closePreview();
         }
     });

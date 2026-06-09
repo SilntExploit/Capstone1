@@ -6,6 +6,76 @@
     <title>ResponseGrid - Active Lab</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/lucide/0.263.0/lucide.min.js"></script>
     <link rel="stylesheet" href="css/shared.css">
+    <style>
+        /* ── Active Lab page-specific fixes ── */
+
+        /* Select dropdown chevron (shared.css strips appearance but adds no arrow) */
+        select.form-input {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 0.65rem center;
+            background-size: 1rem;
+            padding-right: 2.5rem;
+        }
+
+        /* Modal fade transition */
+        #lab-modal {
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.18s ease;
+        }
+        #lab-modal.modal-open {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        /* Empty-state for scenario grid */
+        #scenario-empty-state {
+            display: none;
+            grid-column: 1 / -1;
+            padding: 2.5rem 1rem;
+            text-align: center;
+            color: var(--text-dim);
+            font-size: 0.9rem;
+        }
+        #scenario-empty-state i,
+        #scenario-empty-state svg {
+            width: 2rem;
+            height: 2rem;
+            margin-bottom: 0.75rem;
+            opacity: 0.5;
+        }
+        #scenario-empty-state.visible {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Results table inside shell panel */
+        .shell-results-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.78rem;
+            font-family: 'IBM Plex Mono', monospace;
+        }
+        .shell-results-table th {
+            font-size: 0.66rem;
+            padding: 0.4rem 0.6rem;
+            color: var(--text-dim);
+            border-bottom: 1px solid var(--border);
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            font-weight: 700;
+        }
+        .shell-results-table td {
+            padding: 0.52rem 0.6rem;
+            border-bottom: 1px solid rgba(132,159,197,0.1);
+            color: var(--text-soft);
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.76rem;
+        }
+    </style>
 </head>
 <body>
 
@@ -43,17 +113,17 @@
     <section class="grid-3 section-space">
         <div class="card stat-card">
             <div>
-                <div class="stat-value" id="lab-metric-advanced" style="color:var(--accent-red);">01</div>
-                <div class="stat-label">Advanced Exercise</div>
+                <div class="stat-value" id="lab-metric-advanced" style="color:var(--accent-red);">02</div>
+                <div class="stat-label">Advanced Exercises</div>
             </div>
-            <div class="stat-caption" id="lab-metric-advanced-note">Scenario A delivers the highest-pressure ransomware containment drill.</div>
+            <div class="stat-caption" id="lab-metric-advanced-note">Scenarios A and E deliver the highest-pressure response drills.</div>
         </div>
         <div class="card stat-card">
             <div>
-                <div class="stat-value" id="lab-metric-live" style="color:var(--accent-blue);">02</div>
+                <div class="stat-value" id="lab-metric-live" style="color:var(--accent-blue);">06</div>
                 <div class="stat-label">Live Scenario Pages</div>
             </div>
-            <div class="stat-caption" id="lab-metric-live-note">Launchable exercises currently support Linux/Docker and Windows host investigations.</div>
+            <div class="stat-caption" id="lab-metric-live-note">All six scenarios are launchable across Linux/Docker, Windows, social, and network environments.</div>
         </div>
         <div class="card stat-card">
             <div>
@@ -75,7 +145,6 @@
                 <label class="form-label" for="scenario-search">Search Scenarios</label>
                 <input id="scenario-search" type="text" class="form-input" placeholder="Search by name, skill, or platform..." style="margin-bottom:0;">
             </div>
-
             <div>
                 <label class="form-label" for="difficulty-filter">Difficulty</label>
                 <select id="difficulty-filter" class="form-input" style="margin-bottom:0;">
@@ -85,7 +154,6 @@
                     <option value="advanced">Advanced</option>
                 </select>
             </div>
-
             <div>
                 <label class="form-label" for="platform-filter">Platform</label>
                 <select id="platform-filter" class="form-input" style="margin-bottom:0;">
@@ -111,6 +179,13 @@
         </div>
 
         <div class="grid-2" id="scenario-grid">
+            <!-- Empty state (hidden until filters produce zero results) -->
+            <div id="scenario-empty-state" role="status" aria-live="polite">
+                <i data-lucide="search-x"></i>
+                <strong>No scenarios match your filters.</strong>
+                <span class="surface-note" style="margin-top:0.35rem;">Try clearing the difficulty or platform filter.</span>
+            </div>
+
             <article
                 class="scenario-card card"
                 data-title="Ransomware Containment"
@@ -127,23 +202,18 @@
                     <span class="status-badge red">Critical</span>
                     <span class="surface-note">Scenario A</span>
                 </div>
-
                 <h3><i data-lucide="lock"></i> Ransomware Containment</h3>
-
                 <p>Contain a ransomware strain in a Linux-based Docker lab, isolate the impacted workload, eradicate the malicious script, and restore safe operations under pressure.</p>
-
                 <div class="scenario-meta">
                     <span><i data-lucide="clock"></i> 45 min</span>
                     <span><i data-lucide="zap"></i> Advanced</span>
                     <span><i data-lucide="box"></i> Docker/Linux</span>
                 </div>
-
                 <div>
                     <span class="mitre-tag">T1486</span>
                     <span class="mitre-tag">T1059</span>
                     <span class="mitre-tag">T1110</span>
                 </div>
-
                 <div class="action-stack" style="margin-top:auto;padding-top:1rem;">
                     <button class="btn launch-btn" type="button" data-url="scenario-a.html" data-scenario-id="scenario-a">
                         <i data-lucide="rocket"></i> Launch Scenario
@@ -170,23 +240,18 @@
                     <span class="status-badge yellow">High</span>
                     <span class="surface-note">Scenario B</span>
                 </div>
-
                 <h3><i data-lucide="search"></i> Compromised System Investigation</h3>
-
                 <p>Investigate a compromised Windows host, build the incident timeline, validate indicators of compromise, and apply containment steps without losing evidence fidelity.</p>
-
                 <div class="scenario-meta">
                     <span><i data-lucide="clock"></i> 30 min</span>
                     <span><i data-lucide="zap"></i> Intermediate</span>
                     <span><i data-lucide="monitor"></i> Windows Server</span>
                 </div>
-
                 <div>
                     <span class="mitre-tag">T1566</span>
                     <span class="mitre-tag">T1071</span>
                     <span class="mitre-tag">T1021</span>
                 </div>
-
                 <div class="action-stack" style="margin-top:auto;padding-top:1rem;">
                     <button class="btn launch-btn" type="button" data-url="scenario-b.html" data-scenario-id="scenario-b">
                         <i data-lucide="rocket"></i> Launch Scenario
@@ -213,23 +278,18 @@
                     <span class="status-badge green">Ready</span>
                     <span class="surface-note">Scenario C</span>
                 </div>
-
                 <h3><i data-lucide="phone"></i> Vishing and Social Engineering</h3>
-
                 <p>Respond to simulated AI-generated vishing calls, identify spear-phishing patterns, and execute escalation procedures with communication discipline.</p>
-
                 <div class="scenario-meta">
                     <span><i data-lucide="clock"></i> 20 min</span>
                     <span><i data-lucide="zap"></i> Beginner</span>
                     <span><i data-lucide="user-check"></i> Social Engineering</span>
                 </div>
-
                 <div>
                     <span class="mitre-tag">T1566</span>
                     <span class="mitre-tag">T1598</span>
                     <span class="mitre-tag">Voice Impersonation</span>
                 </div>
-
                 <div class="action-stack" style="margin-top:auto;padding-top:1rem;">
                     <button class="btn launch-btn" type="button" data-url="scenario-generic.html?scenario=scenario-c" data-scenario-id="scenario-c">
                         <i data-lucide="rocket"></i> Launch Scenario
@@ -256,23 +316,18 @@
                     <span class="status-badge green">Ready</span>
                     <span class="surface-note">Scenario D</span>
                 </div>
-
                 <h3><i data-lucide="wifi-off"></i> DDoS Mitigation</h3>
-
                 <p>Detect evidence of service degradation, analyze traffic patterns, and coordinate mitigation decisions to restore service availability under load.</p>
-
                 <div class="scenario-meta">
                     <span><i data-lucide="clock"></i> 25 min</span>
                     <span><i data-lucide="zap"></i> Intermediate</span>
                     <span><i data-lucide="network"></i> Network Defense</span>
                 </div>
-
                 <div>
                     <span class="mitre-tag">Traffic Analysis</span>
                     <span class="mitre-tag">Availability</span>
                     <span class="mitre-tag">Mitigation Response</span>
                 </div>
-
                 <div class="action-stack" style="margin-top:auto;padding-top:1rem;">
                     <button class="btn launch-btn" type="button" data-url="scenario-generic.html?scenario=scenario-d" data-scenario-id="scenario-d">
                         <i data-lucide="rocket"></i> Launch Scenario
@@ -299,23 +354,18 @@
                     <span class="status-badge green">Ready</span>
                     <span class="surface-note">Scenario E</span>
                 </div>
-
                 <h3><i data-lucide="hard-drive-download"></i> Insider Exfiltration Review</h3>
-
                 <p>Investigate unusual archive creation, staged USB activity, and outbound file transfer events from a privileged user workstation.</p>
-
                 <div class="scenario-meta">
                     <span><i data-lucide="clock"></i> 35 min</span>
                     <span><i data-lucide="zap"></i> Advanced</span>
-                    <span><i data-lucide="monitor-up"></i> Windows Endpoint</span>
+                    <span><i data-lucide="monitor"></i> Windows Endpoint</span>
                 </div>
-
                 <div>
                     <span class="mitre-tag">T1567</span>
                     <span class="mitre-tag">T1020</span>
                     <span class="mitre-tag">Data Staging</span>
                 </div>
-
                 <div class="action-stack" style="margin-top:auto;padding-top:1rem;">
                     <button class="btn launch-btn" type="button" data-url="scenario-generic.html?scenario=scenario-e" data-scenario-id="scenario-e">
                         <i data-lucide="rocket"></i> Launch Scenario
@@ -342,23 +392,18 @@
                     <span class="status-badge green">Ready</span>
                     <span class="surface-note">Scenario F</span>
                 </div>
-
-                <h3><i data-lucide="cloud-cog"></i> Cloud IAM Privilege Escalation</h3>
-
+                <h3><i data-lucide="settings-2"></i> Cloud IAM Privilege Escalation</h3>
                 <p>Trace suspicious role assumption, token abuse, and policy changes across a hybrid cloud training tenant.</p>
-
                 <div class="scenario-meta">
                     <span><i data-lucide="clock"></i> 28 min</span>
                     <span><i data-lucide="zap"></i> Intermediate</span>
                     <span><i data-lucide="cloud"></i> Cloud / Network</span>
                 </div>
-
                 <div>
                     <span class="mitre-tag">T1098</span>
                     <span class="mitre-tag">T1078</span>
                     <span class="mitre-tag">IAM Drift</span>
                 </div>
-
                 <div class="action-stack" style="margin-top:auto;padding-top:1rem;">
                     <button class="btn launch-btn" type="button" data-url="scenario-generic.html?scenario=scenario-f" data-scenario-id="scenario-f">
                         <i data-lucide="rocket"></i> Launch Scenario
@@ -399,10 +444,10 @@
                 </div>
                 <div class="toggle-row">
                     <div>
-                        <div style="font-weight:600;font-size:0.92rem;">Upcoming Modules</div>
-                        <div class="surface-note">Scenarios C and D remain roadmap items</div>
+                        <div style="font-weight:600;font-size:0.92rem;">All Scenarios</div>
+                        <div class="surface-note">All six seeded scenarios are live and launchable</div>
                     </div>
-                    <div class="status-badge blue">Pending</div>
+                    <div class="status-badge green">Ready</div>
                 </div>
             </div>
 
@@ -474,31 +519,33 @@
                 <div class="surface-note">Prototype infrastructure inventory used across scenarios.</div>
             </div>
             <ul class="list-clean" id="lab-assets-list" style="font-size:0.9rem;">
-                <li><strong>docker-host-02</strong> | Ubuntu 22.04 | shared volumes mounted to `/srv/shared`</li>
+                <li><strong>docker-host-02</strong> | Ubuntu 22.04 | shared volumes mounted to <code>/srv/shared</code></li>
                 <li><strong>WS-FINANCE-03</strong> | Windows Server 2022 | Office macros enabled for training</li>
                 <li><strong>edge-fw-01</strong> | Palo Alto traffic logs forwarded every 15 sec</li>
                 <li><strong>mail-gw-01</strong> | Microsoft 365 message trace feed enabled</li>
-                <li><strong>siem-lab-core</strong> | Prototype event index: `responsegrid`, retention: 30 days</li>
+                <li><strong>siem-lab-core</strong> | Prototype event index: <code>responsegrid</code>, retention: 30 days</li>
             </ul>
         </div>
     </section>
 
     <section class="grid-2 section-space">
+        <!-- FIX: Shell tabs now functional via data-shell-group / data-shell-panel -->
         <div class="card">
             <div class="toolbar" style="margin-bottom:1rem;">
                 <div class="card-title"><i data-lucide="terminal-square"></i> Prototype Search Shell</div>
                 <div class="surface-note">Dummy search workflow for MVP walkthroughs.</div>
             </div>
-            <div class="shell-window">
+            <div class="shell-window" data-shell-group="lab-search-shell">
                 <div class="shell-header">
                     <div class="shell-title">Saved Search: Launch Readiness</div>
                     <div class="shell-tabs">
-                        <span class="shell-tab active">Search</span>
-                        <span class="shell-tab">Results</span>
+                        <span class="shell-tab active" data-shell-panel="kql" role="tab" tabindex="0" aria-selected="true">Search</span>
+                        <span class="shell-tab" data-shell-panel="results" role="tab" tabindex="-1" aria-selected="false">Results</span>
                     </div>
                 </div>
                 <div class="shell-body">
-<pre class="shell-code" id="lab-readiness-shell">ResponseGridLabStatus
+                    <div class="shell-panel" data-shell-panel="kql">
+                        <pre class="shell-code" id="lab-readiness-shell">ResponseGridLabStatus
 | where scenario_id startswith "scenario-"
 | summarize status = take_any(status), owner = take_any(owner), readiness = max(readiness) by scenario_id
 | order by scenario_id asc
@@ -509,6 +556,24 @@ scenario-c status=ready owner=Awareness Lab readiness=62
 scenario-d status=ready owner=Network Defense Lab readiness=58
 scenario-e status=ready owner=Insider Risk PM readiness=54
 scenario-f status=ready owner=Cloud IAM Team readiness=57</pre>
+                    </div>
+                    <div class="shell-panel" data-shell-panel="results" hidden>
+                        <div style="overflow-x:auto;">
+                            <table class="shell-results-table">
+                                <thead>
+                                    <tr>
+                                        <th>Scenario</th>
+                                        <th>Status</th>
+                                        <th>Owner</th>
+                                        <th>Readiness</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="lab-readiness-results-body">
+                                    <!-- Populated by renderReadinessResultsTable() -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -540,9 +605,10 @@ scenario-f status=ready owner=Cloud IAM Team readiness=57</pre>
         </div>
     </section>
 
+    <!-- Modal overlay: display controlled via .modal-open class + CSS transition -->
     <div
         id="lab-modal"
-        style="display:none;position:fixed;inset:0;background:rgba(2,6,23,0.78);z-index:999;align-items:center;justify-content:center;padding:1rem;"
+        style="position:fixed;inset:0;background:rgba(2,6,23,0.78);z-index:999;display:flex;align-items:center;justify-content:center;padding:1rem;"
         aria-hidden="true"
     >
         <div
@@ -559,7 +625,6 @@ scenario-f status=ready owner=Cloud IAM Team readiness=57</pre>
                 </div>
                 <button class="btn btn-secondary" type="button" id="close-modal-btn">Close</button>
             </div>
-
             <div id="lab-modal-body" style="font-size:0.92rem;"></div>
             <div class="command-row" id="lab-modal-actions" style="display:none;justify-content:flex-end;"></div>
         </div>
@@ -568,6 +633,870 @@ scenario-f status=ready owner=Cloud IAM Team readiness=57</pre>
 
 <script src="js/shared.js"></script>
 <script src="js/services/api-client.js"></script>
-<script src="js/pages/active-lab.js"></script>
+<script>
+/* ============================================================
+   active-lab.js  –  fully fixed, inline version
+   All bugs from the audit are patched here.
+   ============================================================ */
+(function () {
+    'use strict';
+
+    /* ── Local helpers ─────────────────────────────────────── */
+    function escapeHtml(v) {
+        return String(v)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+    }
+
+    /* ── DOM references ────────────────────────────────────── */
+    const scenarioGrid      = document.getElementById('scenario-grid');
+    const scenarioCards     = Array.from(scenarioGrid.querySelectorAll('.scenario-card'));
+    const emptyState        = document.getElementById('scenario-empty-state');
+    const searchInput       = document.getElementById('scenario-search');
+    const difficultyFilter  = document.getElementById('difficulty-filter');
+    const platformFilter    = document.getElementById('platform-filter');
+    const resultsSummary    = document.getElementById('results-summary');
+    const clearFiltersBtn   = document.getElementById('clear-filters-btn');
+    const scenarioDetails   = document.getElementById('scenario-details');
+    const resumeLastBtn     = document.getElementById('resume-last-btn');
+    const modal             = document.getElementById('lab-modal');
+    const modalBody         = document.getElementById('lab-modal-body');
+    const modalSubtitle     = document.getElementById('lab-modal-subtitle');
+    const modalActions      = document.getElementById('lab-modal-actions');
+    const closeModalBtn     = document.getElementById('close-modal-btn');
+    const mainEl            = document.querySelector('main');
+
+    const availablePathsValue   = document.getElementById('lab-available-paths');
+    const availablePathsNote    = document.getElementById('lab-available-paths-note');
+    const advancedMetric        = document.getElementById('lab-metric-advanced');
+    const advancedMetricNote    = document.getElementById('lab-metric-advanced-note');
+    const liveMetric            = document.getElementById('lab-metric-live');
+    const liveMetricNote        = document.getElementById('lab-metric-live-note');
+    const prototypeMetric       = document.getElementById('lab-metric-prototype');
+    const prototypeMetricNote   = document.getElementById('lab-metric-prototype-note');
+    const runsBody              = document.getElementById('lab-runs-body');
+    const assetsList            = document.getElementById('lab-assets-list');
+    const readinessShell        = document.getElementById('lab-readiness-shell');
+    const seedSnapshot          = document.getElementById('lab-seed-snapshot');
+
+    /* ── Storage keys ──────────────────────────────────────── */
+    const STORAGE_KEY          = 'irsp-last-scenario';
+    const WORKSPACE_STORAGE_KEY = 'irsp-active-workspace';
+    const PINNED_STORAGE_KEY   = 'irsp-pinned-scenarios';
+    const SELECTED_STORAGE_KEY = 'irsp-selected-scenario';
+
+    /* ── Static data ───────────────────────────────────────── */
+    const scenarioMetrics = {
+        'scenario-a': { readiness: '98%', telemetry: '27 alerts, 188 sessions',      focus: 'Containment',  owner: 'Blue Team Alpha',      status: 'ready', alertsSeeded: 27, eventsSeeded: 42381 },
+        'scenario-b': { readiness: '96%', telemetry: '19 alerts, 4 confirmed IOCs',  focus: 'Investigation',owner: 'Analyst Cohort 2',     status: 'ready', alertsSeeded: 19, eventsSeeded: 18422 },
+        'scenario-c': { readiness: '62%', telemetry: 'voice transcript + email trail',focus:'Awareness',    owner: 'Awareness Lab',        status: 'ready', alertsSeeded: 8,  eventsSeeded: 920   },
+        'scenario-d': { readiness: '58%', telemetry: 'traffic spikes + service health',focus:'Availability',owner: 'Network Defense Lab',  status: 'ready', alertsSeeded: 12, eventsSeeded: 5410  },
+        'scenario-e': { readiness: '54%', telemetry: 'USB logs + proxy uploads',      focus: 'Insider Risk', owner: 'Insider Risk PM',      status: 'ready', alertsSeeded: 14, eventsSeeded: 2640  },
+        'scenario-f': { readiness: '57%', telemetry: 'IAM audit trails + sign-ins',   focus: 'Cloud IAM',   owner: 'Cloud IAM Team',       status: 'ready', alertsSeeded: 11, eventsSeeded: 3180  }
+    };
+
+    const previewData = {
+        'scenario-a': {
+            title: 'Scenario A: Ransomware Containment',
+            subtitle: 'Advanced | 45 min | Docker/Linux',
+            body: `
+                <div class="alert-item" style="margin-bottom:1rem;">
+                    <div class="alert-info">
+                        <h4>Focus Area</h4>
+                        <p>Rapid containment, malware process handling, C2 disruption, and service restoration.</p>
+                    </div>
+                </div>
+                <div class="grid-2">
+                    <div class="card" style="padding:1rem;">
+                        <div class="card-title"><i data-lucide="target"></i> Objectives</div>
+                        <ul class="list-clean" style="font-size:0.88rem;">
+                            <li>Identify entry point</li>
+                            <li>Isolate infected container</li>
+                            <li>Stop encryption activity</li>
+                            <li>Restore operations safely</li>
+                        </ul>
+                    </div>
+                    <div class="card" style="padding:1rem;">
+                        <div class="card-title"><i data-lucide="shield"></i> Skills Practiced</div>
+                        <ul class="list-clean" style="font-size:0.88rem;">
+                            <li>Incident triage</li>
+                            <li>Linux investigation</li>
+                            <li>Docker containment</li>
+                            <li>MITRE mapping</li>
+                        </ul>
+                    </div>
+                </div>`
+        },
+        'scenario-b': {
+            title: 'Scenario B: Compromised System Investigation',
+            subtitle: 'Intermediate | 30 min | Windows Server',
+            body: `
+                <div class="alert-item info" style="margin-bottom:1rem;">
+                    <div class="alert-info">
+                        <h4>Focus Area</h4>
+                        <p>Evidence gathering, IOC mapping, phishing analysis, persistence review, and endpoint containment.</p>
+                    </div>
+                </div>
+                <div class="grid-2">
+                    <div class="card" style="padding:1rem;">
+                        <div class="card-title"><i data-lucide="clipboard-list"></i> Objectives</div>
+                        <ul class="list-clean" style="font-size:0.88rem;">
+                            <li>Identify the initial vector</li>
+                            <li>Build the timeline</li>
+                            <li>Contain compromised host</li>
+                            <li>Remove persistence</li>
+                        </ul>
+                    </div>
+                    <div class="card" style="padding:1rem;">
+                        <div class="card-title"><i data-lucide="search"></i> Skills Practiced</div>
+                        <ul class="list-clean" style="font-size:0.88rem;">
+                            <li>IOC analysis</li>
+                            <li>Host investigation</li>
+                            <li>Windows event review</li>
+                            <li>Timeline construction</li>
+                        </ul>
+                    </div>
+                </div>`
+        },
+        'scenario-c': {
+            title: 'Scenario C: Vishing &amp; Social Engineering',
+            subtitle: 'Beginner | 20 min | Voice / Email',
+            body: `
+                <div class="alert-item info" style="margin-bottom:1rem;">
+                    <div class="alert-info">
+                        <h4>Focus Area</h4>
+                        <p>Voice-phishing validation, help-desk escalation discipline, identity verification, and mail-rule review.</p>
+                    </div>
+                </div>
+                <p class="surface-note">This module opens a working scenario page with seeded transcript, identity, and mailbox telemetry.</p>`
+        },
+        'scenario-d': {
+            title: 'Scenario D: DDoS Mitigation',
+            subtitle: 'Intermediate | 25 min | Network Defense',
+            body: `
+                <div class="alert-item info" style="margin-bottom:1rem;">
+                    <div class="alert-info">
+                        <h4>Focus Area</h4>
+                        <p>Traffic triage, service-health validation, rate-limit response, and stakeholder coordination during availability pressure.</p>
+                    </div>
+                </div>
+                <p class="surface-note">The live module includes seeded edge, WAF, and health telemetry with response actions.</p>`
+        },
+        'scenario-e': {
+            title: 'Scenario E: Insider Exfiltration Review',
+            subtitle: 'Advanced | 35 min | Windows Endpoint',
+            body: `
+                <div class="alert-item info" style="margin-bottom:1rem;">
+                    <div class="alert-info">
+                        <h4>Focus Area</h4>
+                        <p>Archive staging, removable media review, proxy upload correlation, and insider-risk evidence handling.</p>
+                    </div>
+                </div>
+                <p class="surface-note">The scenario page supports alert actions, evidence review, and log search against the seeded insider dataset.</p>`
+        },
+        'scenario-f': {
+            title: 'Scenario F: Cloud IAM Privilege Escalation',
+            subtitle: 'Intermediate | 28 min | Cloud / Network',
+            body: `
+                <div class="alert-item info" style="margin-bottom:1rem;">
+                    <div class="alert-info">
+                        <h4>Focus Area</h4>
+                        <p>Role-assumption anomalies, policy drift, impossible travel, and cloud control-plane evidence review.</p>
+                    </div>
+                </div>
+                <p class="surface-note">The module opens a working cloud-IAM scenario page backed by seeded audit logs and actions.</p>`
+        }
+    };
+
+    const launchProfiles = {
+        'scenario-a': {
+            title: 'Scenario A Launch',
+            subtitle: 'Provision the ransomware containment workspace and analyst VM',
+            icon: 'server-cog',
+            workspace: 'Ransomware Containment Workspace',
+            vmName: 'rg-ransomware-vm-a',
+            environment: 'Linux / Docker response workspace',
+            services: ['Container response shell', 'Process kill and isolation workflow', 'Artifact hashing and recovery checkpoints'],
+            dataFlow: ['Loads Scenario A seeded telemetry', 'Stores user actions and lab state locally', 'Routes into the live ransomware simulation page'],
+            note: 'Python processing services from the diagram are intentionally skipped. This boot step stays in the front-end prototype.'
+        },
+        'scenario-b': {
+            title: 'Scenario B Launch',
+            subtitle: 'Load the no-VM Windows evidence pack and analyst workspace',
+            icon: 'monitor',
+            workspace: 'Windows Evidence Pack Workspace',
+            vmName: 'ws-finance-03_sanitized_bundle',
+            environment: 'Offline Windows endpoint investigation pack',
+            services: ['Log review and query shell', 'Evidence board and IOC drilldowns', 'Timeline reconstruction and analyst actions'],
+            dataFlow: ['Loads Scenario B seeded telemetry', 'Stores user actions and lab state locally', 'Routes into the live compromised system investigation page'],
+            note: 'This Scenario B flow provisions no VM — it opens a browser-based evidence pack built from sanitized Windows endpoint telemetry.'
+        },
+        'scenario-c': {
+            title: 'Scenario C Launch',
+            subtitle: 'Provision the social-engineering review workspace',
+            icon: 'phone-call',
+            workspace: 'Social Engineering Review Workspace',
+            vmName: 'rg-vishing-vm-c',
+            environment: 'Voice / Email analyst workspace',
+            services: ['Transcript review shell', 'Identity verification evidence board', 'Mailbox-rule triage and action logging'],
+            dataFlow: ['Loads Scenario C seeded telemetry', 'Persists local workspace state for resume support', 'Routes into the live vishing scenario page'],
+            note: 'This launch flow is mock-backed, but the scenario page works end to end with seeded actions and evidence.'
+        },
+        'scenario-d': {
+            title: 'Scenario D Launch',
+            subtitle: 'Provision the DDoS mitigation workspace',
+            icon: 'wifi-off',
+            workspace: 'Availability Defense Workspace',
+            vmName: 'rg-ddos-vm-d',
+            environment: 'Network defense analyst workspace',
+            services: ['Edge traffic triage', 'Health and WAF correlation', 'Mitigation response logging'],
+            dataFlow: ['Loads Scenario D seeded telemetry', 'Persists local workspace state for resume support', 'Routes into the live DDoS scenario page'],
+            note: 'The page models response decisions and evidence flow even though no live cloud edge is being provisioned.'
+        },
+        'scenario-e': {
+            title: 'Scenario E Launch',
+            subtitle: 'Provision the insider-risk review workspace',
+            icon: 'hard-drive-download',
+            workspace: 'Insider Risk Review Workspace',
+            vmName: 'rg-insider-vm-e',
+            environment: 'Windows endpoint investigation workspace',
+            services: ['USB and archive telemetry review', 'DLP and proxy evidence pivots', 'Containment action logging'],
+            dataFlow: ['Loads Scenario E seeded telemetry', 'Persists local workspace state for resume support', 'Routes into the live insider-exfiltration scenario page'],
+            note: 'This scenario is mock-backed but has a complete workflow inside the app.'
+        },
+        'scenario-f': {
+            title: 'Scenario F Launch',
+            subtitle: 'Provision the cloud IAM investigation workspace',
+            icon: 'settings-2',
+            workspace: 'Cloud IAM Investigation Workspace',
+            vmName: 'rg-cloudiam-vm-f',
+            environment: 'Cloud audit and identity workspace',
+            services: ['CloudTrail-style log review', 'Role-assumption analysis', 'Policy-drift containment workflow'],
+            dataFlow: ['Loads Scenario F seeded telemetry', 'Persists local workspace state for resume support', 'Routes into the live cloud IAM scenario page'],
+            note: 'This is the right integration point for future real cloud-provider APIs or IaC execution.'
+        }
+    };
+
+    /* ── Icon refresh ──────────────────────────────────────── */
+    function refreshIcons() {
+        if (window.lucide && typeof window.lucide.createIcons === 'function') {
+            window.lucide.createIcons();
+        }
+    }
+
+    /* ── Timestamp formatter ───────────────────────────────── */
+    function formatRunTimestamp(value) {
+        const date = new Date(value);
+        if (Number.isNaN(date.getTime())) return value;
+        const y  = date.getFullYear();
+        const mo = String(date.getMonth() + 1).padStart(2, '0');
+        const d  = String(date.getDate()).padStart(2, '0');
+        const h  = String(date.getHours()).padStart(2, '0');
+        const mi = String(date.getMinutes()).padStart(2, '0');
+        return `${y}-${mo}-${d} ${h}:${mi}`;
+    }
+
+    function statusBadgeMarkup(status) {
+        const n = String(status || '').toLowerCase();
+        if (n === 'running')   return '<span class="status-badge yellow">Running</span>';
+        if (n === 'completed') return '<span class="status-badge green">Completed</span>';
+        if (n === 'timed_out') return '<span class="status-badge red">Timed Out</span>';
+        if (n === 'planned')   return '<span class="status-badge blue">Planned</span>';
+        if (n === 'ready')     return '<span class="status-badge green">Ready</span>';
+        return '<span class="status-badge blue">Prototype</span>';
+    }
+
+    function platformFromEnvironment(environment) {
+        const n = String(environment || '').toLowerCase();
+        if (n.includes('linux') || n.includes('docker')) return 'linux';
+        if (n.includes('windows')) return 'windows';
+        if (n.includes('voice') || n.includes('email') || n.includes('social')) return 'social';
+        return 'network';
+    }
+
+    /* ── Shell / seed rendering ────────────────────────────── */
+    function renderSeedSnapshotForCard(card) {
+        if (!seedSnapshot || !card) return;
+        const metrics = scenarioMetrics[card.dataset.scenarioId] || {};
+        seedSnapshot.textContent = JSON.stringify({
+            scenario_id:    card.dataset.scenarioId,
+            status:         metrics.status || card.dataset.status,
+            owner:          metrics.owner  || 'Prototype Owner',
+            readiness:      metrics.readiness || '--',
+            alerts_seeded:  metrics.alertsSeeded  || null,
+            events_seeded:  metrics.eventsSeeded  || null,
+            focus:          metrics.focus  || '--',
+            demo_mode:      true
+        }, null, 2);
+    }
+
+    /* FIX: use textContent (not innerHTML) on the <pre> element */
+    function renderReadinessShellData() {
+        if (!readinessShell) return;
+        const rows = scenarioCards
+            .slice()
+            .sort((a, b) => a.dataset.scenarioId.localeCompare(b.dataset.scenarioId))
+            .map(card => {
+                const metrics      = scenarioMetrics[card.dataset.scenarioId] || {};
+                const readinessVal = String(metrics.readiness || '').replace('%', '') || '--';
+                const statusVal    = metrics.status || (card.dataset.status === 'available' ? 'ready' : 'prototype');
+                return `${card.dataset.scenarioId} status=${statusVal} owner=${metrics.owner || 'Prototype Team'} readiness=${readinessVal}`;
+            });
+
+        readinessShell.textContent = [
+            'ResponseGridLabStatus',
+            '| where scenario_id startswith "scenario-"',
+            '| summarize status = take_any(status), owner = take_any(owner), readiness = max(readiness) by scenario_id',
+            '| order by scenario_id asc',
+            '',
+            ...rows
+        ].join('\n');
+
+        renderReadinessResultsTable();
+    }
+
+    /* NEW: populate the Results tab table with live scenarioMetrics data */
+    function renderReadinessResultsTable() {
+        const tbody = document.getElementById('lab-readiness-results-body');
+        if (!tbody) return;
+
+        const rows = scenarioCards
+            .slice()
+            .sort((a, b) => a.dataset.scenarioId.localeCompare(b.dataset.scenarioId))
+            .map(card => {
+                const id       = card.dataset.scenarioId;
+                const metrics  = scenarioMetrics[id] || {};
+                const readiness    = String(metrics.readiness || '--');
+                const readinessNum = parseInt(readiness, 10);
+                const rColor   = readinessNum >= 90 ? 'green' : readinessNum >= 60 ? 'yellow' : 'blue';
+                const sColor   = metrics.status === 'ready' ? 'green' : 'blue';
+                return `<tr>
+                    <td>${escapeHtml(id)}</td>
+                    <td><span class="status-badge ${sColor}">${escapeHtml(metrics.status || 'unknown')}</span></td>
+                    <td>${escapeHtml(metrics.owner || '--')}</td>
+                    <td><span class="status-badge ${rColor}">${escapeHtml(readiness)}</span></td>
+                </tr>`;
+            });
+
+        tbody.innerHTML = rows.join('');
+    }
+
+    function renderRunsTable(items) {
+        if (!runsBody || !Array.isArray(items)) return;
+        runsBody.innerHTML = items.map(run => {
+            const card = scenarioCards.find(c => c.dataset.scenarioId === run.scenario_id);
+            return `<tr>
+                <td>${escapeHtml(formatRunTimestamp(run.timestamp))}</td>
+                <td>${escapeHtml(card ? card.dataset.title : run.scenario_id)}</td>
+                <td>${escapeHtml(run.team || '--')}</td>
+                <td>${statusBadgeMarkup(run.status)}</td>
+                <td>${run.score == null ? '--' : `${escapeHtml(String(run.score))}%`}</td>
+            </tr>`;
+        }).join('');
+    }
+
+    function applyScenarioApiData(items) {
+        if (!Array.isArray(items) || !items.length) return;
+
+        items.forEach(item => {
+            const card = scenarioCards.find(e => e.dataset.scenarioId === item.id);
+            if (!card) return;
+
+            const status = item.status === 'ready' ? 'available' : 'coming-soon';
+            card.dataset.status     = status;
+            card.dataset.difficulty = item.difficulty || card.dataset.difficulty;
+            card.dataset.platform   = platformFromEnvironment(item.environment) || card.dataset.platform;
+
+            scenarioMetrics[item.id] = Object.assign({}, scenarioMetrics[item.id], {
+                readiness:   `${item.readiness}%`,
+                telemetry:   `${item.seeded_alerts} alerts, ${Number(item.seeded_events || 0).toLocaleString()} events`,
+                focus:       item.environment,
+                owner:       item.owner,
+                status:      item.status,
+                alertsSeeded: item.seeded_alerts,
+                eventsSeeded: item.seeded_events
+            });
+
+            const badge = card.querySelector('.toolbar .status-badge');
+            if (badge) {
+                badge.className   = `status-badge ${status === 'available' ? 'green' : 'blue'}`;
+                badge.textContent = status === 'available' ? 'Ready' : 'Prototype';
+            }
+        });
+
+        const liveCount      = scenarioCards.filter(c => c.dataset.status === 'available').length;
+        const protoCount     = scenarioCards.length - liveCount;
+        const advancedCount  = scenarioCards.filter(c => c.dataset.difficulty === 'advanced').length;
+
+        availablePathsValue.textContent = String(scenarioCards.length).padStart(2, '0');
+        availablePathsNote.textContent  = `${liveCount} live exercises, ${protoCount} roadmap modules`;
+        advancedMetric.textContent      = String(advancedCount).padStart(2, '0');
+        advancedMetricNote.textContent  = `${advancedCount} advanced exercises seeded for higher-pressure response drills.`;
+        liveMetric.textContent          = String(liveCount).padStart(2, '0');
+        liveMetricNote.textContent      = `${liveCount} scenarios are launchable through the mock backend and UI flow.`;
+        prototypeMetric.textContent     = String(protoCount).padStart(2, '0');
+        prototypeMetricNote.textContent = protoCount
+            ? `${protoCount} modules remain in roadmap review.`
+            : 'All seeded modules are launchable in the app.';
+
+        if (assetsList) {
+            assetsList.innerHTML = `
+                <li><strong>docker-host-02</strong> | Ubuntu 22.04 | shared volumes mounted to <code>/srv/shared</code></li>
+                <li><strong>WS-FINANCE-03</strong> | Windows Server 2022 | Office macros enabled for training</li>
+                <li><strong>edge-fw-01</strong> | Palo Alto traffic logs forwarded every 15 sec</li>
+                <li><strong>mail-gw-01</strong> | Microsoft 365 message trace feed enabled</li>
+                <li><strong>siem-lab-core</strong> | Mock backend online | synced scenarios=${escapeHtml(String(items.length))}</li>
+            `;
+        }
+
+        renderReadinessShellData();
+    }
+
+    async function hydrateLabData() {
+        if (!window.IRSPApi || !window.IRSPApi.isAvailable()) return;
+        try {
+            const [scenariosPayload, runsPayload] = await Promise.all([
+                window.IRSPApi.getScenarios(),
+                window.IRSPApi.getRuns({ limit: 4 })
+            ]);
+            applyScenarioApiData(scenariosPayload.items || []);
+            renderRunsTable(runsPayload.items || []);
+        } catch (_) {
+            renderReadinessShellData();
+        }
+    }
+
+    /* ── Pin helpers ───────────────────────────────────────── */
+    function getPinnedScenarioIds() {
+        try {
+            const raw = JSON.parse(localStorage.getItem(PINNED_STORAGE_KEY));
+            return Array.isArray(raw) ? raw : [];
+        } catch (_) { return []; }
+    }
+
+    function savePinnedScenarioIds(ids) {
+        localStorage.setItem(PINNED_STORAGE_KEY, JSON.stringify(ids));
+    }
+
+    function isPinned(card) {
+        return getPinnedScenarioIds().includes(card.dataset.scenarioId);
+    }
+
+    function applyPinState() {
+        const pinnedIds = getPinnedScenarioIds();
+        scenarioCards.forEach(card => {
+            const pinButton = card.querySelector('.card-pin');
+            const pinned    = pinnedIds.includes(card.dataset.scenarioId);
+            card.classList.toggle('pinned', pinned);
+            if (pinButton) {
+                pinButton.classList.toggle('active', pinned);
+                pinButton.setAttribute('aria-pressed', pinned ? 'true' : 'false');
+                pinButton.setAttribute('aria-label', pinned ? 'Unpin scenario' : 'Pin scenario');
+            }
+        });
+    }
+
+    function sortScenarioCards() {
+        const pinnedIds = getPinnedScenarioIds();
+        scenarioCards
+            .slice()
+            .sort((a, b) => {
+                const ap = pinnedIds.includes(a.dataset.scenarioId) ? 1 : 0;
+                const bp = pinnedIds.includes(b.dataset.scenarioId) ? 1 : 0;
+                if (ap !== bp) return bp - ap;
+                if (a.dataset.status !== b.dataset.status) return a.dataset.status === 'available' ? -1 : 1;
+                return a.dataset.title.localeCompare(b.dataset.title);
+            })
+            .forEach(card => scenarioGrid.appendChild(card));
+    }
+
+    function createPinButtons() {
+        scenarioCards.forEach(card => {
+            const toolbar = card.querySelector('.toolbar');
+            if (!toolbar || toolbar.querySelector('.card-pin')) return;
+
+            const pinButton = document.createElement('button');
+            pinButton.type      = 'button';
+            pinButton.className = 'icon-btn card-pin';
+            pinButton.setAttribute('aria-label', 'Pin scenario');
+            pinButton.setAttribute('aria-pressed', 'false');
+            pinButton.innerHTML = '<i data-lucide="pin"></i>';
+
+            pinButton.addEventListener('click', function (event) {
+                event.stopPropagation();
+                const pinnedIds  = getPinnedScenarioIds();
+                const id         = card.dataset.scenarioId;
+                const nextIds    = pinnedIds.includes(id)
+                    ? pinnedIds.filter(x => x !== id)
+                    : pinnedIds.concat(id);
+                savePinnedScenarioIds(nextIds);
+                applyPinState();
+                sortScenarioCards();
+                updateSummary();
+                refreshIcons();
+            });
+
+            toolbar.appendChild(pinButton);
+        });
+    }
+
+    /* ── Filter / summary ──────────────────────────────────── */
+    function updateSummary() {
+        const visible       = scenarioCards.filter(c => c.style.display !== 'none');
+        const count         = visible.length;
+        const pinnedVisible = visible.filter(c => c.classList.contains('pinned')).length;
+        resultsSummary.textContent = `Showing ${count} scenario${count === 1 ? '' : 's'}${pinnedVisible ? ` • ${pinnedVisible} pinned` : ''}`;
+
+        /* FIX: toggle empty state */
+        if (emptyState) {
+            emptyState.classList.toggle('visible', count === 0);
+        }
+    }
+
+    function normalize(v) { return (v || '').toLowerCase().trim(); }
+
+    function filterCards() {
+        const q          = normalize(searchInput.value);
+        const difficulty = difficultyFilter.value;
+        const platform   = platformFilter.value;
+
+        scenarioCards.forEach(card => {
+            const diffOk  = difficulty === 'all' || card.dataset.difficulty === difficulty;
+            const platOk  = platform   === 'all' || card.dataset.platform   === platform;
+            const textOk  = !q || normalize(card.dataset.title).includes(q) || card.textContent.toLowerCase().includes(q);
+            card.style.display = (diffOk && platOk && textOk) ? '' : 'none';
+        });
+
+        updateSummary();
+
+        const selectedId   = localStorage.getItem(SELECTED_STORAGE_KEY);
+        const selectedCard = scenarioCards.find(c => c.dataset.scenarioId === selectedId && c.style.display !== 'none');
+        if (selectedCard) { selectCard(selectedCard, false); return; }
+
+        const firstVisible = scenarioCards.find(c => c.style.display !== 'none');
+        if (firstVisible) { selectCard(firstVisible, false); }
+    }
+
+    /* ── Scenario details panel ────────────────────────────── */
+    function setDetails(card) {
+        const title         = card.dataset.title;
+        const difficulty    = card.dataset.difficulty;
+        const platform      = card.dataset.platform;
+        const isAvailable   = card.dataset.status === 'available';
+        const statusLabel   = isAvailable ? 'Available Now' : 'Coming Soon';
+        const metrics       = scenarioMetrics[card.dataset.scenarioId] || {};
+        const isPinnedCard  = isPinned(card);
+        /* FIX: null-safe access to the card's description paragraph */
+        const descEl        = card.querySelector('p');
+        const description   = descEl ? escapeHtml(descEl.textContent) : '';
+        const targetUrl     = card.dataset.url || '#';
+
+        scenarioDetails.innerHTML = `
+            <h3 style="margin-bottom:0.6rem;">${escapeHtml(title)}</h3>
+            <div class="detail-pills">
+                <span class="status-badge ${isAvailable ? 'green' : 'blue'}">${statusLabel}</span>
+                <span class="status-badge" style="border-color:var(--border);color:var(--text-dim);background:rgba(51,65,85,0.2);">${escapeHtml(difficulty.charAt(0).toUpperCase() + difficulty.slice(1))}</span>
+                <span class="status-badge" style="border-color:var(--border);color:var(--text-dim);background:rgba(51,65,85,0.2);">${escapeHtml(platform.charAt(0).toUpperCase() + platform.slice(1))}</span>
+                <span class="status-badge" style="border-color:var(--border);color:var(--text-dim);background:rgba(51,65,85,0.2);">${isPinnedCard ? 'Pinned' : 'Previewed'}</span>
+            </div>
+            <p class="surface-note" style="font-size:0.92rem;margin-bottom:1rem;color:var(--text-dim);">${description}</p>
+            <div class="grid-3" style="gap:0.75rem;margin-bottom:1rem;">
+                <div class="metric-tile">
+                    <div class="label">Readiness</div>
+                    <div class="value" style="font-size:1.1rem;">${escapeHtml(metrics.readiness || '--')}</div>
+                    <div class="subtext">Seeded for walkthrough</div>
+                </div>
+                <div class="metric-tile">
+                    <div class="label">Telemetry</div>
+                    <div class="value" style="font-size:0.92rem;">${escapeHtml(metrics.telemetry || '--')}</div>
+                    <div class="subtext">Dummy dataset scope</div>
+                </div>
+                <div class="metric-tile">
+                    <div class="label">Focus</div>
+                    <div class="value" style="font-size:0.98rem;">${escapeHtml(metrics.focus || '--')}</div>
+                    <div class="subtext">Primary analyst skill</div>
+                </div>
+            </div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                ${isAvailable
+                    /* FIX: data-open-url attribute instead of inline onclick */
+                    ? `<button class="btn" type="button" data-open-url="${escapeHtml(targetUrl)}">Open Scenario</button>`
+                    : `<button class="btn btn-secondary" type="button" disabled>Launch Unavailable</button>`
+                }
+                <button class="btn btn-secondary" type="button" data-preview-inline="${escapeHtml(card.dataset.scenarioId)}">View Preview</button>
+            </div>
+        `;
+
+        /* FIX: wire Open Scenario via event listener, not inline onclick */
+        const openBtn = scenarioDetails.querySelector('[data-open-url]');
+        if (openBtn) {
+            openBtn.addEventListener('click', function () {
+                window.location.href = this.dataset.openUrl;
+            });
+        }
+
+        const inlinePreviewButton = scenarioDetails.querySelector('[data-preview-inline]');
+        if (inlinePreviewButton) {
+            inlinePreviewButton.addEventListener('click', function () {
+                openPreview(this.dataset.previewInline);
+            });
+        }
+
+        renderSeedSnapshotForCard(card);
+    }
+
+    function selectCard(card, persist = true) {
+        scenarioCards.forEach(c => c.classList.remove('selected'));
+        card.classList.add('selected');
+        setDetails(card);
+        if (persist) {
+            localStorage.setItem(SELECTED_STORAGE_KEY, card.dataset.scenarioId);
+        }
+    }
+
+    /* ── Resume button ─────────────────────────────────────── */
+    function saveLastScenario(id, url, title) {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify({ id, url, title }));
+        updateResumeButton();
+    }
+
+    function updateResumeButton() {
+        try {
+            const last = JSON.parse(localStorage.getItem(STORAGE_KEY));
+            if (last && last.url && last.title) {
+                resumeLastBtn.style.display = 'inline-flex';
+                /* FIX: build innerHTML safely — icon via data attribute, title via textContent on span */
+                resumeLastBtn.innerHTML = '';
+                const icon   = document.createElement('i');
+                icon.setAttribute('data-lucide', 'history');
+                icon.style.cssText = 'width:14px;display:inline;';
+                const label  = document.createElement('span');
+                label.textContent = ' Resume ' + last.title;
+                resumeLastBtn.appendChild(icon);
+                resumeLastBtn.appendChild(label);
+                resumeLastBtn.onclick = function () {
+                    window.location.href = last.url;
+                };
+                refreshIcons();
+            } else {
+                resumeLastBtn.style.display = 'none';
+            }
+        } catch (_) {
+            resumeLastBtn.style.display = 'none';
+        }
+    }
+
+    /* ── Modal ─────────────────────────────────────────────── */
+    function openModal(config) {
+        /* FIX: block scroll on both body and main */
+        document.body.style.overflow = 'hidden';
+        if (mainEl) mainEl.style.overflow = 'hidden';
+
+        modal.classList.add('modal-open');
+        modal.setAttribute('aria-hidden', 'false');
+
+        const titleEl = document.getElementById('lab-modal-title');
+        if (titleEl) {
+            titleEl.innerHTML = `<i data-lucide="${escapeHtml(config.icon || 'eye')}"></i> ${escapeHtml(config.title || '')}`;
+        }
+        modalSubtitle.textContent = config.subtitle || '';
+        modalBody.innerHTML       = config.body     || '';
+        modalActions.innerHTML    = config.actions  || '';
+        modalActions.style.display = config.actions ? 'flex' : 'none';
+        refreshIcons();
+    }
+
+    function openPreview(id) {
+        const data = previewData[id];
+        if (!data) return;
+        openModal({ icon: 'eye', title: data.title, subtitle: data.subtitle, body: data.body });
+    }
+
+    function closeModal() {
+        modal.classList.remove('modal-open');
+        modal.setAttribute('aria-hidden', 'true');
+        document.body.style.overflow = '';
+        if (mainEl) mainEl.style.overflow = '';
+        modalActions.innerHTML     = '';
+        modalActions.style.display = 'none';
+    }
+
+    /* ── Workspace state ───────────────────────────────────── */
+    function saveWorkspaceState(profile, scenarioId, url, title) {
+        localStorage.setItem(WORKSPACE_STORAGE_KEY, JSON.stringify({
+            scenarioId, url, title,
+            workspace:   profile.workspace,
+            vmName:      profile.vmName,
+            environment: profile.environment,
+            status:      'running',
+            startedAt:   new Date().toISOString()
+        }));
+    }
+
+    /* ── Launch flow ───────────────────────────────────────── */
+    function launchScenario(card, launchButton) {
+        const scenarioId    = launchButton.dataset.scenarioId;
+        const profile       = launchProfiles[scenarioId];
+        const isEvidencePack = scenarioId === 'scenario-b';
+
+        if (!profile) {
+            saveLastScenario(scenarioId, launchButton.dataset.url, card.dataset.title);
+            window.location.href = launchButton.dataset.url;
+            return;
+        }
+
+        openModal({
+            icon:     profile.icon,
+            title:    profile.title,
+            subtitle: profile.subtitle,
+            body: `
+                <div class="grid-2" style="margin-bottom:1rem;">
+                    <div class="card" style="padding:1rem;">
+                        <div class="card-title"><i data-lucide="${isEvidencePack ? 'folder-open' : 'cpu'}"></i> ${isEvidencePack ? 'Evidence Pack' : 'VM Instance'}</div>
+                        <div class="key-value-list" style="margin-top:0.75rem;">
+                            <div class="key-value-item">
+                                <span class="key">${isEvidencePack ? 'Pack Name' : 'VM Name'}</span>
+                                <span class="value">${escapeHtml(profile.vmName)}</span>
+                            </div>
+                            <div class="key-value-item">
+                                <span class="key">Workspace</span>
+                                <span class="value">${escapeHtml(profile.workspace)}</span>
+                            </div>
+                            <div class="key-value-item">
+                                <span class="key">Environment</span>
+                                <span class="value">${escapeHtml(profile.environment)}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card" style="padding:1rem;">
+                        <div class="card-title"><i data-lucide="workflow"></i> Boot Sequence</div>
+                        <ul class="list-clean" style="font-size:0.88rem;margin-top:0.75rem;">
+                            <li>Attach seeded scenario telemetry and run history</li>
+                            <li>Prepare analyst workspace controls for ${escapeHtml(card.dataset.title)}</li>
+                            <li>Preserve session state locally for resume support</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="card" style="padding:1rem;margin-bottom:1rem;">
+                    <div class="card-title"><i data-lucide="app-window"></i> Workspace Services</div>
+                    <ul class="list-clean" style="font-size:0.88rem;margin-top:0.75rem;">
+                        ${profile.services.map(s => `<li>${escapeHtml(s)}</li>`).join('')}
+                    </ul>
+                </div>
+                <div class="card" style="padding:1rem;">
+                    <div class="card-title"><i data-lucide="database-zap"></i> Data Flow</div>
+                    <ul class="list-clean" style="font-size:0.88rem;margin-top:0.75rem;">
+                        ${profile.dataFlow.map(s => `<li>${escapeHtml(s)}</li>`).join('')}
+                    </ul>
+                    <p class="surface-note" style="margin-top:0.85rem;">${escapeHtml(profile.note)}</p>
+                </div>`,
+            actions: `
+                <button class="btn btn-secondary" type="button" id="launch-vm-cancel">Cancel</button>
+                <button class="btn" type="button" id="launch-vm-confirm">
+                    <i data-lucide="rocket"></i> ${isEvidencePack ? 'Load Evidence Pack' : 'Start VM'}
+                </button>`
+        });
+
+        const cancelButton  = document.getElementById('launch-vm-cancel');
+        const confirmButton = document.getElementById('launch-vm-confirm');
+
+        if (cancelButton)  cancelButton.addEventListener('click', closeModal);
+
+        if (confirmButton) {
+            confirmButton.addEventListener('click', function () {
+                confirmButton.disabled     = true;
+                confirmButton.innerHTML    = `<i data-lucide="loader-2"></i> ${isEvidencePack ? 'Loading Workspace…' : 'Booting Workspace…'}`;
+                modalSubtitle.textContent  = isEvidencePack
+                    ? `${profile.vmName} is loading. Preparing ${profile.workspace}.`
+                    : `${profile.vmName} is starting. Preparing ${profile.workspace}.`;
+                refreshIcons();
+
+                saveLastScenario(scenarioId, launchButton.dataset.url, card.dataset.title);
+                saveWorkspaceState(profile, scenarioId, launchButton.dataset.url, card.dataset.title);
+
+                window.setTimeout(function () {
+                    window.location.href = launchButton.dataset.url;
+                }, 900);
+            });
+        }
+    }
+
+    /* ── Card event binding ────────────────────────────────── */
+    scenarioCards.forEach(card => {
+        const launchButton  = card.querySelector('.launch-btn');
+        const previewButton = card.querySelector('.preview-btn');
+
+        card.addEventListener('click', function (event) {
+            if (event.target.closest('button')) return;
+            selectCard(card);
+        });
+
+        card.addEventListener('keydown', function (event) {
+            if (event.key === 'Enter' || event.key === ' ') {
+                event.preventDefault();
+                selectCard(card);
+            }
+        });
+
+        if (launchButton) {
+            launchButton.addEventListener('click', function (event) {
+                event.stopPropagation();
+                launchScenario(card, this);
+            });
+        }
+
+        if (previewButton) {
+            previewButton.addEventListener('click', function (event) {
+                event.stopPropagation();
+                openPreview(card.dataset.scenarioId);
+            });
+        }
+    });
+
+    /* ── Filter controls ───────────────────────────────────── */
+    searchInput.addEventListener('input', filterCards);
+    difficultyFilter.addEventListener('change', filterCards);
+    platformFilter.addEventListener('change', filterCards);
+
+    clearFiltersBtn.addEventListener('click', function () {
+        searchInput.value       = '';
+        difficultyFilter.value  = 'all';
+        platformFilter.value    = 'all';
+        filterCards();
+    });
+
+    /* ── Modal dismiss ─────────────────────────────────────── */
+    closeModalBtn.addEventListener('click', closeModal);
+
+    modal.addEventListener('click', function (event) {
+        if (event.target === modal) closeModal();
+    });
+
+    document.addEventListener('keydown', function (event) {
+        if (event.key === 'Escape' && modal.classList.contains('modal-open')) {
+            closeModal();
+        }
+    });
+
+    /* ── Boot sequence ─────────────────────────────────────── */
+    hydrateLabData().finally(function () {
+        createPinButtons();
+        applyPinState();
+        sortScenarioCards();
+        updateResumeButton();
+        filterCards();
+
+        /* Restore previously selected card, or default to first */
+        const storedId      = localStorage.getItem(SELECTED_STORAGE_KEY);
+        const restoredCard  = scenarioCards.find(c => c.dataset.scenarioId === storedId) || scenarioCards[0];
+        if (restoredCard) selectCard(restoredCard, false);
+
+        refreshIcons();
+    });
+})();
+</script>
 </body>
 </html>
