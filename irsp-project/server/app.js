@@ -280,6 +280,16 @@ function createApp() {
             return;
         }
 
+        if (requestUrl.pathname === '/api/ingest/logs' && request.method === 'GET') {
+            sendJson(response, 200, {
+                status: 'ready',
+                endpoint: '/api/ingest/logs',
+                method: 'POST',
+                message: 'Send Windows event log payloads here from Fluent Bit using HTTP POST.'
+            });
+            return;
+        }
+
         if (requestUrl.pathname === '/api/ingest/logs' && request.method === 'POST') {
             try {
                 const rawBody = await readRawRequestBody(request);
