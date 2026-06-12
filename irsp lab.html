@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IRSP Direct Lab Launcher</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            min-height: 100%;
+            font-family: Arial, Helvetica, sans-serif;
+            background: linear-gradient(135deg, #0f172a, #1e293b);
+            color: white;
+        }
+
+        body {
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .launcher-card {
+            width: 90%;
+            max-width: 560px;
+            background: rgba(30, 41, 59, 0.96);
+            border-radius: 20px;
+            padding: 42px 34px;
+            text-align: center;
+            box-shadow: 0 20px 45px rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .badge {
+            display: inline-block;
+            background: rgba(37, 99, 235, 0.18);
+            color: #93c5fd;
+            padding: 8px 14px;
+            border-radius: 999px;
+            font-size: 14px;
+            margin-bottom: 18px;
+        }
+
+        h1 {
+            margin: 0 0 14px 0;
+            font-size: 34px;
+            letter-spacing: 0.5px;
+        }
+
+        p {
+            margin: 0 auto 28px auto;
+            color: #d1d5db;
+            font-size: 16px;
+            line-height: 1.6;
+            max-width: 460px;
+        }
+
+        .launch-button {
+            display: inline-block;
+            text-decoration: none;
+            background: #2563eb;
+            color: white;
+            padding: 16px 34px;
+            border-radius: 12px;
+            font-size: 18px;
+            font-weight: bold;
+            transition: 0.2s ease;
+        }
+
+        .launch-button:hover {
+            background: #1d4ed8;
+            transform: translateY(-2px);
+        }
+
+        .note {
+            margin-top: 24px;
+            color: #9ca3af;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+    </style>
+</head>
+
+<body>
+<main class="launcher-card">
+    <div class="badge">Incident Response Simulation Platform</div>
+
+    <h1>IRSP Linux Lab</h1>
+
+    <p>
+        Click the button below to open the Linux VM desktop directly in your web browser.
+    </p>
+
+    <a
+            class="launch-button"
+            href="http://20.151.96.46:8080/guacamole/#/client/MQBjAHBvc3RncmVzcWw="
+            target="_blank"
+            rel="noopener noreferrer"
+    >
+        Launch Direct Lab
+    </a>
+
+    <div class="note">
+        The Azure VM and Guacamole containers must be running before launching the lab.
+    </div>
+</main>
+</body>
+</html>

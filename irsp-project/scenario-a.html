@@ -3,9 +3,94 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ResponseGrid - Scenario A: Ransomware Containment</title>
+    <title>ResponseGrid - Scenario A: IRSP Direct Lab Launcher</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/lucide/0.263.0/lucide.min.js"></script>
     <link rel="stylesheet" href="css/shared.css">
+
+    <style>
+        main.launcher-main {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            background:
+                radial-gradient(circle at top left, rgba(59, 130, 246, 0.16), transparent 32%),
+                radial-gradient(circle at bottom right, rgba(14, 165, 233, 0.12), transparent 30%),
+                linear-gradient(135deg, #020617, #0f172a 55%, #111827);
+        }
+
+        .launcher-card {
+            width: min(100%, 760px);
+            padding: 2.5rem;
+            text-align: center;
+        }
+
+        .launcher-card h1 {
+            margin-bottom: 0.9rem;
+        }
+
+        .launcher-copy {
+            max-width: 560px;
+            margin: 0 auto 1.75rem;
+            color: var(--text-muted);
+            line-height: 1.7;
+        }
+
+        .launch-actions {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 0.85rem;
+            margin-bottom: 1rem;
+        }
+
+        .launcher-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 1rem;
+            margin-top: 1.6rem;
+            text-align: left;
+        }
+
+        .launcher-info {
+            padding: 1rem;
+            border-radius: 16px;
+            background: rgba(15, 23, 42, 0.72);
+            border: 1px solid rgba(148, 163, 184, 0.16);
+        }
+
+        .launcher-info .eyebrow {
+            margin-bottom: 0.35rem;
+        }
+
+        .launcher-info .value {
+            font-size: 1rem;
+            line-height: 1.5;
+        }
+
+        .note {
+            max-width: 560px;
+            margin: 0 auto;
+            color: var(--text-dim);
+            line-height: 1.6;
+        }
+
+        @media (max-width: 860px) {
+            main.launcher-main {
+                min-height: auto;
+                padding: 1rem;
+            }
+
+            .launcher-card {
+                padding: 1.5rem;
+            }
+
+            .launcher-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
 </head>
 <body>
 
@@ -21,281 +106,45 @@
     </div>
 </nav>
 
-<main>
-    <header>
-        <div>
-            <div class="status-badge red">Local Lab Active</div>
-            <h1>Scenario A: Ransomware Containment</h1>
-            <p class="subtitle">Local Docker ransomware lab with a safe file-locking simulator. Prioritize process containment, outbound beacon disruption, artifact capture, and script removal.</p>
-        </div>
-        <div>
-            <div class="header-panel">
-                <div class="eyebrow">Risk Level</div>
-                <div class="value">Critical</div>
-                <div class="surface-note" id="scenario-a-risk-note">Impact-focused disruption in progress</div>
-            </div>
-            <div class="header-panel header-timer">
-                <div class="eyebrow">Time Remaining</div>
-                <div class="value" id="timer">00:45:00</div>
-                <div class="surface-note">Containment window</div>
-            </div>
-        </div>
-    </header>
+<main class="launcher-main">
+    <section class="card launcher-card">
+        <div class="status-badge green">Incident Response Simulation Platform</div>
+        <h1>Scenario A: IRSP Linux Lab</h1>
+        <p class="launcher-copy">
+            Open the Linux VM desktop directly in your browser and continue the Scenario A exercise from the live IRSP environment using this direct lab launch flow.
+        </p>
 
-    <section class="card section-space" aria-labelledby="scenario-a-workspace-title">
-        <div class="toolbar" style="margin-bottom:0.85rem;">
-            <div>
-                <div class="card-title" id="scenario-a-workspace-title"><i data-lucide="server-cog"></i> Active Workspace</div>
-                <div class="surface-note" id="scenario-a-workspace-note">Local Docker container running the Scenario A simulator.</div>
-            </div>
-            <span class="status-badge green" id="scenario-a-workspace-status">Lab Running</span>
+        <div class="launch-actions">
+            <a
+                class="btn"
+                href="http://20.151.96.46:8080/guacamole/#/client/MQBjAHBvc3RncmVzcWw="
+                target="_blank"
+                rel="noopener noreferrer"
+            >
+                <i data-lucide="rocket"></i> Launch Direct Lab
+            </a>
+            <a class="btn btn-secondary" href="active-lab.html">
+                <i data-lucide="arrow-left"></i> Back to Active Lab
+            </a>
         </div>
-        <div class="command-chips" style="margin-bottom:1rem;">
-            <button class="chip-btn" type="button" id="scenario-a-start-lab">Start Lab</button>
-            <button class="chip-btn" type="button" id="scenario-a-stop-lab">Stop Lab</button>
-            <button class="chip-btn" type="button" id="scenario-a-reset-top">Reset Lab</button>
-        </div>
-        <div class="grid-3">
-            <div class="card" style="padding:1rem;">
-                <div class="eyebrow">Workspace</div>
-                <div class="value" style="font-size:1.05rem;" id="scenario-a-workspace-name">Ransomware Containment Workspace</div>
-                <div class="surface-note" id="scenario-a-workspace-vm">Container: responsegrid-scenario-a</div>
+
+        <div class="launcher-grid">
+            <div class="launcher-info">
+                <div class="eyebrow">Access Method</div>
+                <div class="value">Browser-based Guacamole session into the IRSP Linux VM.</div>
             </div>
-            <div class="card" style="padding:1rem;">
-                <div class="eyebrow">Environment</div>
-                <div style="font-weight:600;" id="scenario-a-environment-copy">Ubuntu container with a safe ransomware simulator</div>
-                <div class="surface-note" id="scenario-a-workspace-started">Booted from the Launch Bay</div>
-            </div>
-            <div class="card" style="padding:1rem;">
-                <div class="eyebrow">Services</div>
-                <div class="surface-note" id="scenario-a-services-copy">Real container shell, live file impact, lab logs, and artifact inspection.</div>
+            <div class="launcher-info">
+                <div class="eyebrow">Scenario Focus</div>
+                <div class="value">Hands-on Linux investigation, containment workflow, and response practice.</div>
             </div>
         </div>
+
+        <p class="note">
+            The Azure VM and Guacamole services should already be running before launch. If the session does not open, return to Active Lab and try again once the environment is ready.
+        </p>
     </section>
-
-    <section class="grid-3 section-space">
-        <div class="card stat-card">
-            <div>
-                <div class="stat-value" style="color:var(--accent-red);" id="scenario-a-pid-value">--</div>
-                <div class="stat-label">Malicious PID</div>
-            </div>
-            <div class="stat-caption" id="scenario-a-pid-note">Loading container process state.</div>
-        </div>
-        <div class="card stat-card">
-            <div>
-                <div class="stat-value" style="color:var(--accent-blue);" id="scenario-a-progress-metric">33%</div>
-                <div class="stat-label">Objective Completion</div>
-            </div>
-            <div class="stat-caption" id="scenario-a-progress-note">Entry-point discovery and isolation are underway; eradication steps remain open.</div>
-        </div>
-        <div class="card stat-card">
-            <div>
-                <div class="stat-value" style="color:var(--accent-yellow);" id="scenario-a-files-value">00</div>
-                <div class="stat-label">Encrypted Files</div>
-            </div>
-            <div class="stat-caption" id="scenario-a-files-note">Container file impact is being inspected.</div>
-        </div>
-    </section>
-
-    <div class="grid-2-1">
-        <div class="stack">
-            <div class="card">
-                <div class="card-title"><i data-lucide="bell"></i> SIEM Alerts</div>
-                <div class="alert-item" id="scenario-a-alert-process">
-                    <div class="alert-info">
-                        <h4 id="scenario-a-alert-process-title">Unauthorized encryption process detected</h4>
-                        <p id="scenario-a-alert-process-copy">Waiting for live process telemetry from the Docker lab.</p>
-                    </div>
-                    <button class="btn btn-danger" type="button" data-shell-command="kill -9 4821" id="scenario-a-alert-process-btn">Kill Process</button>
-                </div>
-                <div class="alert-item warning" id="scenario-a-alert-script">
-                    <div class="alert-info">
-                        <h4 id="scenario-a-alert-script-title">Malicious script present on disk</h4>
-                        <p id="scenario-a-alert-script-copy">Waiting for live filesystem state from the Docker lab.</p>
-                    </div>
-                    <button class="btn btn-secondary" type="button" data-shell-command="rm -f /tmp/.encrypt.sh" id="scenario-a-alert-script-btn">Remove Script</button>
-                </div>
-                <div class="alert-item info" id="scenario-a-alert-c2">
-                    <div class="alert-info">
-                        <h4 id="scenario-a-alert-c2-title">Outbound beacon path detected</h4>
-                        <p id="scenario-a-alert-c2-copy">Waiting for live network state from the Docker lab.</p>
-                    </div>
-                    <button class="btn btn-secondary" type="button" data-shell-command="iptables -A OUTPUT -d 203.0.113.42 -j DROP" id="scenario-a-alert-c2-btn">Block C2</button>
-                </div>
-            </div>
-
-            <div class="card">
-                <div class="card-title"><i data-lucide="terminal"></i> Live Container Terminal</div>
-                <div class="shell-window" data-shell-group="scenario-a-shell">
-                    <div class="shell-header">
-                        <div class="shell-title">container-01 / Response Shell</div>
-                        <div class="shell-tabs">
-                            <button class="shell-tab active" type="button" data-shell-panel="terminal">Terminal</button>
-                            <button class="shell-tab" type="button" data-shell-panel="artifacts">Artifacts</button>
-                        </div>
-                    </div>
-                    <div class="shell-body" style="padding:0;">
-                        <div class="shell-panel" data-shell-panel="terminal">
-                            <div class="terminal" id="term-output" style="border:none;border-radius:0;box-shadow:none;">
-<span class="prompt">root@container-01:~#</span> ps aux | grep encrypt
-<span class="error">root  4821  89.2  3.1 /tmp/.encrypt.sh --target /data --key rsa2048</span>
-<span class="prompt">root@container-01:~#</span> docker inspect container-01 --format '{{.State.Status}}'
-running
-<span class="prompt">root@container-01:~#</span> lsof -p 4821 | tail -3
-/srv/shared/customer-ledger.xlsx.lock
-/srv/shared/hr-roster.csv.lock
-/srv/shared/april-payroll.zip.lock
-<span class="prompt">root@container-01:~#</span> netstat -plant | grep 8443
-tcp   0   0 10.77.4.23:49812   203.0.113.42:8443   ESTABLISHED 4821/bash
-                            </div>
-                        </div>
-                        <div class="shell-panel" data-shell-panel="artifacts" hidden>
-<pre class="shell-code" id="scenario-a-artifacts-panel">artifact=/tmp/.encrypt.sh
-sha256=6df3e1e7de10d9cf938e1a04f8ef120f54f8adf78f2e44d0f8b2217f9b27ac49
-owner=root mode=0755
-
-strings preview:
-- target_path=/srv/shared
-- ext_lock=.lock
-- key_mode=rsa2048
-- beacon_host=203.0.113.42
-
-last touched assets:
-/srv/shared/customer-ledger.xlsx.lock
-/srv/shared/hr-roster.csv.lock
-/srv/shared/april-payroll.zip.lock</pre>
-                        </div>
-                    </div>
-                </div>
-                <div class="command-row">
-                    <input id="scenario-a-command-input" type="text" class="form-input" style="flex:1;" placeholder="Enter command...">
-                    <button class="btn" id="scenario-a-execute" type="button">Execute</button>
-                </div>
-                <div class="command-chips">
-                    <button class="chip-btn" type="button" data-shell-command="ps aux | grep encrypt">Inspect Process</button>
-                    <button class="chip-btn" type="button" data-shell-command="kill -9 4821">Kill Process</button>
-                    <button class="chip-btn" type="button" data-shell-command="iptables -A OUTPUT -d 203.0.113.42 -j DROP">Block C2</button>
-                    <button class="chip-btn" type="button" data-shell-command="rm /tmp/.encrypt.sh">Remove Script</button>
-                    <button class="chip-btn" type="button" id="scenario-a-reset-lab">Reset Lab</button>
-                </div>
-                <p class="surface-note" id="scenario-a-status-line" style="margin-top:0.75rem;">Awaiting analyst command.</p>
-            </div>
-
-            <div class="card">
-                <div class="card-title"><i data-lucide="clock-3"></i> Incident Timeline</div>
-                <div class="timeline">
-                    <div class="timeline-item">
-                        <span class="time">14:02:10</span>
-                        <p class="desc">Initial access via spear-phishing email with malicious attachment.</p>
-                    </div>
-                    <div class="timeline-item">
-                        <span class="time">14:08:33</span>
-                        <p class="desc">Payload executed and reverse shell established to the command-and-control server.</p>
-                    </div>
-                    <div class="timeline-item">
-                        <span class="time">14:15:45</span>
-                        <p class="desc">Lateral movement to the Docker host using stolen SSH credentials.</p>
-                    </div>
-                    <div class="timeline-item">
-                        <span class="time">14:22:01</span>
-                        <p class="desc">Encryption process started against the Container-01 `/data` volume.</p>
-                    </div>
-                </div>
-            </div>
-
-            <div class="card">
-                <div class="toolbar" style="margin-bottom:1rem;">
-                    <div class="card-title"><i data-lucide="table-properties"></i> Indexed Host Events</div>
-                    <div class="surface-note" id="scenario-a-events-note">Live container lab logs for the ransomware exercise.</div>
-                </div>
-                <div class="table-wrap">
-                    <table>
-                        <thead>
-                        <tr>
-                            <th>_time</th>
-                            <th>host</th>
-                            <th>source</th>
-                            <th>event</th>
-                        </tr>
-                        </thead>
-                        <tbody id="scenario-a-events-body">
-                        <tr>
-                            <td>14:21:58</td>
-                            <td>container-01</td>
-                            <td>auditd</td>
-                            <td>execve pid=4821 exe=/bin/bash cmd=/tmp/.encrypt.sh</td>
-                        </tr>
-                        <tr>
-                            <td>14:22:07</td>
-                            <td>docker-host-02</td>
-                            <td>sysmon:network</td>
-                            <td>outbound connection to 203.0.113.42:8443 process=bash</td>
-                        </tr>
-                        <tr>
-                            <td>14:22:19</td>
-                            <td>container-01</td>
-                            <td>inotify</td>
-                            <td>rename burst detected under /srv/shared affected_files=412</td>
-                        </tr>
-                        <tr>
-                            <td>14:22:44</td>
-                            <td>mail-gw-01</td>
-                            <td>o365:message_trace</td>
-                            <td>delivered message subject="Updated payroll policy" attachment=policy_update.iso</td>
-                        </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-
-        <div class="stack">
-            <div class="card">
-                <div class="card-title"><i data-lucide="target"></i> Objectives</div>
-                <ul class="objective-list">
-                    <li class="objective-item complete" data-objective="entry"><i data-lucide="check-circle" style="color:var(--accent-green);"></i> Identify entry point</li>
-                    <li class="objective-item complete" data-objective="isolate"><i data-lucide="check-circle" style="color:var(--accent-green);"></i> Isolate infected container</li>
-                    <li class="objective-item" data-objective="kill"><i data-lucide="circle" style="color:var(--text-dim);"></i> Kill encryption process</li>
-                    <li class="objective-item" data-objective="eradicate"><i data-lucide="circle" style="color:var(--text-dim);"></i> Eradicate malware script</li>
-                    <li class="objective-item" data-objective="block"><i data-lucide="circle" style="color:var(--text-dim);"></i> Block C2 communication</li>
-                    <li class="objective-item" data-objective="restore"><i data-lucide="circle" style="color:var(--text-dim);"></i> Capture forensic snapshot</li>
-                </ul>
-                <p class="surface-note" id="scenario-a-progress-text" style="margin-top:1rem;">Completion: 33%</p>
-                <div class="progress-bar"><div class="progress-fill" id="scenario-a-progress-fill" style="width:33%;"></div></div>
-            </div>
-
-            <div class="card">
-                <div class="card-title"><i data-lucide="message-square"></i> Team Comms</div>
-                <div class="chat-box" id="scenario-a-comms-box">
-                    <div class="msg"><span class="msg-sender">System:</span> Loading local Docker lab state.</div>
-                </div>
-                <input type="text" class="form-input" style="margin-bottom:0;margin-top:0.85rem;" placeholder="Notes only..." disabled>
-            </div>
-
-            <div class="card">
-                <div class="card-title"><i data-lucide="shield"></i> MITRE ATT&amp;CK Coverage</div>
-                <span class="mitre-tag active">T1566 – Phishing</span>
-                <span class="mitre-tag active">T1059 – Execution</span>
-                <span class="mitre-tag critical">T1486 – Encryption</span>
-                <span class="mitre-tag active">T1110 – Brute Force</span>
-                <span class="mitre-tag">T1071 – C2</span>
-                <span class="mitre-tag">T1490 – Inhibit Recovery</span>
-            </div>
-
-            <div class="card">
-                <div class="card-title"><i data-lucide="zap"></i> Quick Actions</div>
-                <div class="action-stack">
-                    <button class="btn btn-danger" type="button" data-shell-command="kill -9 4821"><i data-lucide="octagon-x"></i> Kill Process 4821</button>
-                    <button class="btn btn-secondary" type="button" data-shell-command="docker network disconnect bridge container-01"><i data-lucide="shield-ban"></i> Isolate Container Network</button>
-                    <button class="btn btn-secondary" type="button" data-shell-command="sha256sum /tmp/.encrypt.sh"><i data-lucide="clipboard-copy"></i> Export Forensic Snapshot</button>
-                    <a href="reports.html" class="btn"><i data-lucide="bar-chart-3"></i> View Reports</a>
-                </div>
-            </div>
-        </div>
-    </div>
 </main>
 
 <script src="js/shared.js"></script>
-<script src="js/pages/scenario-a.js"></script>
 </body>
 </html>

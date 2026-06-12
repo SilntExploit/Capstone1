@@ -41,7 +41,7 @@
     const PINNED_STORAGE_KEY = 'irsp-pinned-scenarios';
     const SELECTED_STORAGE_KEY = 'irsp-selected-scenario';
     const scenarioMetrics = {
-        'scenario-a': { readiness: '98%', telemetry: '27 alerts, 188 sessions', focus: 'Containment', owner: 'Blue Team Alpha', status: 'ready', alertsSeeded: 27, eventsSeeded: 42381 },
+        'scenario-a': { readiness: '98%', telemetry: '27 alerts, 188 sessions', focus: 'Direct Lab Access', owner: 'Blue Team Alpha', status: 'ready', alertsSeeded: 27, eventsSeeded: 42381 },
         'scenario-b': { readiness: '96%', telemetry: '19 alerts, 4 confirmed IOCs', focus: 'Investigation', owner: 'Analyst Cohort 2', status: 'ready', alertsSeeded: 19, eventsSeeded: 18422 },
         'scenario-c': { readiness: '62%', telemetry: 'voice transcript + email trail', focus: 'Awareness', owner: 'Awareness Lab', status: 'ready', alertsSeeded: 8, eventsSeeded: 920 },
         'scenario-d': { readiness: '58%', telemetry: 'traffic spikes + service health', focus: 'Availability', owner: 'Network Defense Lab', status: 'ready', alertsSeeded: 12, eventsSeeded: 5410 },
@@ -51,32 +51,32 @@
 
     const previewData = {
         'scenario-a': {
-            title: 'Scenario A: Ransomware Containment',
-            subtitle: 'Advanced | 45 min | Docker/Linux',
+            title: 'Scenario A: IRSP Linux Lab',
+            subtitle: 'Advanced | 45 min | Browser Linux VM',
             body: `
                 <div class="alert-item" style="margin-bottom:1rem;">
                     <div class="alert-info">
                         <h4>Focus Area</h4>
-                        <p>Rapid containment, malware process handling, C2 disruption, and service restoration.</p>
+                        <p>Open the IRSP Linux VM directly in your browser and continue the live Scenario A exercise from the hosted lab desktop.</p>
                     </div>
                 </div>
                 <div class="grid-2">
                     <div class="card" style="padding:1rem;">
                         <div class="card-title"><i data-lucide="target"></i> Objectives</div>
                         <ul class="list-clean" style="font-size:0.88rem;">
-                            <li>Identify entry point</li>
-                            <li>Isolate infected container</li>
-                            <li>Stop encryption activity</li>
-                            <li>Restore operations safely</li>
+                            <li>Open the IRSP Linux VM</li>
+                            <li>Access the active training desktop</li>
+                            <li>Continue the Scenario A lab exercise</li>
+                            <li>Return to Active Lab when finished</li>
                         </ul>
                     </div>
                     <div class="card" style="padding:1rem;">
                         <div class="card-title"><i data-lucide="shield"></i> Skills Practiced</div>
                         <ul class="list-clean" style="font-size:0.88rem;">
-                            <li>Incident triage</li>
-                            <li>Linux investigation</li>
-                            <li>Docker containment</li>
-                            <li>MITRE mapping</li>
+                            <li>Linux navigation</li>
+                            <li>Browser-based VM workflow</li>
+                            <li>Lab environment access</li>
+                            <li>Incident response practice</li>
                         </ul>
                     </div>
                 </div>
@@ -377,7 +377,7 @@
 
         if (assetsList) {
             assetsList.innerHTML = `
-                <li><strong>docker-host-02</strong> | Ubuntu 22.04 | shared volumes mounted to \`/srv/shared\`</li>
+                <li><strong>irsp-linux-vm</strong> | Azure-hosted Linux VM | delivered through Guacamole web access</li>
                 <li><strong>WS-FINANCE-03</strong> | Windows Server 2022 | Office macros enabled for training</li>
                 <li><strong>edge-fw-01</strong> | Palo Alto traffic logs forwarded every 15 sec</li>
                 <li><strong>mail-gw-01</strong> | Microsoft 365 message trace feed enabled</li>

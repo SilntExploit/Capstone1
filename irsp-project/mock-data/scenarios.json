@@ -4,7 +4,7 @@
       "id": "scenario-a",
       "name": "Ransomware Containment",
       "status": "ready",
-      "environment": "Linux / Docker",
+      "environment": "Browser Linux VM",
       "difficulty": "advanced",
       "owner": "Blue Team Alpha",
       "readiness": 98,

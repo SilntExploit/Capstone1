@@ -123,7 +123,7 @@
                 <div class="stat-value" id="lab-metric-live" style="color:var(--accent-blue);">06</div>
                 <div class="stat-label">Live Scenario Pages</div>
             </div>
-            <div class="stat-caption" id="lab-metric-live-note">All six scenarios are launchable across Linux/Docker, Windows, social, and network environments.</div>
+            <div class="stat-caption" id="lab-metric-live-note">Launchable exercises support a browser-based Linux VM lab, Windows host investigations, and the broader scenario catalog.</div>
         </div>
         <div class="card stat-card">
             <div>
@@ -158,7 +158,7 @@
                 <label class="form-label" for="platform-filter">Platform</label>
                 <select id="platform-filter" class="form-input" style="margin-bottom:0;">
                     <option value="all" selected>All Platforms</option>
-                    <option value="linux">Linux / Docker</option>
+                    <option value="linux">Linux VM</option>
                     <option value="windows">Windows Server</option>
                     <option value="social">Social Engineering</option>
                     <option value="network">Network Defense</option>
@@ -203,11 +203,11 @@
                     <span class="surface-note">Scenario A</span>
                 </div>
                 <h3><i data-lucide="lock"></i> Ransomware Containment</h3>
-                <p>Contain a ransomware strain in a Linux-based Docker lab, isolate the impacted workload, eradicate the malicious script, and restore safe operations under pressure.</p>
+                <p>Launch the IRSP Linux VM directly in your browser, work through the Scenario A response exercise, and practice containment in the live lab environment.</p>
                 <div class="scenario-meta">
                     <span><i data-lucide="clock"></i> 45 min</span>
                     <span><i data-lucide="zap"></i> Advanced</span>
-                    <span><i data-lucide="box"></i> Docker/Linux</span>
+                    <span><i data-lucide="monitor"></i> Browser Linux VM</span>
                 </div>
                 <div>
                     <span class="mitre-tag">T1486</span>
@@ -431,7 +431,7 @@
                 <div class="toggle-row">
                     <div>
                         <div style="font-weight:600;font-size:0.92rem;">Scenario Engine</div>
-                        <div class="surface-note">Interactive front-end simulation flow available now</div>
+                        <div class="surface-note">Interactive launch flow for the browser-based IRSP lab is available now</div>
                     </div>
                     <div class="status-badge green">Ready</div>
                 </div>
@@ -454,7 +454,7 @@
             <div class="card">
                 <div class="card-title"><i data-lucide="clipboard-list"></i> Quick Notes</div>
                 <ul class="list-clean" style="font-size:0.92rem;">
-                    <li>Scenario A is the highest-intensity path and centers on ransomware containment discipline.</li>
+                    <li>Scenario A now opens the direct IRSP Linux lab in a browser session for hands-on practice.</li>
                     <li>Scenario B is the stronger fit for evidence mapping, timeline work, and host-oriented investigation.</li>
                     <li>Your most recently launched scenario is stored locally and surfaced as a resume action.</li>
                 </ul>
@@ -519,6 +519,7 @@
                 <div class="surface-note">Prototype infrastructure inventory used across scenarios.</div>
             </div>
             <ul class="list-clean" id="lab-assets-list" style="font-size:0.9rem;">
+                <li><strong>irsp-linux-vm</strong> | Azure-hosted Linux VM | delivered through Guacamole web access</li>
                 <li><strong>docker-host-02</strong> | Ubuntu 22.04 | shared volumes mounted to <code>/srv/shared</code></li>
                 <li><strong>WS-FINANCE-03</strong> | Windows Server 2022 | Office macros enabled for training</li>
                 <li><strong>edge-fw-01</strong> | Palo Alto traffic logs forwarded every 15 sec</li>
@@ -594,7 +595,7 @@ scenario-f status=ready owner=Cloud IAM Team readiness=57</pre>
 <pre class="shell-code" id="lab-seed-snapshot">{
   "scenario_id": "scenario-a",
   "alerts_seeded": 27,
-  "hosts": ["container-01", "docker-host-02", "edge-fw-01"],
+  "hosts": ["irsp-linux-vm", "edge-fw-01", "mail-gw-01"],
   "mail_artifacts": 4,
   "network_sessions": 188,
   "mitre_tags": ["T1486", "T1059", "T1110", "T1071"],

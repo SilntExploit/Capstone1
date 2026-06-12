@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ResponseGrid - IRSP Direct Lab Launcher</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lucide/0.263.0/lucide.min.js"></script>
+    <link rel="stylesheet" href="css/shared.css">
+
+    <style>
+        :root {
+            --bg-main: #0f172a;
+            --bg-panel: rgba(15, 23, 42, 0.82);
+            --bg-panel-strong: rgba(30, 41, 59, 0.94);
+            --border-soft: rgba(148, 163, 184, 0.22);
+            --text-main: #f8fafc;
+            --text-muted: #cbd5e1;
+            --text-dim: #94a3b8;
+            --accent-blue: #3b82f6;
+            --accent-green: #22c55e;
+            --accent-yellow: #facc15;
+            --accent-red: #ef4444;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            font-family: Arial, Helvetica, sans-serif;
+            color: var(--text-main);
+            background:
+                radial-gradient(circle at top left, rgba(59, 130, 246, 0.20), transparent 34%),
+                radial-gradient(circle at bottom right, rgba(34, 197, 94, 0.10), transparent 30%),
+                linear-gradient(135deg, #020617, #0f172a 55%, #111827);
+        }
+
+        nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            width: 245px;
+            padding: 1.2rem;
+            background: rgba(2, 6, 23, 0.84);
+            border-right: 1px solid var(--border-soft);
+            backdrop-filter: blur(18px);
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .logo,
+        .nav-item {
+            color: var(--text-main);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.7rem;
+            border-radius: 12px;
+        }
+
+        .logo {
+            font-weight: 800;
+            font-size: 1.12rem;
+            margin-bottom: 1.4rem;
+            color: #dbeafe;
+        }
+
+        .nav-item {
+            padding: 0.86rem 0.95rem;
+            color: var(--text-muted);
+            transition: 0.2s ease;
+        }
+
+        .nav-item:hover,
+        .nav-item.active {
+            background: rgba(59, 130, 246, 0.15);
+            color: #ffffff;
+        }
+
+        .nav-bottom {
+            margin-top: auto;
+        }
+
+        main {
+            margin-left: 245px;
+            min-height: 100vh;
+            padding: 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .launcher-shell {
+            width: min(100%, 980px);
+            display: grid;
+            grid-template-columns: 1.25fr 0.75fr;
+            gap: 1.25rem;
+            align-items: stretch;
+        }
+
+        .card {
+            background: var(--bg-panel-strong);
+            border: 1px solid var(--border-soft);
+            border-radius: 22px;
+            box-shadow: 0 24px 70px rgba(0, 0, 0, 0.36);
+        }
+
+        .launcher-card {
+            padding: 2.2rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .launcher-card::before {
+            content: "";
+            position: absolute;
+            inset: -80px -120px auto auto;
+            width: 280px;
+            height: 280px;
+            background: rgba(59, 130, 246, 0.18);
+            border-radius: 999px;
+            filter: blur(2px);
+        }
+
+        .status-badge {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+            padding: 0.5rem 0.75rem;
+            border-radius: 999px;
+            background: rgba(34, 197, 94, 0.14);
+            color: #bbf7d0;
+            border: 1px solid rgba(34, 197, 94, 0.25);
+            font-size: 0.86rem;
+            font-weight: 700;
+            margin-bottom: 1.35rem;
+        }
+
+        h1 {
+            position: relative;
+            margin: 0;
+            font-size: clamp(2rem, 5vw, 3.85rem);
+            line-height: 1.02;
+            letter-spacing: -0.04em;
+        }
+
+        .subtitle {
+            position: relative;
+            max-width: 620px;
+            margin: 1rem 0 1.65rem;
+            color: var(--text-muted);
+            font-size: 1.04rem;
+            line-height: 1.7;
+        }
+
+        .launch-button {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.65rem;
+            text-decoration: none;
+            background: linear-gradient(135deg, #2563eb, #1d4ed8);
+            color: white;
+            padding: 1rem 1.35rem;
+            border-radius: 14px;
+            font-size: 1rem;
+            font-weight: 800;
+            border: 1px solid rgba(255, 255, 255, 0.14);
+            box-shadow: 0 16px 30px rgba(37, 99, 235, 0.25);
+            transition: 0.2s ease;
+        }
+
+        .launch-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 20px 38px rgba(37, 99, 235, 0.34);
+        }
+
+        .note {
+            position: relative;
+            margin-top: 1rem;
+            color: var(--text-dim);
+            font-size: 0.9rem;
+            line-height: 1.55;
+        }
+
+        .side-card {
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .card-title {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            margin-bottom: 0.5rem;
+            font-weight: 800;
+            color: #e2e8f0;
+        }
+
+        .info-row {
+            padding: 0.95rem;
+            border-radius: 15px;
+            background: rgba(15, 23, 42, 0.72);
+            border: 1px solid rgba(148, 163, 184, 0.16);
+        }
+
+        .eyebrow {
+            color: var(--text-dim);
+            font-size: 0.78rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            margin-bottom: 0.35rem;
+        }
+
+        .value {
+            font-weight: 800;
+            color: #f8fafc;
+        }
+
+        .terminal-preview {
+            margin: 0;
+            white-space: pre-wrap;
+            color: #c4b5fd;
+            font-size: 0.86rem;
+            line-height: 1.55;
+        }
+
+        @media (max-width: 860px) {
+            nav {
+                position: static;
+                width: auto;
+                flex-direction: row;
+                overflow-x: auto;
+                border-right: none;
+                border-bottom: 1px solid var(--border-soft);
+            }
+
+            .nav-bottom {
+                margin-top: 0;
+            }
+
+            main {
+                margin-left: 0;
+                padding: 1rem;
+            }
+
+            .launcher-shell {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<nav aria-label="Primary navigation">
+    <a href="dashboard.html" class="logo"><i data-lucide="shield-alert"></i> ResponseGrid</a>
+    <a href="dashboard.html" class="nav-item"><i data-lucide="layout-dashboard"></i> Dashboard</a>
+    <a href="active-lab.html" class="nav-item active"><i data-lucide="terminal"></i> Active Lab</a>
+    <a href="reports.html" class="nav-item"><i data-lucide="file-text"></i> Reports</a>
+    <a href="team.html" class="nav-item"><i data-lucide="users"></i> Team</a>
+    <a href="mitre.html" class="nav-item"><i data-lucide="shield"></i> MITRE ATT&amp;CK</a>
+    <div class="nav-bottom">
+        <a href="settings.html" class="nav-item"><i data-lucide="settings"></i> Settings</a>
+    </div>
+</nav>
+
+<main>
+    <section class="launcher-shell">
+        <div class="card launcher-card">
+            <div class="status-badge"><i data-lucide="activity"></i> Lab Ready</div>
+            <h1>IRSP Linux Lab</h1>
+            <p class="subtitle">
+                Click the button below to open the Linux VM desktop directly in your web browser through Apache Guacamole.
+            </p>
+
+            <a
+                class="launch-button"
+                href="http://20.151.96.46:8080/guacamole/#/client/MQBjAHBvc3RncmVzcWw="
+                target="_blank"
+                rel="noopener noreferrer"
+            >
+                <i data-lucide="rocket"></i>
+                Launch Direct Lab
+            </a>
+
+            <div class="note">
+                The Azure VM, xrdp service, Guacamole container, guacd container, and database container must be running before launching the lab.
+            </div>
+        </div>
+
+        <aside class="card side-card">
+            <div>
+                <div class="card-title"><i data-lucide="server"></i> Lab Connection</div>
+                <div class="info-row">
+                    <div class="eyebrow">Access Method</div>
+                    <div class="value">Browser-based Guacamole session</div>
+                </div>
+            </div>
+
+            <div class="info-row">
+                <div class="eyebrow">Target Environment</div>
+                <div class="value">Linux VM Desktop</div>
+            </div>
+
+            <div class="info-row">
+                <div class="eyebrow">Student Action</div>
+                <div class="value">Single-click lab launch</div>
+            </div>
+
+            <div class="info-row">
+                <div class="eyebrow">System Check</div>
+                <pre class="terminal-preview">$ docker ps
+$ sudo systemctl status xrdp
+$ open Guacamole client URL</pre>
+            </div>
+        </aside>
+    </section>
+</main>
+
+<script>
+    if (window.lucide) {
+        lucide.createIcons();
+    }
+</script>
+</body>
+</html>
