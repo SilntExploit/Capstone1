@@ -120,29 +120,95 @@ function normalizeEvent(event) {
     };
 }
 
-function mapLogDocument(item) {
+function pickLogTimestamp(item) {
+    return item.timestamp || item.TimeCreated || item.time || item.UtcTime || item.created_at || item.raw?.timestamp || null;
+}
+
+function pickLogEvent(item) {
+    const rawEventData = item.EventData || item.event_data || item.raw?.EventData || {};
+    const message = item.event || item.Message || item.message || rawEventData.Message || '';
+    return typeof message === 'string' ? message : JSON.stringify(message);
+}
+
+function extractXmlTag(xml, tagName) {
+    const match = String(xml || '').match(new RegExp(`<${tagName}[^>]*>([^<]*)</${tagName}>`, 'i'));
+    return match ? match[1] : null;
+}
+
+function extractXmlData(xml, fieldName) {
+    const match = String(xml || '').match(new RegExp(`<Data\\s+Name=['"]${fieldName}['"]>([^<]*)</Data>`, 'i'));
+    return match ? match[1] : null;
+}
+
+function extractMessageField(message, label) {
+    const match = String(message || '').match(new RegExp(`${label}:\\s*([^\\r\\n]+)`, 'i'));
+    return match ? match[1].trim() : null;
+}
+
+function presentValue(value) {
+    if (value === null || value === undefined) return null;
+    const normalized = String(value).trim();
+    if (!normalized || normalized === '-' || normalized.toLowerCase() === 'unknown-host') return null;
+    return value;
+}
+
+function mapLogDocument(item, fallbackScenarioId = null) {
+    const rawEventData = item.EventData || item.event_data || item.raw?.EventData || {};
+    const rawSystemXml = item.System || item.raw?.System || '';
+    const rawMessage = pickLogEvent(item);
+    const timestamp = pickLogTimestamp(item);
+    const channel = item.Channel || item.channel || item.SourceName || item.sourcetype || extractXmlTag(rawSystemXml, 'Channel');
+    const eventId = item.event_id || item.EventID || item.EventId || extractXmlTag(rawSystemXml, 'EventID') || null;
+    const host = presentValue(item.host) || presentValue(item.Computer) || presentValue(item.computer) || extractXmlTag(rawSystemXml, 'Computer') || 'unknown-host';
+    const processName = presentValue(item.process_name)
+        || presentValue(item.Image)
+        || presentValue(item.ProcessName)
+        || presentValue(rawEventData.Image)
+        || presentValue(rawEventData.ProcessName)
+        || extractXmlData(rawSystemXml, 'NewProcessName')
+        || extractXmlData(rawSystemXml, 'Image')
+        || extractMessageField(rawMessage, 'New Process Name')
+        || extractMessageField(rawMessage, 'Image');
+    const parentProcess = presentValue(item.parent_process)
+        || presentValue(item.ParentImage)
+        || presentValue(rawEventData.ParentImage)
+        || extractXmlData(rawSystemXml, 'ParentProcessName')
+        || extractXmlData(rawSystemXml, 'ParentImage')
+        || extractMessageField(rawMessage, 'Creator Process Name')
+        || extractMessageField(rawMessage, 'ParentImage');
+    const user = presentValue(item.user)
+        || presentValue(item.User)
+        || presentValue(item.SubjectUserName)
+        || presentValue(rawEventData.User)
+        || presentValue(rawEventData.SubjectUserName)
+        || extractXmlData(rawSystemXml, 'TargetUserName')
+        || extractXmlData(rawSystemXml, 'SubjectUserName')
+        || extractMessageField(rawMessage, 'Account Name');
+
     return {
         id: String(item._id),
-        scenario_id: item.scenario_id,
-        timestamp: item.timestamp instanceof Date ? item.timestamp.toISOString() : item.timestamp,
-        host: item.host,
-        sourcetype: item.sourcetype,
-        severity: item.severity,
-        user: item.user,
-        process_name: item.process_name,
-        parent_process: item.parent_process,
-        dest_ip: item.dest_ip,
-        dest_port: item.dest_port,
-        query_name: item.query_name,
-        task_name: item.task_name,
-        event_id: item.event_id,
-        event: item.event
+        scenario_id: item.scenario_id || fallbackScenarioId,
+        timestamp: timestamp instanceof Date ? timestamp.toISOString() : timestamp,
+        host,
+        sourcetype: item.sourcetype || normalizeSourceType(channel, eventId, rawMessage),
+        severity: item.severity || normalizeSeverity(item.Level || item.level || item.LevelDisplayName),
+        user,
+        process_name: processName || null,
+        parent_process: parentProcess || null,
+        dest_ip: item.dest_ip || item.DestinationIp || rawEventData.DestinationIp || rawEventData.DestinationHostname || extractXmlData(rawSystemXml, 'DestinationIp') || null,
+        dest_port: item.dest_port || item.DestinationPort || rawEventData.DestinationPort || extractXmlData(rawSystemXml, 'DestinationPort') || null,
+        query_name: item.query_name || item.QueryName || rawEventData.QueryName || extractXmlData(rawSystemXml, 'QueryName') || null,
+        task_name: item.task_name || item.TaskName || rawEventData.TaskName || rawEventData.Task || extractXmlData(rawSystemXml, 'TaskName') || null,
+        event_id: eventId,
+        event: rawMessage
     };
 }
 
 async function getStoredLogs({ scenarioId, limit } = {}) {
     const db = await getDb();
-    const query = scenarioId ? { scenario_id: scenarioId } : {};
+    const query = scenarioId === 'scenario-b'
+        ? { $or: [{ scenario_id: scenarioId }, { scenario_id: { $exists: false } }, { scenario_id: null }] }
+        : (scenarioId ? { scenario_id: scenarioId } : {});
 
     return db.collection('security_events')
         .find(query)
@@ -193,7 +259,7 @@ function createApp() {
         if (requestUrl.pathname === '/api/logs') {
             try {
                 const logs = await getStoredLogs({ scenarioId, limit });
-                const mappedLogs = logs.map(mapLogDocument);
+                const mappedLogs = logs.map(item => mapLogDocument(item, scenarioId));
 
                 sendJson(response, 200, {
                     count: mappedLogs.length,
@@ -226,7 +292,7 @@ function createApp() {
             const query = requestUrl.searchParams.get('q') || '';
             try {
                 const logs = await getStoredLogs({ scenarioId, limit: 500 });
-                sendJson(response, 200, buildSearchResponse(logs.map(mapLogDocument), query, scenarioId));
+                sendJson(response, 200, buildSearchResponse(logs.map(item => mapLogDocument(item, scenarioId)), query, scenarioId));
             } catch (error) {
                 sendJson(response, 200, buildSearchResponse(state.logs, query, scenarioId));
             }
