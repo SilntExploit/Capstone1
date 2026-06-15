@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ResponseGrid – IRSP Live Lab</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<!-- ══════════════ TOP BAR ══════════════ -->
+<header>
+    <div class="logo">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+        </svg>
+        <span>ResponseGrid</span>
+    </div>
+
+    <div class="header-center">
+        <span class="stage-pill active" id="pill-1">🔴 Stage 1 — Detection</span>
+        <span class="stage-pill locked" id="pill-2">🟡 Stage 2 — Containment</span>
+        <span class="stage-pill locked" id="pill-3">🟢 Stage 3 — Recovery</span>
+    </div>
+
+    <div class="header-right">
+        <span class="timer-label">⏳ Time Left:</span>
+        <span id="global-timer">30:00</span>
+        <button id="end-lab-btn" class="end-lab-btn" type="button" title="End Lab">End Lab</button>
+        <span class="score-badge">Score: <span id="score-display">0</span> / 100</span>
+    </div>
+</header>
+
+<!-- ══════════════ SPLIT LAYOUT ══════════════ -->
+<div class="split">
+
+    <!-- ── LEFT: VM PANEL ── -->
+    <div class="vm-panel">
+        <div class="vm-bar">
+            <div class="vm-dot red"></div>
+            <div class="vm-dot yellow"></div>
+            <div class="vm-dot green"></div>
+            <div class="vm-url">http://20.151.96.46:8080/guacamole/#/client/MQBjAHBvc3RncmVzcWw=</div>
+            <span id="vm-status-indicator" style="font-size:0.7rem; font-weight:700; margin-left:0.5rem;">🟢 VM Visible</span>
+        </div>
+
+        <!-- Time's Up Overlay -->
+        <div id="countdown-overlay">
+            <div class="skull">💀</div>
+            <h2>TIME'S UP!</h2>
+            <p>Your response window has expired.<br>In a real attack, your files would be gone.<br>Review your answers and try again.</p>
+            <button class="retry-btn" onclick="location.reload()">🔄 Restart Exercise</button>
+        </div>
+
+        <iframe
+            id="vm-frame"
+            src="http://20.151.96.46:8080/guacamole/#/client/MQBjAHBvc3RncmVzcWw="
+            title="IRSP Linux VM via Apache Guacamole"
+            allow="fullscreen; clipboard-read; clipboard-write"
+            allowfullscreen
+            loading="eager"
+            referrerpolicy="no-referrer-when-downgrade"
+            tabindex="0"
+        ></iframe>
+    </div>
+
+    <!-- ── RIGHT: TASK PANEL ── -->
+    <div class="task-panel">
+        <div class="panel-header">
+            <h2>📋 Incident Response Tasks</h2>
+            <p>Complete each task using the VM on the left. Enter your findings below.</p>
+        </div>
+
+        <div class="panel-body" id="panel-body">
+
+            <!-- ════ STAGE 1 ════ -->
+            <div class="stage-block" id="stage-1-block">
+                <div class="stage-header s1">
+                    <span class="stage-icon">🔴</span>
+                    <span class="stage-title">Stage 1 — Identification &amp; Scoping</span>
+                    <span class="stage-pts">31 pts</span>
+                </div>
+                <div class="stage-body">
+
+                    <div class="q-card" id="q1">
+                        <div class="q-number">Question 1 of 4</div>
+                        <div class="q-text">A ransomware window has appeared on the VM. Open any <code>!README_TO_DECRYPT.txt</code> file you find. What is the contact email listed in the ransom note?</div>
+                        <div class="q-hint">💡 Hint: Try <code>cat ~/Desktop/!README_TO_DECRYPT.txt</code></div>
+                        <div class="q-input-row">
+                            <input class="q-input" id="q1-input" type="text" placeholder="e.g. decrypt@evil.onion" />
+                            <button class="q-submit" onclick="checkAnswer(1)">Submit</button>
+                        </div>
+                        <div class="q-feedback" id="q1-feedback"></div>
+                    </div>
+
+                    <div class="q-card" id="q2">
+                        <div class="q-number">Question 2 of 4</div>
+                        <div class="q-text">Look inside the <code>~/Documents</code> folder. What file extension has the ransomware added to the encrypted files?</div>
+                        <div class="q-hint">💡 Hint: Try <code>ls ~/Documents</code></div>
+                        <div class="q-input-row">
+                            <input class="q-input" id="q2-input" type="text" placeholder="e.g. .locked" />
+                            <button class="q-submit" onclick="checkAnswer(2)">Submit</button>
+                        </div>
+                        <div class="q-feedback" id="q2-feedback"></div>
+                    </div>
+
+                    <div class="q-card" id="q3">
+                        <div class="q-number">Question 3 of 4</div>
+                        <div class="q-text">How many folders on the system contain a <code>!README_TO_DECRYPT.txt</code> file? (This tells you the scope of the attack.)</div>
+                        <div class="q-hint">💡 Hint: Try <code>find /home -name "!README_TO_DECRYPT.txt" | wc -l</code></div>
+                        <div class="q-input-row">
+                            <input class="q-input" id="q3-input" type="text" placeholder="e.g. 4" />
+                            <button class="q-submit" onclick="checkAnswer(3)">Submit</button>
+                        </div>
+                        <div class="q-feedback" id="q3-feedback"></div>
+                    </div>
+
+                    <div class="q-card" id="q4">
+                        <div class="q-number">Question 4 of 4</div>
+                        <div class="q-text">Check the running processes. There is a suspicious process running from the <code>/tmp/</code> directory. What is the name of that process?</div>
+                        <div class="q-hint">💡 Hint: Try <code>ps aux | grep /tmp</code></div>
+                        <div class="q-input-row">
+                            <input class="q-input" id="q4-input" type="text" placeholder="e.g. sysupdate" />
+                            <button class="q-submit" onclick="checkAnswer(4)">Submit</button>
+                        </div>
+                        <div class="q-feedback" id="q4-feedback"></div>
+                    </div>
+
+                    <div class="stage-complete-banner" id="stage-1-complete">
+                        ✅ Stage 1 Complete! Stage 2 is now unlocked.
+                    </div>
+                </div>
+            </div>
+
+            <!-- ════ STAGE 2 ════ -->
+            <div class="stage-block locked-block" id="stage-2-block">
+                <div class="stage-header s2">
+                    <span class="stage-icon">🟡</span>
+                    <span class="stage-title">Stage 2 — Containment</span>
+                    <span class="stage-pts">31 pts</span>
+                </div>
+                <div class="stage-body">
+
+                    <div class="q-card" id="q5">
+                        <div class="q-number">Question 1 of 4</div>
+                        <div class="q-text">Find the PID of the suspicious <code>/tmp/</code> process and kill it. What PID did you kill?</div>
+                        <div class="q-hint">💡 Hint: <code>ps aux | grep /tmp</code> then <code>kill -9 [PID]</code></div>
+                        <div class="q-input-row">
+                            <input class="q-input" id="q5-input" type="text" placeholder="e.g. 1337" />
+                            <button class="q-submit" onclick="checkAnswer(5)">Submit</button>
+                        </div>
+                        <div class="q-feedback" id="q5-feedback"></div>
+                    </div>
+
+                    <div class="q-card" id="q6">
+                        <div class="q-number">Question 2 of 4</div>
+                        <div class="q-text">Enable the firewall to isolate the machine. What is the status output after running <code>sudo ufw enable</code>?</div>
+                        <div class="q-hint">💡 Hint: Run <code>sudo ufw enable</code> then <code>sudo ufw status</code></div>
+                        <div class="q-input-row">
+                            <input class="q-input" id="q6-input" type="text" placeholder="e.g. Status: active" />
+                            <button class="q-submit" onclick="checkAnswer(6)">Submit</button>
+                        </div>
+                        <div class="q-feedback" id="q6-feedback"></div>
+                    </div>
+
+                    <div class="q-card" id="q7">
+                        <div class="q-number">Question 3 of 4</div>
+                        <div class="q-text">Check the system logs to find when the first encrypted file was created. What is the date of the attack? (e.g. 2024-01-15)</div>
+                        <div class="q-hint">💡 Hint: Try <code>ls -lt ~/Documents | tail -5</code> or <code>journalctl --since today</code></div>
+                        <div class="q-input-row">
+                            <input class="q-input" id="q7-input" type="text" placeholder="e.g. 2024-01-15" />
+                            <button class="q-submit" onclick="checkAnswer(7)">Submit</button>
+                        </div>
+                        <div class="q-feedback" id="q7-feedback"></div>
+                    </div>
+
+                    <div class="q-card" id="q8">
+                        <div class="q-number">Question 4 of 4</div>
+                        <div class="q-text">The ransomware set up persistence so it runs again on reboot. Check the crontab. What is the full crontab entry the attacker added?</div>
+                        <div class="q-hint">💡 Hint: Run <code>crontab -l</code></div>
+                        <div class="q-input-row">
+                            <input class="q-input" id="q8-input" type="text" placeholder="e.g. @reboot /tmp/sysupdate" />
+                            <button class="q-submit" onclick="checkAnswer(8)">Submit</button>
+                        </div>
+                        <div class="q-feedback" id="q8-feedback"></div>
+                    </div>
+
+                    <div class="stage-complete-banner" id="stage-2-complete">
+                        ✅ Stage 2 Complete! Stage 3 is now unlocked.
+                    </div>
+                </div>
+            </div>
+
+            <!-- ════ STAGE 3 ════ -->
+            <div class="stage-block locked-block" id="stage-3-block">
+                <div class="stage-header s3">
+                    <span class="stage-icon">🟢</span>
+                    <span class="stage-title">Stage 3 — Recovery</span>
+                    <span class="stage-pts">38 pts</span>
+                </div>
+                <div class="stage-body">
+
+                    <div class="q-card" id="q9">
+                        <div class="q-number">Question 1 of 5</div>
+                        <div class="q-text">Locate the backup folder on the system. What is the full path to the backup directory?</div>
+                        <div class="q-hint">💡 Hint: Try <code>ls /var/backups/</code> or <code>find / -name "backup" 2>/dev/null</code></div>
+                        <div class="q-input-row">
+                            <input class="q-input" id="q9-input" type="text" placeholder="e.g. /var/backups/user" />
+                            <button class="q-submit" onclick="checkAnswer(9)">Submit</button>
+                        </div>
+                        <div class="q-feedback" id="q9-feedback"></div>
+                    </div>
+
+                    <div class="q-card" id="q10">
+                        <div class="q-number">Question 2 of 5</div>
+                        <div class="q-text">Run a checksum on the backup file <code>report.txt</code> in the backup folder. What is the MD5 hash of that file?</div>
+                        <div class="q-hint">💡 Hint: <code>md5sum /var/backups/user/report.txt</code></div>
+                        <div class="q-input-row">
+                            <input class="q-input" id="q10-input" type="text" placeholder="e.g. d41d8cd98f00b204e9800998ecf8427e" />
+                            <button class="q-submit" onclick="checkAnswer(10)">Submit</button>
+                        </div>
+                        <div class="q-feedback" id="q10-feedback"></div>
+                    </div>
+
+                    <div class="q-card" id="q11">
+                        <div class="q-number">Question 3 of 5</div>
+                        <div class="q-text">Restore <code>report.txt</code> from the backup to the Documents folder. What command did you use to copy it?</div>
+                        <div class="q-hint">💡 Hint: <code>cp /var/backups/user/report.txt ~/Documents/report.txt</code></div>
+                        <div class="q-input-row">
+                            <input class="q-input" id="q11-input" type="text" placeholder="e.g. cp /var/backups/user/report.txt ~/Documents/" />
+                            <button class="q-submit" onclick="checkAnswer(11)">Submit</button>
+                        </div>
+                        <div class="q-feedback" id="q11-feedback"></div>
+                    </div>
+
+                    <div class="q-card" id="q12">
+                        <div class="q-number">Question 4 of 5</div>
+                        <div class="q-text">Remove the attacker's persistence by deleting the crontab entry. After removing it, what does <code>crontab -l</code> return?</div>
+                        <div class="q-hint">💡 Hint: <code>crontab -e</code> to edit and delete the line, then <code>crontab -l</code> to verify</div>
+                        <div class="q-input-row">
+                            <input class="q-input" id="q12-input" type="text" placeholder="e.g. no crontab for user" />
+                            <button class="q-submit" onclick="checkAnswer(12)">Submit</button>
+                        </div>
+                        <div class="q-feedback" id="q12-feedback"></div>
+                    </div>
+
+                    <div class="q-card" id="q13">
+                        <div class="q-number">Question 5 of 5</div>
+                        <div class="q-text">During your investigation on the VM, you should have found an image recovered from the attacker's workstation. <strong>What is the word that is circled in red in that image?</strong></div>
+                        <div class="q-hint">💡 Hint: Look through the recovered files on the VM for an image with a word circled in red.</div>
+                        <div class="q-input-row">
+                            <input class="q-input" id="q13-input" type="text" placeholder="Type the circled word" />
+                            <button class="q-submit" onclick="checkAnswer(13)">Submit</button>
+                        </div>
+                        <div class="q-feedback" id="q13-feedback"></div>
+                    </div>
+
+                    <div class="stage-complete-banner" id="stage-3-complete">
+                        🎉 All Stages Complete! Great work.
+                    </div>
+                </div>
+            </div>
+
+            <!-- ════ FINAL SCORE ════ -->
+            <div id="final-panel">
+                <h3>🏁 Exercise Complete</h3>
+                <div class="big-score" id="final-score-num">0</div>
+                <div class="out-of" style="color:var(--text-muted); font-size:0.9rem;">out of 100 points</div>
+                <div class="grade" id="final-grade" style="margin:0.75rem 0; font-weight:700; font-size:1rem;"></div>
+                <div class="breakdown" id="final-breakdown" style="font-size:0.8rem; color:var(--text-secondary); line-height:1.8;"></div>
+            </div>
+
+        </div><!-- /panel-body -->
+    </div><!-- /task-panel -->
+
+</div><!-- /split -->
+
+<script src="app.js"></script>
+<script defer src="https://static.cloudflareinsights.com/beacon.min.js/v833ccba57c9e4d2798f2e76cebdd09a11778172276447" integrity="sha512-57MDmcccJXYtNnH+ZiBwzC4jb2rvgVCEokYN+L/nLlmO8rfYT/gIpW2A569iJ/3b+0UEasghjuZH/ma3wIs/EQ==" data-cf-beacon='{"version":"2024.11.0","token":"f0f03d0605bf45f1a3b17cf7d5e6861f","server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
+</body>
+</html>
