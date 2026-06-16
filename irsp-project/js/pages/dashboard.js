@@ -1,152 +1,99 @@
 (function () {
     'use strict';
 
-    const scenarioId = 'scenario-a';
-    const alertsBody = document.getElementById('dashboard-alerts-body');
-    const alertsMetric = document.getElementById('dashboard-metric-alerts');
-    const alertsMetricNote = document.getElementById('dashboard-metric-alerts-note');
-    const eventsMetric = document.getElementById('dashboard-metric-events');
-    const eventsMetricNote = document.getElementById('dashboard-metric-events-note');
-    const progressMetric = document.getElementById('dashboard-metric-progress');
-    const progressMetricNote = document.getElementById('dashboard-metric-progress-note');
-    const analystsMetric = document.getElementById('dashboard-metric-analysts');
-    const analystsMetricNote = document.getElementById('dashboard-metric-analysts-note');
-    const connectionStatus = document.getElementById('dashboard-connection-status');
-    const evidenceLocker = document.getElementById('dashboard-evidence-locker');
-    const evidenceCount = document.getElementById('dashboard-evidence-count');
-    const liveFeed = document.getElementById('live-activity-feed');
-    const liveStatus = document.getElementById('dashboard-live-status');
+    const LAST_SCENARIO_KEY = 'irsp-last-scenario';
+    const DEFAULT_SCENARIO_ID = 'scenario-b';
 
-    let liveCursor = 0;
-    const seenPlaybackIds = new Set();
-
-    function severityMeta(value) {
-        const normalized = String(value || '').toLowerCase();
-
-        if (normalized === 'critical') {
-            return { badgeClass: 'red', rowClass: 'critical', label: 'Critical', score: 91 };
+    const SCENARIO_SUMMARIES = {
+        'scenario-a': {
+            id: 'scenario-a',
+            name: 'Scenario A',
+            title: 'Scenario A: IRSP Linux Lab',
+            url: 'eapen-scenario-a/lab_a.html',
+            summary: 'Scenario A is Eapen\'s browser-based Linux VM lab with a Guacamole session, staged IR questions, timer, and final score.',
+            mode: 'Live VM',
+            modeNote: 'The trainee opens the Guacamole VM wrapper and completes detection, containment, and recovery stages.',
+            primaryLabel: 'Workspace',
+            primaryTarget: 'IRSP Linux VM',
+            primaryNote: 'Browser-accessible Guacamole lab desktop.',
+            secondaryLabel: 'Environment',
+            secondaryTarget: 'Linux / Docker',
+            secondaryNote: 'Containment and response workspace.',
+            alertsLabel: 'Scenario A Alerts',
+            page: 'Scenario A IRSP Linux Lab',
+            evaluation: 'Score comes from staged answers, time bonuses, and completion before timeout.',
+            actionText: 'Resume Scenario A',
+            actionIcon: 'terminal'
+        },
+        'scenario-b': {
+            id: 'scenario-b',
+            name: 'Scenario B',
+            title: 'Scenario B: Endpoint Investigation',
+            url: 'scenario-b.html',
+            summary: 'Scenario B is the timed trainee endpoint investigation exercise with alerts, telemetry pivots, response actions, and hidden scoring.',
+            mode: 'Timed',
+            modeNote: 'Score is hidden until submit or timeout.',
+            primaryLabel: 'Primary Endpoint',
+            primaryTarget: '192.168.32.130',
+            primaryNote: 'Initial triage and execution focus.',
+            secondaryLabel: 'Secondary Endpoint',
+            secondaryTarget: '192.168.32.129',
+            secondaryNote: 'Lateral movement validation target.',
+            alertsLabel: 'Scenario B Alerts',
+            page: 'Scenario B Endpoint Investigation',
+            evaluation: 'Hidden score revealed on submit or timeout.',
+            actionText: 'Resume Scenario B',
+            actionIcon: 'shield-alert'
         }
+    };
 
-        if (normalized === 'high') {
-            return { badgeClass: 'yellow', rowClass: 'high', label: 'High', score: 82 };
-        }
+    const els = {
+        recentLabName: document.getElementById('dashboard-recent-lab-name'),
+        alertsBody: document.getElementById('dashboard-alerts-body'),
+        metricAlerts: document.getElementById('dashboard-metric-alerts'),
+        metricAlertsNote: document.getElementById('dashboard-metric-alerts-note'),
+        metricEvents: document.getElementById('dashboard-metric-events'),
+        metricEventsNote: document.getElementById('dashboard-metric-events-note'),
+        connectionStatus: document.getElementById('dashboard-connection-status'),
+        progressNote: document.getElementById('dashboard-progress-note'),
+        progressFill: document.getElementById('dashboard-progress-fill'),
+        lastRun: document.getElementById('dashboard-last-run'),
+        recentLabSummary: document.getElementById('dashboard-recent-lab-summary'),
+        resumeLab: document.getElementById('dashboard-resume-lab'),
+        exerciseMode: document.getElementById('dashboard-exercise-mode'),
+        exerciseModeNote: document.getElementById('dashboard-exercise-mode-note'),
+        primaryLabel: document.getElementById('dashboard-primary-label'),
+        primaryTarget: document.getElementById('dashboard-primary-target'),
+        primaryNote: document.getElementById('dashboard-primary-note'),
+        secondaryLabel: document.getElementById('dashboard-secondary-label'),
+        secondaryTarget: document.getElementById('dashboard-secondary-target'),
+        secondaryNote: document.getElementById('dashboard-secondary-note'),
+        alertsLabel: document.getElementById('dashboard-alerts-label'),
+        alertsTitleText: document.getElementById('dashboard-alerts-title-text'),
+        eventsLabel: document.getElementById('dashboard-events-label'),
+        primaryPage: document.getElementById('dashboard-primary-page'),
+        modeValue: document.getElementById('dashboard-mode-value'),
+        evaluationValue: document.getElementById('dashboard-evaluation-value'),
+        primaryAction: document.getElementById('dashboard-primary-action')
+    };
 
-        return { badgeClass: 'blue', rowClass: 'medium', label: 'Medium', score: 72 };
-    }
-
-    function formatNumber(value) {
-        return Number(value || 0).toLocaleString();
-    }
-
-    function formatClock(value) {
-        const date = new Date(value);
-        if (Number.isNaN(date.getTime())) return value;
-
-        return date.toISOString().split('T')[1].replace('Z', '');
-    }
-
-    function mapLogToRecord(log) {
-        const event = String(log.event || '').toLowerCase();
-        const sourcetype = String(log.sourcetype || '').toLowerCase();
-        let recordId = log.id;
-
-        if (event.includes('chmod +x') || event.includes('/tmp/.encrypt.sh')) {
-            recordId = 'evt-encrypt';
-        } else if (event.includes('rename burst')) {
-            recordId = 'evt-rename';
-        } else if (sourcetype.includes('okta')) {
-            recordId = 'evt-okta';
-        } else if (event.includes('203.0.113.42') || String(log.dest_ip || '').includes('203.0.113.42')) {
-            recordId = 'evt-c2';
-        } else if (sourcetype.includes('sysmon:process') || event.includes('svc-backup') || event.includes('sshd')) {
-            recordId = 'evt-ssh';
-        } else if (sourcetype.includes('o365')) {
-            recordId = 'evt-mail';
-        } else if (sourcetype.includes('falco')) {
-            recordId = 'evt-falco';
-        }
-
-        const severity = severityMeta(log.severity);
-
-        return Object.assign({}, log, {
-            record_id: recordId,
-            risk_score: severity.score
-        });
-    }
-
-    function hydrateAlertQueue(items) {
-        if (!alertsBody || !Array.isArray(items)) return;
-
-        const rows = Array.from(alertsBody.querySelectorAll('tr'));
-
-        items.forEach(function (item, index) {
-            const row = rows[index];
-            if (!row) return;
-
-            const meta = severityMeta(item.severity);
-            row.className = `queue-row ${meta.rowClass}`;
-            row.dataset.serverAlertId = item.id || '';
-            if (item.alert_key) {
-                row.dataset.alertId = item.alert_key;
-            }
-
-            row.cells[0].innerHTML = `<span class="status-badge ${meta.badgeClass}">${meta.label}</span>`;
-            row.cells[1].textContent = item.title || 'Untitled alert';
-            row.cells[2].textContent = item.user ? `${item.host} / ${item.user}` : (item.host || '--');
-            row.cells[2].className = 'mono';
-            row.cells[3].textContent = item.technique_id || '--';
-        });
-
-        const criticalCount = items.filter(item => item.severity === 'critical').length;
-        const highCount = items.filter(item => item.severity === 'high').length;
-        alertsMetric.textContent = String(items.length).padStart(2, '0');
-        alertsMetricNote.textContent = `${criticalCount} critical • ${highCount} high from mock backend`;
-    }
-
-    function renderEvidence(items) {
-        if (!evidenceLocker || !Array.isArray(items)) return;
-
-        evidenceLocker.innerHTML = items.slice(0, 5).map(function (item) {
-            return `
-                <li>
-                    <span class="stamp">${formatClock(item.collected_at)}</span>
-                    ${item.title} ${item.source ? `from ${item.source}.` : ''}
-                </li>
-            `;
-        }).join('');
-
-        evidenceCount.textContent = `${items.length} artifact${items.length === 1 ? '' : 's'} collected`;
-    }
-
-    async function refreshEvidence() {
-        if (!window.IRSPApi || !window.IRSPApi.isAvailable()) return;
-
+    function readLastScenario() {
         try {
-            const payload = await window.IRSPApi.getEvidence({ scenario: scenarioId, limit: 5 });
-            renderEvidence(payload.items || []);
+            const parsed = JSON.parse(localStorage.getItem(LAST_SCENARIO_KEY) || 'null');
+            if (parsed && SCENARIO_SUMMARIES[parsed.id]) {
+                return Object.assign({}, SCENARIO_SUMMARIES[parsed.id], {
+                    title: parsed.title || SCENARIO_SUMMARIES[parsed.id].title,
+                    url: parsed.url || SCENARIO_SUMMARIES[parsed.id].url
+                });
+            }
         } catch (error) {
-            evidenceCount.textContent = 'Evidence feed offline';
+            return SCENARIO_SUMMARIES[DEFAULT_SCENARIO_ID];
         }
+
+        return SCENARIO_SUMMARIES[DEFAULT_SCENARIO_ID];
     }
 
-    function prependLiveFeedItem(item) {
-        if (!liveFeed || !item || seenPlaybackIds.has(item.id)) return;
-
-        seenPlaybackIds.add(item.id);
-
-        const entry = document.createElement('li');
-        entry.innerHTML = `
-            <span class="stamp">${formatClock(item.timestamp)}</span>
-            ${item.message}
-        `;
-        liveFeed.prepend(entry);
-
-        while (liveFeed.children.length > 6) {
-            liveFeed.removeChild(liveFeed.lastElementChild);
-        }
-    }
-
-    function escapeHtmlLocal(value) {
+    function escapeHtml(value) {
         return String(value || '')
             .replace(/&/g, '&amp;')
             .replace(/</g, '&lt;')
@@ -155,136 +102,124 @@
             .replace(/'/g, '&#39;');
     }
 
-    function appendTimelinePlayback(item) {
-        const timeline = document.getElementById('incident-timeline');
-        if (!timeline || !item) return;
-
-        const entry = document.createElement('div');
-        entry.className = 'timeline-item';
-        entry.innerHTML = `
-            <span class="time">${escapeHtmlLocal(formatClock(item.timestamp))}</span>
-            <p class="desc">${escapeHtmlLocal(item.message)}</p>
-        `;
-        timeline.appendChild(entry);
+    function formatNumber(value) {
+        return Number(value || 0).toLocaleString();
     }
 
-    function appendChatPlayback(item) {
-        const comms = document.getElementById('team-comms');
-        if (!comms || !item) return;
-
-        const entry = document.createElement('div');
-        entry.className = 'msg';
-        entry.innerHTML = `<span class="msg-sender">${escapeHtmlLocal(item.source || 'System')}:</span> ${escapeHtmlLocal(item.message)}`;
-        comms.appendChild(entry);
-        comms.scrollTop = comms.scrollHeight;
+    function severityMeta(value) {
+        const severity = String(value || '').toLowerCase();
+        if (severity === 'critical') return { badge: 'red', label: 'Critical' };
+        if (severity === 'high') return { badge: 'yellow', label: 'High' };
+        if (severity === 'medium') return { badge: 'blue', label: 'Medium' };
+        return { badge: 'blue', label: 'Info' };
     }
 
-    async function pollLivePlayback() {
-        if (!window.IRSPApi || !window.IRSPApi.isAvailable()) return;
+    function renderShellAction(link, scenario) {
+        if (!link) return;
 
-        try {
-            const payload = await window.IRSPApi.getLive({
-                scenario: scenarioId,
-                cursor: liveCursor,
-                limit: 2
-            });
-            const items = payload.items || [];
+        link.href = scenario.url;
+        link.innerHTML = '<i data-lucide="' + escapeHtml(scenario.actionIcon) + '"></i> ' + escapeHtml(scenario.actionText);
+    }
 
-            items.forEach(function (item) {
-                prependLiveFeedItem(item);
+    function renderScenarioSummary(scenario) {
+        if (els.recentLabName) els.recentLabName.textContent = scenario.name;
+        if (els.lastRun) els.lastRun.textContent = scenario.title + ' ready';
+        if (els.recentLabSummary) els.recentLabSummary.textContent = scenario.summary;
+        renderShellAction(els.resumeLab, scenario);
+        renderShellAction(els.primaryAction, scenario);
 
-                if (item.type === 'timeline') {
-                    appendTimelinePlayback(item);
-                }
+        if (els.exerciseMode) els.exerciseMode.textContent = scenario.mode;
+        if (els.exerciseModeNote) els.exerciseModeNote.textContent = scenario.modeNote;
+        if (els.primaryLabel) els.primaryLabel.textContent = scenario.primaryLabel;
+        if (els.primaryTarget) els.primaryTarget.textContent = scenario.primaryTarget;
+        if (els.primaryNote) els.primaryNote.textContent = scenario.primaryNote;
+        if (els.secondaryLabel) els.secondaryLabel.textContent = scenario.secondaryLabel;
+        if (els.secondaryTarget) els.secondaryTarget.textContent = scenario.secondaryTarget;
+        if (els.secondaryNote) els.secondaryNote.textContent = scenario.secondaryNote;
+        if (els.alertsLabel) els.alertsLabel.textContent = scenario.alertsLabel;
+        if (els.alertsTitleText) els.alertsTitleText.textContent = 'Recent ' + scenario.name + ' Alerts';
+        if (els.eventsLabel) els.eventsLabel.textContent = scenario.name + ' Telemetry';
+        if (els.primaryPage) els.primaryPage.textContent = scenario.page;
+        if (els.modeValue) els.modeValue.textContent = scenario.mode + ' trainee exercise';
+        if (els.evaluationValue) els.evaluationValue.textContent = scenario.evaluation;
+    }
 
-                if (item.type === 'chat') {
-                    appendChatPlayback(item);
-                }
-            });
+    function renderAlerts(alerts, scenario) {
+        if (!els.alertsBody) return;
 
-            if (items.length) {
-                liveCursor = payload.next_cursor || liveCursor;
-                liveStatus.textContent = `${items.length} new live update${items.length === 1 ? '' : 's'} received at ${IRSP.getTimestamp()}`;
-            } else {
-                liveStatus.textContent = `Listening for playback at ${IRSP.getTimestamp()}`;
-            }
+        if (!alerts.length) {
+            els.alertsBody.innerHTML = '<tr><td colspan="4" class="surface-note" style="padding:0.75rem;">No '
+                + escapeHtml(scenario.name) + ' alerts are currently queued.</td></tr>';
+            return;
+        }
 
-            if (items.some(item => item.type === 'evidence')) {
-                refreshEvidence();
-            }
-        } catch (error) {
-            liveStatus.textContent = 'Playback feed unavailable';
+        els.alertsBody.innerHTML = alerts.slice(0, 5).map(function (alert) {
+            const meta = severityMeta(alert.severity);
+            return '<tr>'
+                + '<td><span class="status-badge ' + meta.badge + '">' + escapeHtml(meta.label) + '</span></td>'
+                + '<td>' + escapeHtml(alert.title || 'Untitled alert') + '</td>'
+                + '<td class="mono">' + escapeHtml(alert.host || '--') + '</td>'
+                + '<td>' + escapeHtml(alert.technique_id || '--') + '</td>'
+                + '</tr>';
+        }).join('');
+    }
+
+    function renderOfflineState(scenario) {
+        if (els.metricAlerts) els.metricAlerts.textContent = '--';
+        if (els.metricAlertsNote) els.metricAlertsNote.textContent = 'Alert summary unavailable';
+        if (els.metricEvents) els.metricEvents.textContent = '--';
+        if (els.metricEventsNote) els.metricEventsNote.textContent = 'Telemetry summary unavailable';
+        if (els.connectionStatus) els.connectionStatus.textContent = 'Telemetry service unavailable';
+        if (els.progressNote) els.progressNote.textContent = 'Start the local server, then refresh this page.';
+        if (els.progressFill) els.progressFill.style.width = '35%';
+        if (els.alertsBody) {
+            els.alertsBody.innerHTML = '<tr><td colspan="4" class="surface-note" style="padding:0.75rem;">'
+                + escapeHtml(scenario.name) + ' summary is unavailable.</td></tr>';
         }
     }
 
-    async function hydrateDashboard() {
+    async function hydrateHomeSummary() {
+        const scenario = readLastScenario();
+        renderScenarioSummary(scenario);
+
         if (!window.IRSPApi || !window.IRSPApi.isAvailable()) {
+            renderOfflineState(scenario);
             return;
         }
 
         try {
-            const [alertsPayload, searchPayload, evidencePayload] = await Promise.all([
-                window.IRSPApi.getAlerts({ scenario: scenarioId, limit: 5 }),
-                window.IRSPApi.search({ scenario: scenarioId, q: '' }),
-                window.IRSPApi.getEvidence({ scenario: scenarioId, limit: 5 })
+            const [alertsPayload, searchPayload] = await Promise.all([
+                window.IRSPApi.getAlerts({ scenario: scenario.id, limit: 5 }),
+                window.IRSPApi.search({ scenario: scenario.id, q: '' })
             ]);
 
             const alerts = Array.isArray(alertsPayload.items) ? alertsPayload.items : [];
-            const searchResults = Array.isArray(searchPayload.results) ? searchPayload.results : [];
+            const highPriority = alerts.filter(function (alert) {
+                return ['critical', 'high'].includes(String(alert.severity || '').toLowerCase());
+            });
+            const eventCount = searchPayload.total_matches || (searchPayload.results || []).length;
 
-            hydrateAlertQueue(alerts);
-            renderEvidence(evidencePayload.items || []);
-            eventsMetric.textContent = formatNumber(searchPayload.total_matches || searchResults.length);
-            eventsMetricNote.textContent = `Seeded backend events for ${scenarioId} are now active`;
-            progressMetric.textContent = '40%';
-            progressMetricNote.textContent = `Live mock API synced at ${IRSP.getTimestamp()}`;
-            analystsMetric.textContent = '04';
-            analystsMetricNote.textContent = `4 analysts mapped to ${scenarioId}`;
-            connectionStatus.textContent = 'Mock API connected • live data mode';
+            renderAlerts(alerts, scenario);
+
+            if (els.metricAlerts) els.metricAlerts.textContent = String(highPriority.length).padStart(2, '0');
+            if (els.metricAlertsNote) {
+                els.metricAlertsNote.textContent = alerts.length + ' ' + scenario.name + ' alert'
+                    + (alerts.length === 1 ? '' : 's') + ' loaded';
+            }
+            if (els.metricEvents) els.metricEvents.textContent = formatNumber(eventCount);
+            if (els.metricEventsNote) els.metricEventsNote.textContent = 'Telemetry ready for ' + scenario.name;
+            if (els.connectionStatus) els.connectionStatus.textContent = scenario.name + ' telemetry connected';
+            if (els.progressNote) els.progressNote.textContent = 'Home summary is ready. Open ' + scenario.name + ' to continue the most recent lab.';
+            if (els.progressFill) els.progressFill.style.width = '100%';
+            if (els.lastRun) els.lastRun.textContent = scenario.name + ' summary synced at ' + IRSP.getTimestamp();
         } catch (error) {
-            connectionStatus.textContent = 'Mock API offline • using embedded seed data';
+            renderOfflineState(scenario);
+        } finally {
+            if (window.IRSP && typeof window.IRSP.refreshIcons === 'function') {
+                window.IRSP.refreshIcons();
+            }
         }
     }
 
-    startTimer('timer', 1455, { storageKey: 'irsp-dashboard-timer' });
-
-    hydrateDashboard().finally(function () {
-        initDashboard({
-            timelineId: 'incident-timeline',
-            commsId: 'team-comms',
-            inputId: 'team-message-input',
-            progressFillId: 'progress-fill',
-            progressTextId: 'progress-text',
-            searchResultsBodyId: 'dashboard-results-body',
-            storageKey: 'irsp-dashboard-state',
-            actionProvider: async function (payload) {
-                await window.IRSPApi.postAction({
-                    scenario_id: scenarioId,
-                    alert_key: payload.alertId,
-                    action: payload.action,
-                    alert_id: payload.serverAlertId
-                });
-
-                await refreshEvidence();
-                await pollLivePlayback();
-            },
-            searchProvider: async function (query) {
-                const payload = await window.IRSPApi.search({
-                    scenario: scenarioId,
-                    q: query
-                });
-
-                return {
-                    query: query,
-                    scenario_id: payload.scenario_id,
-                    total_matches: payload.total_matches,
-                    severity_breakdown: payload.severity_breakdown,
-                    results: (payload.results || []).map(mapLogToRecord)
-                };
-            }
-        });
-
-        pollLivePlayback();
-        window.setInterval(pollLivePlayback, 8000);
-    });
+    hydrateHomeSummary();
 })();

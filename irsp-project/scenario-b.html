@@ -24,104 +24,58 @@
 <main>
     <header>
         <div>
-            <div class="status-badge yellow">Investigation Active</div>
-            <h1>Scenario B: Compromised System Investigation</h1>
-            <p class="subtitle">Review live endpoint telemetry for the compromised-system lab and map activity across the attack chain.</p>
+            <div class="status-badge yellow">Live Training Scenario</div>
+            <h1>Scenario B: Endpoint Investigation</h1>
+            <p class="subtitle">Start the clock, triage the alerts, pivot through endpoint telemetry, contain the incident, and submit before the timer expires.</p>
         </div>
         <div class="header-panel">
-            <div class="eyebrow">Records Shown</div>
-            <div class="value" id="scenario-b-log-count">--</div>
-            <div class="surface-note" id="scenario-b-source-status">Connecting to live telemetry...</div>
+            <div class="eyebrow">Scenario Timer</div>
+            <div class="value mono" id="scenario-b-timer">10:00</div>
+            <div class="surface-note" id="scenario-b-exercise-status">Ready to begin</div>
         </div>
     </header>
 
-    <section class="card section-space" aria-labelledby="scenario-b-plan-title">
+    <section class="card section-space" aria-labelledby="scenario-b-brief-title">
         <div class="toolbar" style="margin-bottom:1rem;">
             <div>
-                <div class="card-title" id="scenario-b-plan-title"><i data-lucide="list-checks"></i> Scenario B Run Plan</div>
-                <div class="surface-note">Target hosts: <code>192.168.32.130</code> and <code>192.168.32.129</code></div>
+                <div class="card-title" id="scenario-b-brief-title"><i data-lucide="radio-tower"></i> Trainee Mission Brief</div>
+                <div class="surface-note">Target hosts: <code>192.168.32.130</code> and <code>192.168.32.129</code>. Final score is hidden until you submit or time expires.</div>
             </div>
-            <span class="status-badge blue">Lab Only</span>
+            <div class="console-actions">
+                <button class="btn btn-secondary" id="scenario-b-start-exercise" type="button"><i data-lucide="timer"></i> Start Scenario</button>
+                <button class="btn btn-secondary" id="scenario-b-submit-exercise" type="button" disabled><i data-lucide="flag"></i> Submit Incident</button>
+            </div>
         </div>
         <div class="grid-3">
-            <div class="card" style="padding:1rem;">
-                <div class="eyebrow">Start Here</div>
-                <div class="value" style="font-size:1rem;">Discovery + Initial Access</div>
-                <div class="surface-note">Run discovery first so the baseline is visible before phishing, PowerShell, and user changes.</div>
+            <div class="metric-tile">
+                <div class="label">Step 1</div>
+                <div class="value" style="font-size:1.1rem;">Identify</div>
+                <div class="subtext">Pivot from high-priority alerts into the endpoint event trail.</div>
             </div>
-            <div class="card" style="padding:1rem;">
-                <div class="eyebrow">Then</div>
-                <div class="value" style="font-size:1rem;">Execution + Persistence</div>
-                <div class="surface-note">Generate process, script, scheduled task, and startup-script telemetry.</div>
+            <div class="metric-tile">
+                <div class="label">Step 2</div>
+                <div class="value" style="font-size:1.1rem;">Contain</div>
+                <div class="subtext">Validate remote access, persistence, protection, and credential actions.</div>
             </div>
-            <div class="card" style="padding:1rem;">
-                <div class="eyebrow">Finish</div>
-                <div class="value" style="font-size:1rem;">Collection + Impact</div>
-                <div class="surface-note">Use dummy data only, and keep impact actions last so they do not disrupt earlier evidence.</div>
+            <div class="metric-tile">
+                <div class="label">Step 3</div>
+                <div class="value" style="font-size:1.1rem;">Report</div>
+                <div class="subtext">Submit before time runs out to reveal the trainee score.</div>
             </div>
         </div>
-        <div class="table-wrap" style="margin-top:1rem;">
-            <table class="dense-table">
-                <thead>
-                <tr>
-                    <th>Phase</th>
-                    <th>Run Items</th>
-                    <th>Notes</th>
-                </tr>
-                </thead>
-                <tbody>
-                <tr>
-                    <td>Discovery</td>
-                    <td>System/network configuration, process list, system information, network connections, owner/user directory</td>
-                    <td>Run first on both hosts to create a clean before/after trail.</td>
-                </tr>
-                <tr>
-                    <td>Initial Access</td>
-                    <td>Spear phishing simulation, hidden user creation, PowerShell execution policy bypass</td>
-                    <td>Use the primary host for the initial-access story.</td>
-                </tr>
-                <tr>
-                    <td>Execution</td>
-                    <td>PowerShell known-malicious-cmdlet emulation</td>
-                    <td>Keep it controlled and verify the event appears in the log table.</td>
-                </tr>
-                <tr>
-                    <td>Persistence</td>
-                    <td>Scheduled task, modify scheduled task, scheduled task startup script</td>
-                    <td>Best phase for clear Task Scheduler evidence.</td>
-                </tr>
-                <tr>
-                    <td>Privilege Escalation</td>
-                    <td>UAC-bypass emulation, computer defaults backup activity</td>
-                    <td>Run after persistence so the sequence is easy to explain.</td>
-                </tr>
-                <tr>
-                    <td>Defense Evasion</td>
-                    <td>Security service tamper simulation</td>
-                    <td>Avoid disabling protection on anything outside the isolated lab.</td>
-                </tr>
-                <tr>
-                    <td>Credential Access</td>
-                    <td>PowerShell history search, credential-file listing, registry credential emulation</td>
-                    <td>Use dummy credentials and lab-only files.</td>
-                </tr>
-                <tr>
-                    <td>Lateral Movement</td>
-                    <td>Enable WinRM, remote execution emulation</td>
-                    <td>Use the secondary host only after both endpoints are logging.</td>
-                </tr>
-                <tr>
-                    <td>Collection / C2 / Exfiltration</td>
-                    <td>Compress dummy data, PowerShell user-agent simulation, controlled exfiltration simulation</td>
-                    <td>Send only harmless test files to a controlled listener or sink.</td>
-                </tr>
-                <tr>
-                    <td>Impact</td>
-                    <td>High CPU load simulation, ransom note</td>
-                    <td>Run last, then stop the exercise and review the final log trail.</td>
-                </tr>
-                </tbody>
-            </table>
+        <div class="key-value-list" style="margin-top:1rem;">
+            <div class="key-value-item">
+                <span class="key">Scoring Rule</span>
+                <span class="value">Investigate alerts, prove the timeline, validate response actions, and preserve time.</span>
+            </div>
+            <div class="key-value-item">
+                <span class="key">Final Score</span>
+                <span class="value" id="scenario-b-final-score">Locked until submission</span>
+            </div>
+            <div class="key-value-item">
+                <span class="key">Score Breakdown</span>
+                <span class="value" id="scenario-b-score-breakdown">Start the scenario to begin assessment.</span>
+            </div>
         </div>
     </section>
 
@@ -151,7 +105,7 @@
         </div>
         <div class="console-status">
             <span id="scenario-b-search-status">Ready to search Scenario B telemetry.</span>
-            <span id="scenario-b-source-status">Connecting to live telemetry...</span>
+            <span id="scenario-b-console-source-status">Connecting to live telemetry...</span>
         </div>
     </section>
 
@@ -172,9 +126,94 @@
             <div class="subtext" id="scenario-b-metric-results-note">Matches for current query</div>
         </div>
         <div class="metric-tile">
-            <div class="label">Target Hosts</div>
-            <div class="value" style="color:var(--accent-blue);">02</div>
-            <div class="subtext">192.168.32.130, 192.168.32.129</div>
+            <div class="label">Records Shown</div>
+            <div class="value" id="scenario-b-log-count" style="color:var(--accent-blue);">--</div>
+            <div class="subtext" id="scenario-b-source-status">Connecting to live telemetry...</div>
+        </div>
+    </section>
+
+    <section class="grid-2-1 section-space" aria-label="Endpoint investigation workspace">
+        <div class="stack">
+            <section class="card" aria-labelledby="scenario-b-endpoint-title">
+                <div class="toolbar" style="margin-bottom:0.85rem;">
+                    <div class="card-title" id="scenario-b-endpoint-title"><i data-lucide="monitor-dot"></i> Endpoint Investigation Workspace</div>
+                    <span class="status-badge yellow" id="scenario-b-investigation-phase">Triage</span>
+                </div>
+                <div class="grid-3">
+                    <div class="metric-tile">
+                        <div class="label">Primary Endpoint</div>
+                        <div class="value mono" style="font-size:1.35rem;">192.168.32.130</div>
+                        <div class="subtext" id="scenario-b-primary-note">Initial access and execution focus</div>
+                    </div>
+                    <div class="metric-tile">
+                        <div class="label">Secondary Endpoint</div>
+                        <div class="value mono" style="font-size:1.35rem;">192.168.32.129</div>
+                        <div class="subtext" id="scenario-b-secondary-note">Lateral movement validation target</div>
+                    </div>
+                    <div class="metric-tile">
+                        <div class="label">Containment Posture</div>
+                        <div class="value" id="scenario-b-containment-posture" style="font-size:1.35rem;">Monitoring</div>
+                        <div class="subtext">Remote access is reviewed before remediation.</div>
+                    </div>
+                </div>
+                <div class="key-value-list" style="margin-top:1rem;">
+                    <div class="key-value-item">
+                        <span class="key">Current Analyst Question</span>
+                        <span class="value" id="scenario-b-analyst-question">Which endpoint event created the first confirmed compromise signal?</span>
+                    </div>
+                    <div class="key-value-item">
+                        <span class="key">Validation Method</span>
+                        <span class="value">KQL pivot, alert review, event drilldown, then post-action telemetry check</span>
+                    </div>
+                </div>
+            </section>
+
+            <section class="card" aria-labelledby="scenario-b-timeline-title">
+                <div class="toolbar" style="margin-bottom:0.85rem;">
+                    <div class="card-title" id="scenario-b-timeline-title"><i data-lucide="git-commit-vertical"></i> Endpoint Timeline</div>
+                    <div class="surface-note" id="scenario-b-timeline-note">Built from the current KQL result set.</div>
+                </div>
+                <div class="timeline" id="scenario-b-timeline">
+                    <div class="timeline-item">
+                        <div class="time">Waiting</div>
+                        <div class="desc">Run a KQL search to build the incident sequence.</div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <div class="stack">
+            <section class="card" aria-labelledby="scenario-b-risk-title">
+                <div class="toolbar" style="margin-bottom:0.85rem;">
+                    <div class="card-title" id="scenario-b-risk-title"><i data-lucide="activity"></i> Incident Pressure</div>
+                    <span class="status-badge red" id="scenario-b-risk-label">Pending</span>
+                </div>
+                <div class="value" id="scenario-b-risk-score" style="font-size:2.25rem;color:var(--accent-red);">Hidden</div>
+                <div class="surface-note" id="scenario-b-risk-note">The trainee score is hidden while the exercise is active.</div>
+                <div class="progress-bar" aria-label="Scenario B risk score">
+                    <div class="progress-fill" id="scenario-b-risk-fill" style="width:0%;"></div>
+                </div>
+                <div class="key-value-list" style="margin-top:1rem;">
+                    <div class="key-value-item">
+                        <span class="key">Evidence Weight</span>
+                        <span class="value" id="scenario-b-risk-evidence">Alerts, severity, suspicious commands, and remote activity</span>
+                    </div>
+                    <div class="key-value-item">
+                        <span class="key">Decision</span>
+                        <span class="value" id="scenario-b-risk-decision">Collect evidence before containment.</span>
+                    </div>
+                </div>
+            </section>
+
+            <section class="card" aria-labelledby="scenario-b-remediation-title">
+                <div class="toolbar" style="margin-bottom:0.85rem;">
+                    <div class="card-title" id="scenario-b-remediation-title"><i data-lucide="shield-check"></i> Response Actions</div>
+                    <div class="surface-note">Demo-safe actions with validation pivots.</div>
+                </div>
+                <div class="action-stack" id="scenario-b-remediation-actions">
+                    <div class="surface-note">Loading response actions...</div>
+                </div>
+            </section>
         </div>
     </section>
 
@@ -207,7 +246,7 @@
 
             <section class="card" id="scenario-b-search-results-card" aria-labelledby="scenario-b-results-title">
                 <div class="toolbar" style="margin-bottom:0.85rem;">
-                    <div class="card-title" id="scenario-b-results-title"><i data-lucide="database-zap"></i> Search Results</div>
+                    <div class="card-title" id="scenario-b-results-title"><i data-lucide="list-filter"></i> Telemetry Results</div>
                     <div class="surface-note" id="scenario-b-results-note">Run a query to populate matching events.</div>
                 </div>
                 <div class="table-wrap">

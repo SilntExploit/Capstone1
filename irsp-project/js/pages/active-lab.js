@@ -41,12 +41,12 @@
     const PINNED_STORAGE_KEY = 'irsp-pinned-scenarios';
     const SELECTED_STORAGE_KEY = 'irsp-selected-scenario';
     const scenarioMetrics = {
-        'scenario-a': { readiness: '98%', telemetry: '27 alerts, 188 sessions', focus: 'Direct Lab Access', owner: 'Blue Team Alpha', status: 'ready', alertsSeeded: 27, eventsSeeded: 42381 },
-        'scenario-b': { readiness: '96%', telemetry: '19 alerts, 4 confirmed IOCs', focus: 'Investigation', owner: 'Analyst Cohort 2', status: 'ready', alertsSeeded: 19, eventsSeeded: 18422 },
-        'scenario-c': { readiness: '62%', telemetry: 'voice transcript + email trail', focus: 'Awareness', owner: 'Awareness Lab', status: 'ready', alertsSeeded: 8, eventsSeeded: 920 },
-        'scenario-d': { readiness: '58%', telemetry: 'traffic spikes + service health', focus: 'Availability', owner: 'Network Defense Lab', status: 'ready', alertsSeeded: 12, eventsSeeded: 5410 },
-        'scenario-e': { readiness: '54%', telemetry: 'USB logs + proxy uploads', focus: 'Insider Risk', owner: 'Insider Risk PM', status: 'ready', alertsSeeded: 14, eventsSeeded: 2640 },
-        'scenario-f': { readiness: '57%', telemetry: 'IAM audit trails + sign-ins', focus: 'Cloud IAM', owner: 'Cloud IAM Team', status: 'ready', alertsSeeded: 11, eventsSeeded: 3180 }
+        'scenario-a': { readiness: '98%', telemetry: '27 alerts, 188 sessions', focus: 'Guacamole VM Lab', owner: 'Blue Team Alpha', status: 'ready', alertsSeeded: 27, eventsSeeded: 42381 },
+        'scenario-b': { readiness: '96%', telemetry: '19 alerts, 4 confirmed IOCs', focus: 'Timed Endpoint IR', owner: 'Analyst Cohort 2', status: 'ready', alertsSeeded: 19, eventsSeeded: 18422 },
+        'scenario-c': { readiness: '35%', telemetry: 'roadmap module', focus: 'Awareness', owner: 'Awareness Lab', status: 'coming-soon', alertsSeeded: 0, eventsSeeded: 0 },
+        'scenario-d': { readiness: '35%', telemetry: 'roadmap module', focus: 'Availability', owner: 'Network Defense Lab', status: 'coming-soon', alertsSeeded: 0, eventsSeeded: 0 },
+        'scenario-e': { readiness: '35%', telemetry: 'roadmap module', focus: 'Insider Risk', owner: 'Insider Risk PM', status: 'coming-soon', alertsSeeded: 0, eventsSeeded: 0 },
+        'scenario-f': { readiness: '35%', telemetry: 'roadmap module', focus: 'Cloud IAM', owner: 'Cloud IAM Team', status: 'coming-soon', alertsSeeded: 0, eventsSeeded: 0 }
     };
 
     const previewData = {
@@ -64,19 +64,19 @@
                     <div class="card" style="padding:1rem;">
                         <div class="card-title"><i data-lucide="target"></i> Objectives</div>
                         <ul class="list-clean" style="font-size:0.88rem;">
-                            <li>Open the IRSP Linux VM</li>
-                            <li>Access the active training desktop</li>
-                            <li>Continue the Scenario A lab exercise</li>
-                            <li>Return to Active Lab when finished</li>
+                            <li>Open Eapen's Scenario A launcher</li>
+                            <li>Connect to the Guacamole Linux VM</li>
+                            <li>Complete detection, containment, and recovery questions</li>
+                            <li>Review the final timed score</li>
                         </ul>
                     </div>
                     <div class="card" style="padding:1rem;">
                         <div class="card-title"><i data-lucide="shield"></i> Skills Practiced</div>
                         <ul class="list-clean" style="font-size:0.88rem;">
-                            <li>Linux navigation</li>
+                            <li>Linux investigation</li>
                             <li>Browser-based VM workflow</li>
-                            <li>Lab environment access</li>
-                            <li>Incident response practice</li>
+                            <li>Timed answer validation</li>
+                            <li>Incident response scoring</li>
                         </ul>
                     </div>
                 </div>
@@ -124,7 +124,7 @@
                         <p>Voice-phishing validation, help-desk escalation discipline, identity verification, and mail-rule review.</p>
                     </div>
                 </div>
-                <p class="surface-note">This module now opens a working scenario page with seeded transcript, identity, and mailbox telemetry.</p>
+                <p class="surface-note">Coming soon. This module remains visible as a roadmap scenario for future expansion.</p>
             `
         },
         'scenario-d': {
@@ -137,7 +137,7 @@
                         <p>Traffic triage, service-health validation, rate-limit response, and stakeholder coordination during availability pressure.</p>
                     </div>
                 </div>
-                <p class="surface-note">The live module includes seeded edge, WAF, and health telemetry with response actions.</p>
+                <p class="surface-note">Coming soon. This module remains visible as a roadmap scenario for future expansion.</p>
             `
         },
         'scenario-e': {
@@ -150,7 +150,7 @@
                         <p>Archive staging, removable media review, proxy upload correlation, and insider-risk evidence handling.</p>
                     </div>
                 </div>
-                <p class="surface-note">The scenario page now supports alert actions, evidence review, and log search against the seeded insider dataset.</p>
+                <p class="surface-note">Coming soon. This module remains visible as a roadmap scenario for future expansion.</p>
             `
         },
         'scenario-f': {
@@ -163,7 +163,7 @@
                         <p>Role-assumption anomalies, policy drift, impossible travel, and cloud control-plane evidence review.</p>
                     </div>
                 </div>
-                <p class="surface-note">The module now opens a working cloud-IAM scenario page backed by seeded audit logs and actions.</p>
+                <p class="surface-note">Coming soon. This module remains visible as a roadmap scenario for future expansion.</p>
             `
         }
     };
@@ -171,14 +171,14 @@
     const launchProfiles = {
         'scenario-a': {
             title: 'Scenario A Launch',
-            subtitle: 'Provision the ransomware containment workspace and analyst VM',
+            subtitle: 'Open the Guacamole VM lab wrapper and timed Scenario A task panel',
             icon: 'server-cog',
-            workspace: 'Ransomware Containment Workspace',
-            vmName: 'rg-ransomware-vm-a',
-            environment: 'Linux / Docker response workspace',
-            services: ['Container response shell', 'Process kill and isolation workflow', 'Artifact hashing and recovery checkpoints'],
-            dataFlow: ['Loads Scenario A seeded telemetry', 'Stores user actions and lab state locally', 'Routes into the live ransomware simulation page'],
-            note: 'Python processing services from the diagram are intentionally skipped here. This boot step stays in the front-end prototype.'
+            workspace: 'Eapen Scenario A VM Lab',
+            vmName: 'IRSP Linux VM via Guacamole',
+            environment: 'Browser Linux VM and timed task panel',
+            services: ['Guacamole VM iframe', 'Detection, containment, and recovery questions', 'Timer, scoring, and final result capture'],
+            dataFlow: ['Routes into eapen-scenario-a/lab_a.html', 'Launches the VM kiosk page in a new tab', 'Stores last-launched lab state locally for dashboard resume'],
+            note: 'The web app opens the VM session and scoring wrapper. Commands inside the VM are performed by the trainee or by services already configured on the VM.'
         },
         'scenario-b': {
             title: 'Scenario B Launch',
@@ -187,9 +187,9 @@
             workspace: 'Windows Evidence Pack Workspace',
             vmName: 'ws-finance-03_sanitized_bundle',
             environment: 'Offline Windows endpoint investigation pack',
-            services: ['Log review and query shell', 'Evidence board and IOC drilldowns', 'Timeline reconstruction and analyst actions'],
-            dataFlow: ['Loads Scenario B seeded telemetry', 'Stores user actions and lab state locally', 'Routes into the live compromised system investigation page'],
-            note: 'This Scenario B flow no longer provisions a VM. It opens a browser-based evidence pack built from sanitized Windows endpoint telemetry.'
+            services: ['KQL-style telemetry pivots', 'Alert queue and endpoint timeline', 'Timed response actions with hidden final score'],
+            dataFlow: ['Loads Scenario B endpoint telemetry', 'Stores user actions and lab state locally', 'Routes into the timed endpoint investigation page'],
+            note: 'Scenario B is the main blue-team investigation workspace. It keeps KQL inside the scenario page, not the dashboard.'
         },
         'scenario-c': {
             title: 'Scenario C Launch',
@@ -263,8 +263,13 @@
         if (normalized === 'timed_out') return '<span class="status-badge red">Timed Out</span>';
         if (normalized === 'planned') return '<span class="status-badge blue">Planned</span>';
         if (normalized === 'ready') return '<span class="status-badge green">Ready</span>';
+        if (normalized === 'coming-soon') return '<span class="status-badge blue">Coming Soon</span>';
 
         return '<span class="status-badge blue">Prototype</span>';
+    }
+
+    function isLiveScenario(id) {
+        return id === 'scenario-a' || id === 'scenario-b';
     }
 
     function platformFromEnvironment(environment) {
@@ -340,25 +345,34 @@
             const card = scenarioCards.find(entry => entry.dataset.scenarioId === item.id);
             if (!card) return;
 
-            const status = item.status === 'ready' ? 'available' : 'coming-soon';
+            const status = item.status === 'ready' && isLiveScenario(item.id) ? 'available' : 'coming-soon';
             card.dataset.status = status;
             card.dataset.difficulty = item.difficulty || card.dataset.difficulty;
             card.dataset.platform = platformFromEnvironment(item.environment) || card.dataset.platform;
 
             scenarioMetrics[item.id] = Object.assign({}, scenarioMetrics[item.id], {
-                readiness: `${item.readiness}%`,
-                telemetry: `${item.seeded_alerts} alerts, ${Number(item.seeded_events || 0).toLocaleString()} events`,
+                readiness: status === 'available' ? `${item.readiness}%` : '35%',
+                telemetry: status === 'available'
+                    ? `${item.seeded_alerts} alerts, ${Number(item.seeded_events || 0).toLocaleString()} events`
+                    : 'roadmap module',
                 focus: item.environment,
                 owner: item.owner,
-                status: item.status,
-                alertsSeeded: item.seeded_alerts,
-                eventsSeeded: item.seeded_events
+                status: status === 'available' ? item.status : 'coming-soon',
+                alertsSeeded: status === 'available' ? item.seeded_alerts : 0,
+                eventsSeeded: status === 'available' ? item.seeded_events : 0
             });
 
             const badge = card.querySelector('.toolbar .status-badge');
             if (badge) {
                 badge.className = `status-badge ${status === 'available' ? 'green' : 'blue'}`;
-                badge.textContent = status === 'available' ? 'Ready' : 'Prototype';
+                badge.textContent = status === 'available' ? (item.id === 'scenario-a' ? 'Live VM' : 'Live IR') : 'Coming Soon';
+            }
+
+            const launchButton = card.querySelector('.launch-btn');
+            if (launchButton && status !== 'available') {
+                launchButton.disabled = true;
+                launchButton.classList.add('btn-secondary');
+                launchButton.innerHTML = '<i data-lucide="clock"></i> Coming Soon';
             }
         });
 
@@ -367,21 +381,20 @@
         const advancedCount = scenarioCards.filter(card => card.dataset.difficulty === 'advanced').length;
 
         availablePathsValue.textContent = String(scenarioCards.length).padStart(2, '0');
-        availablePathsNote.textContent = `${liveCount} live exercises, ${prototypeCount} roadmap modules`;
+        availablePathsNote.textContent = `${liveCount} live exercises, ${prototypeCount} coming-soon modules`;
         advancedMetric.textContent = String(advancedCount).padStart(2, '0');
         advancedMetricNote.textContent = `${advancedCount} advanced exercises seeded for higher-pressure response drills.`;
         liveMetric.textContent = String(liveCount).padStart(2, '0');
-        liveMetricNote.textContent = `${liveCount} scenarios are launchable through the mock backend and UI flow.`;
+        liveMetricNote.textContent = `${liveCount} scenarios are launchable: Scenario A VM lab and Scenario B endpoint IR.`;
         prototypeMetric.textContent = String(prototypeCount).padStart(2, '0');
         prototypeMetricNote.textContent = prototypeCount ? `${prototypeCount} modules remain in roadmap review.` : 'All seeded modules are launchable in the app.';
 
         if (assetsList) {
             assetsList.innerHTML = `
-                <li><strong>irsp-linux-vm</strong> | Azure-hosted Linux VM | delivered through Guacamole web access</li>
-                <li><strong>WS-FINANCE-03</strong> | Windows Server 2022 | Office macros enabled for training</li>
-                <li><strong>edge-fw-01</strong> | Palo Alto traffic logs forwarded every 15 sec</li>
-                <li><strong>mail-gw-01</strong> | Microsoft 365 message trace feed enabled</li>
-                <li><strong>siem-lab-core</strong> | Mock backend online | synced scenarios=${items.length}</li>
+                <li><strong>irsp-linux-vm</strong> | Scenario A | Guacamole web access and timed task scoring</li>
+                <li><strong>scenario-b-endpoint</strong> | Scenario B | endpoint telemetry, alerts, KQL pivots, and response actions</li>
+                <li><strong>roadmap-modules</strong> | Scenarios C-F | visible as coming-soon capstone expansion cards</li>
+                <li><strong>siem-lab-core</strong> | Mock backend online | live scenarios=2 roadmap=${Math.max(0, items.length - 2)}</li>
             `;
         }
 

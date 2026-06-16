@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ResponseGrid - Scenario A</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lucide/0.263.0/lucide.min.js"></script>
+    <link rel="stylesheet" href="../css/shared.css">
+
+    <style>
+        :root {
+            --bg-main: #0f172a;
+            --bg-panel: rgba(15, 23, 42, 0.82);
+            --bg-panel-strong: rgba(30, 41, 59, 0.94);
+            --border-soft: rgba(148, 163, 184, 0.22);
+            --text-main: #f8fafc;
+            --text-muted: #cbd5e1;
+            --text-dim: #94a3b8;
+            --accent-blue: #3b82f6;
+            --accent-green: #22c55e;
+            --accent-yellow: #facc15;
+            --accent-red: #ef4444;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            font-family: Arial, Helvetica, sans-serif;
+            color: var(--text-main);
+            background:
+                radial-gradient(circle at top left, rgba(59, 130, 246, 0.20), transparent 34%),
+                radial-gradient(circle at bottom right, rgba(34, 197, 94, 0.10), transparent 30%),
+                linear-gradient(135deg, #020617, #0f172a 55%, #111827);
+        }
+
+        nav {
+            position: fixed;
+            top: 0; left: 0; bottom: 0;
+            width: 245px;
+            padding: 1.2rem;
+            background: rgba(2, 6, 23, 0.84);
+            border-right: 1px solid var(--border-soft);
+            backdrop-filter: blur(18px);
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .logo, .nav-item {
+            color: var(--text-main);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.7rem;
+            border-radius: 12px;
+        }
+
+        .logo {
+            font-weight: 800;
+            font-size: 1.12rem;
+            margin-bottom: 1.4rem;
+            color: #dbeafe;
+        }
+
+        .nav-item {
+            padding: 0.86rem 0.95rem;
+            color: var(--text-muted);
+            transition: 0.2s ease;
+        }
+
+        .nav-item:hover, .nav-item.active {
+            background: rgba(59, 130, 246, 0.15);
+            color: #fff;
+        }
+
+        .nav-bottom { margin-top: auto; }
+
+        main {
+            margin-left: 245px;
+            min-height: 100vh;
+            padding: 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .launcher-shell {
+            width: min(100%, 980px);
+            display: grid;
+            grid-template-columns: 1.25fr 0.75fr;
+            gap: 1.25rem;
+            align-items: stretch;
+        }
+
+        .card {
+            background: var(--bg-panel-strong);
+            border: 1px solid var(--border-soft);
+            border-radius: 22px;
+            box-shadow: 0 24px 70px rgba(0, 0, 0, 0.36);
+        }
+
+        .launcher-card {
+            padding: 2.2rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .launcher-card::before {
+            content: "";
+            position: absolute;
+            inset: -80px -120px auto auto;
+            width: 280px; height: 280px;
+            background: rgba(59, 130, 246, 0.18);
+            border-radius: 999px;
+            filter: blur(2px);
+        }
+
+        .status-badge {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+            padding: 0.5rem 0.75rem;
+            border-radius: 999px;
+            background: rgba(34, 197, 94, 0.14);
+            color: #bbf7d0;
+            border: 1px solid rgba(34, 197, 94, 0.25);
+            font-size: 0.86rem;
+            font-weight: 700;
+            margin-bottom: 1.35rem;
+        }
+
+        h1 {
+            position: relative;
+            margin: 0;
+            font-size: clamp(2rem, 5vw, 3.85rem);
+            line-height: 1.02;
+            letter-spacing: -0.04em;
+        }
+
+        .subtitle {
+            position: relative;
+            max-width: 620px;
+            margin: 1rem 0 1.65rem;
+            color: var(--text-muted);
+            font-size: 1.04rem;
+            line-height: 1.7;
+        }
+
+        .launch-button {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.65rem;
+            text-decoration: none;
+            background: linear-gradient(135deg, #2563eb, #1d4ed8);
+            color: white;
+            padding: 1rem 1.35rem;
+            border-radius: 14px;
+            font-size: 1rem;
+            font-weight: 800;
+            border: 1px solid rgba(255, 255, 255, 0.14);
+            box-shadow: 0 16px 30px rgba(37, 99, 235, 0.25);
+            transition: 0.2s ease;
+            cursor: pointer;
+        }
+
+        .launch-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 20px 38px rgba(37, 99, 235, 0.34);
+        }
+
+        .note {
+            position: relative;
+            margin-top: 1rem;
+            color: var(--text-dim);
+            font-size: 0.9rem;
+            line-height: 1.55;
+        }
+
+        .side-card {
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .card-title {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            margin-bottom: 0.5rem;
+            font-weight: 800;
+            color: #e2e8f0;
+        }
+
+        .info-row {
+            padding: 0.95rem;
+            border-radius: 15px;
+            background: rgba(15, 23, 42, 0.72);
+            border: 1px solid rgba(148, 163, 184, 0.16);
+        }
+
+        .eyebrow {
+            color: var(--text-dim);
+            font-size: 0.78rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            margin-bottom: 0.35rem;
+        }
+
+        .value {
+            font-weight: 800;
+            color: #f8fafc;
+        }
+
+        @media (max-width: 860px) {
+            nav {
+                position: static;
+                width: auto;
+                flex-direction: row;
+                overflow-x: auto;
+                border-right: none;
+                border-bottom: 1px solid var(--border-soft);
+            }
+            .nav-bottom { margin-top: 0; }
+            main { margin-left: 0; padding: 1rem; }
+            .launcher-shell { grid-template-columns: 1fr; }
+        }
+
+        /* ResponseGrid integration overrides */
+        body {
+            font-family: 'IBM Plex Sans', 'Helvetica Neue', sans-serif;
+            color: var(--text-main);
+            background: var(--bg-dark);
+        }
+
+        nav {
+            background: var(--sidebar-bg);
+            border-right: 1px solid var(--border);
+            box-shadow: var(--shadow-md);
+        }
+
+        .logo {
+            color: #ffffff;
+        }
+
+        .nav-item {
+            color: rgba(255, 255, 255, 0.72);
+            border-radius: var(--radius-md);
+        }
+
+        .nav-item:hover,
+        .nav-item.active {
+            color: #ffffff;
+            background: rgba(249, 115, 22, 0.18);
+        }
+
+        main {
+            align-items: flex-start;
+            justify-content: stretch;
+        }
+
+        .launcher-shell {
+            width: 100%;
+            max-width: 1120px;
+            margin: 0 auto;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .launcher-card::before {
+            display: none;
+        }
+
+        .status-badge {
+            background: rgba(34, 197, 94, 0.12);
+            color: #15803d;
+            border: 1px solid rgba(34, 197, 94, 0.22);
+        }
+
+        h1,
+        .value,
+        .card-title {
+            color: var(--text-main);
+        }
+
+        .subtitle,
+        .note {
+            color: var(--text-soft);
+        }
+
+        .launch-button {
+            background: var(--accent-primary);
+            border: 1px solid var(--accent-primary-strong);
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-md);
+        }
+
+        .launch-button:hover {
+            background: var(--accent-primary-strong);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .info-row {
+            background: var(--card-bg-soft);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+        }
+
+        .eyebrow {
+            color: var(--text-dim);
+        }
+
+        /* Readability/color pass for the launcher screen */
+        body {
+            background:
+                linear-gradient(rgba(249, 115, 22, 0.018), rgba(14, 165, 233, 0.012)),
+                #eef2f7;
+        }
+
+        main {
+            padding-top: 2.5rem;
+        }
+
+        .launcher-card {
+            background: #ffffff;
+            border: 2px solid rgba(249, 115, 22, 0.18);
+        }
+
+        .side-card {
+            background: #ffffff;
+            border: 2px solid rgba(14, 165, 233, 0.16);
+        }
+
+        .status-badge {
+            background: #ecfdf5;
+            color: #047857;
+            border: 1px solid rgba(34, 197, 94, 0.32);
+            font-weight: 800;
+        }
+
+        h1 {
+            color: #111827;
+            letter-spacing: 0;
+            font-size: clamp(2.4rem, 5vw, 4rem);
+        }
+
+        .subtitle {
+            color: #334155;
+            font-weight: 600;
+            font-size: 1.08rem;
+        }
+
+        .note {
+            color: #475569;
+            font-weight: 600;
+            background: #fff7ed;
+            border: 1px solid rgba(249, 115, 22, 0.2);
+            border-radius: var(--radius-md);
+            padding: 0.85rem;
+        }
+
+        .launch-button {
+            background: #0ea5e9;
+            border-color: #0284c7;
+            color: #ffffff;
+            font-weight: 900;
+        }
+
+        .launch-button:hover {
+            background: #0284c7;
+        }
+
+        .info-row {
+            background: #f8fafc;
+            border: 2px solid rgba(15, 23, 42, 0.08);
+        }
+
+        .info-row:nth-child(2) {
+            border-color: rgba(249, 115, 22, 0.24);
+            background: #fff7ed;
+        }
+
+        .info-row:nth-child(3) {
+            border-color: rgba(14, 165, 233, 0.22);
+            background: #eff6ff;
+        }
+
+        .info-row:nth-child(4) {
+            border-color: rgba(34, 197, 94, 0.22);
+            background: #ecfdf5;
+        }
+
+        .eyebrow {
+            color: #64748b;
+            font-weight: 800;
+        }
+
+        .value {
+            color: #111827;
+            font-weight: 900;
+        }
+    </style>
+</head>
+<body>
+
+<nav aria-label="Primary navigation">
+    <a href="../dashboard.html" class="logo"><i data-lucide="shield-alert"></i> ResponseGrid</a>
+    <a href="../dashboard.html" class="nav-item"><i data-lucide="layout-dashboard"></i> Dashboard</a>
+    <a href="../active-lab.html" class="nav-item active"><i data-lucide="terminal"></i> Active Lab</a>
+    <a href="../reports.html" class="nav-item"><i data-lucide="file-text"></i> Reports</a>
+    <a href="../team.html" class="nav-item"><i data-lucide="users"></i> Team</a>
+    <a href="../mitre.html" class="nav-item"><i data-lucide="shield"></i> MITRE ATT&amp;CK</a>
+    <div class="nav-bottom">
+        <a href="../settings.html" class="nav-item"><i data-lucide="settings"></i> Settings</a>
+    </div>
+</nav>
+
+<main>
+    <section class="launcher-shell">
+        <div class="card launcher-card">
+            <div class="status-badge"><i data-lucide="activity"></i> Lab Ready</div>
+            <h1>Scenario A</h1>
+            <p class="subtitle">
+                Ransomware Incident Response simulation. Work through detection, containment, and recovery stages in a realistic Linux environment.
+            </p>
+
+            <a class="launch-button" id="launch-lab-btn" href="index.html" target="_blank" rel="noopener noreferrer">
+                <i data-lucide="rocket"></i>
+                Launch Scenario A
+            </a>
+
+            <p class="note">
+                The lab will open in a new tab. Complete all 3 stages within the 30-minute time limit to achieve a full score.
+            </p>
+        </div>
+
+        <aside class="card side-card">
+            <div>
+                <div class="card-title"><i data-lucide="info"></i> Scenario Details</div>
+                <div class="info-row">
+                    <div class="eyebrow">Scenario</div>
+                    <div class="value">Ransomware IR Simulation</div>
+                </div>
+            </div>
+
+            <div class="info-row">
+                <div class="eyebrow">Difficulty</div>
+                <div class="value">Beginner — Intermediate</div>
+            </div>
+
+            <div class="info-row">
+                <div class="eyebrow">Time Limit</div>
+                <div class="value">30 Minutes</div>
+            </div>
+
+            <div class="info-row">
+                <div class="eyebrow">Stages</div>
+                <div class="value">3 — Detection · Containment · Recovery</div>
+            </div>
+        </aside>
+    </section>
+</main>
+
+<script>
+    if (window.lucide) { lucide.createIcons(); }
+
+    function openLabKiosk(event) {
+        event.preventDefault();
+
+        const features = [
+            'popup=yes',
+            'width=1440',
+            'height=900',
+            'menubar=no',
+            'toolbar=no',
+            'location=no',
+            'status=no',
+            'scrollbars=no',
+            'resizable=yes'
+        ].join(',');
+
+        const labWindow = window.open('index.html?kiosk=1', 'responsegrid_kiosk_lab', features);
+
+        if (!labWindow) {
+            window.alert('Popup was blocked. Please allow popups and try again.');
+            return;
+        }
+
+        labWindow.focus();
+
+        const requestFull = () => {
+            try {
+                if (labWindow.document?.documentElement?.requestFullscreen) {
+                    labWindow.document.documentElement.requestFullscreen({ navigationUI: 'hide' }).catch(() => {});
+                }
+            } catch (e) {
+                /* Cross-window timing restrictions: index.html will auto-request fullscreen too. */
+            }
+        };
+
+        setTimeout(requestFull, 120);
+        setTimeout(requestFull, 450);
+    }
+
+    const launchBtn = document.getElementById('launch-lab-btn');
+    if (launchBtn) {
+        launchBtn.addEventListener('click', openLabKiosk);
+    }
+</script>
+<script defer src="https://static.cloudflareinsights.com/beacon.min.js/v833ccba57c9e4d2798f2e76cebdd09a11778172276447" integrity="sha512-57MDmcccJXYtNnH+ZiBwzC4jb2rvgVCEokYN+L/nLlmO8rfYT/gIpW2A569iJ/3b+0UEasghjuZH/ma3wIs/EQ==" data-cf-beacon='{"version":"2024.11.0","token":"f0f03d0605bf45f1a3b17cf7d5e6861f","server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
+</body>
+</html>
