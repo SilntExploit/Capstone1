@@ -3,6 +3,7 @@
 
     const SCENARIO_ID = 'scenario-b';
     const DEFAULT_QUERY = 'host in ("192.168.32.130", "192.168.32.129", "DESKTOP-GRQ4G1E") or sourcetype has "sysmon" or sourcetype has "security" or sourcetype has "taskscheduler"';
+    const ATTACK_CLEANUP_EXCLUSION = ' and not event has "cleanup.ps1" and not event has "Remove-Item" and not event has "Remove-ItemProperty" and not event has "Remove-LocalUser" and not event has "Disable-PSRemoting" and not event has "Set-NetFirewallProfile" and not event has "Remove-NetFirewallRule" and not event has "Set-ExecutionPolicy" and not event has "RemoteSigned"';
     const EXERCISE_SECONDS = 10 * 60;
 
     const els = {
@@ -49,6 +50,9 @@
         drilldownSourcetype: document.getElementById('scenario-b-drilldown-sourcetype'),
         drilldownUser: document.getElementById('scenario-b-drilldown-user'),
         drilldownEventId: document.getElementById('scenario-b-drilldown-event-id'),
+        drilldownTask: document.getElementById('scenario-b-drilldown-task'),
+        drilldownProcess: document.getElementById('scenario-b-drilldown-process'),
+        drilldownParent: document.getElementById('scenario-b-drilldown-parent'),
         drilldownJson: document.getElementById('scenario-b-drilldown-json'),
         drilldownFields: document.getElementById('scenario-b-drilldown-fields')
     };
@@ -71,39 +75,45 @@
     const REMEDIATION_ACTIONS = [
         {
             id: 'collect-evidence',
-            title: 'Collect endpoint evidence',
-            detail: 'Preserve event trail, selected raw fields, process activity, users, network connections, and alert pivots.',
-            validation: 'Validate with the current KQL result set and event drilldown fields.'
+            title: 'Preserve investigation evidence',
+            detail: 'Review the attack events and the cleanup events before clearing artifacts so the case can be explained later.',
+            validation: 'Validate with event drilldown fields, PowerShell history references, and selected raw records.',
+            query: 'event has "ConsoleHost_history" or event has "PowerShell history" or event has "Get-ExecutionPolicy" or event has "Get-MpComputerStatus" or event has "Verification"'
         },
         {
             id: 'restrict-remote-admin',
-            title: 'Restrict remote administration',
-            detail: 'Treat RDP, SSH, WinRM, and remote command paths as containment controls until the incident is understood.',
-            validation: 'Pivot on remote access, WinRM, Invoke-Command, RDP, SSH, and destination connection events.'
+            title: 'Disable remote administration paths',
+            detail: 'Confirm remoting was shut down after investigation so the endpoint is not left reachable by WinRM or remote command channels.',
+            validation: 'Pivot on Disable-PSRemoting, WinRM service changes, Stop-Service, and Set-Service evidence.',
+            query: 'event has "Disable-PSRemoting" or event has "WinRM" or event has "Stop-Service" or event has "Set-Service"'
         },
         {
             id: 'remove-persistence',
-            title: 'Remove persistence mechanism',
-            detail: 'Queue review of scheduled tasks, startup scripts, and task modifications tied to the suspicious host.',
-            validation: 'Search for Task Scheduler events and confirm no matching task activity remains after cleanup.'
+            title: 'Remove persistence mechanisms',
+            detail: 'Verify scheduled task cleanup and startup persistence removal after the suspicious on-logon or startup task activity.',
+            validation: 'Pivot on task removal, scheduled task review, Task Scheduler telemetry, and startup task names.',
+            query: 'event has "Unregister-ScheduledTask" or event has "schtasks" or event has "T1053" or event has "Scheduled Task" or event has "Task Scheduler" or sourcetype has "taskscheduler"'
         },
         {
             id: 'restore-protection',
             title: 'Restore endpoint protections',
-            detail: 'Confirm security services are enabled and any tamper-style activity has stopped.',
-            validation: 'Pivot on Defender, security service, tamper, and protection-state events.'
+            detail: 'Confirm tamper cleanup, security preference restoration, service restart, and endpoint protection status checks.',
+            validation: 'Pivot on WinDefend, Get-MpComputerStatus, and endpoint protection status fields after remediation.',
+            query: 'event has "WinDefend" or event has "Get-MpComputerStatus" or event has "RealTimeProtectionEnabled" or event has "AntivirusEnabled"'
         },
         {
             id: 'rotate-credentials',
-            title: 'Rotate exposed credentials',
-            detail: 'Prioritize accounts seen in credential access, registry, history, LSASS, or password-search telemetry.',
-            validation: 'Search credential access terms and verify no repeated access attempts after rotation.'
+            title: 'Remove unauthorized local users',
+            detail: 'Validate hidden or test local users were reviewed and removed from privileged groups before closure.',
+            validation: 'Pivot on local user removal, group membership cleanup, net user activity, and suspicious user names.',
+            query: 'event has "Remove-LocalUser" or event has "Remove-LocalGroupMember" or event has "Get-LocalUser" or event has "net user" or event has "hiddenuser" or event has "testuser"'
         },
         {
             id: 'validate-clean-state',
-            title: 'Validate clean state',
-            detail: 'Run final broad host activity search across both endpoints and compare against the attack timeline.',
-            validation: 'Use Host Activity plus alert pivots to prove suspicious activity has gone quiet.'
+            title: 'Validate clean endpoint state',
+            detail: 'Confirm artifacts, registry hijacks, firewall state, remoting state, and execution policy were restored after containment.',
+            validation: 'Pivot on file removal, firewall restore, registry cleanup, execution-policy restore, and final verification logs.',
+            query: 'event has "Remove-Item" or event has "Remove-ItemProperty" or event has "Set-NetFirewallProfile" or event has "Remove-NetFirewallRule" or event has "Set-ExecutionPolicy" or event has "RemoteSigned"'
         }
     ];
 
@@ -158,16 +168,17 @@
             record.query_name
         ].join(' ').toLowerCase();
 
-        if (/phish|invoice|executionpolicy|hidden user/.test(haystack)) return 'Initial Access';
-        if (/powershell|invoke|cmdlet|process create|process_create/.test(haystack)) return 'Execution';
-        if (/scheduled task|taskscheduler|task scheduler|startup script/.test(haystack)) return 'Persistence';
-        if (/fodhelper|computerdefaults|uac|privilege/.test(haystack)) return 'Privilege Escalation';
-        if (/defender|security service|tamper|disable/.test(haystack)) return 'Defense Evasion';
+        if (/remove-item|remove-localuser|remove-localgroupmember|unregister-scheduledtask|remove-itemproperty|set-netfirewallprofile|remove-netfirewallrule|disable-psremoting|set-executionpolicy|remotesigned|windefend|get-mpcomputerstatus|get-executionpolicy/.test(haystack)) return 'Recovery / Remediation';
+        if (/phish|invoice|attachment|xlsm|executionpolicy|hidden user|net user|\/add|\/active:yes/.test(haystack)) return 'Initial Access';
+        if (/powershell|invoke|cmdlet|process create|process_create|downloadfile|webclient|license\.txt/.test(haystack)) return 'Execution';
+        if (/scheduled task|taskscheduler|task scheduler|startup script|schtasks|t1053_005|onlogon|onstartup/.test(haystack)) return 'Persistence';
+        if (/fodhelper|computerdefaults|eventvwr|mscfile|ms-settings|delegateexecute|uac|privilege/.test(haystack)) return 'Privilege Escalation';
+        if (/defender|security service|tamper|disable|set-mppreference|disableioav|disablerealtime|disablescriptscanning|controlledfolderaccess/.test(haystack)) return 'Defense Evasion';
         if (/credential|password|lsass|procdump|registry|history/.test(haystack)) return 'Credential Access';
         if (/ipconfig|tasklist|systeminfo|netstat|whoami|discovery/.test(haystack)) return 'Discovery';
         if (/winrm|invoke-command|remote|rdp|ssh/.test(haystack)) return 'Lateral Movement';
-        if (/compress|archive|exfil|user-agent|tls|outbound|c2/.test(haystack)) return 'Collection / C2 / Exfiltration';
-        if (/cpu|ransom|note|impact/.test(haystack)) return 'Impact';
+        if (/compress|archive|exfil|user-agent|tls|outbound|c2|staged/.test(haystack)) return 'Collection / C2 / Exfiltration';
+        if (/cpu|ransom|note|read_me|t1491|notepad|art-t1491/.test(haystack)) return 'Impact';
         return 'Endpoint Activity';
     }
 
@@ -191,7 +202,7 @@
             if (phase === 'Credential Access') score += 20;
             else if (phase === 'Persistence' || phase === 'Lateral Movement') score += 16;
             else if (phase === 'Defense Evasion' || phase === 'Collection / C2 / Exfiltration') score += 14;
-            else if (phase === 'Privilege Escalation' || phase === 'Impact') score += 12;
+            else if (phase === 'Privilege Escalation' || phase === 'Impact' || phase === 'Recovery / Remediation') score += 12;
             else if (phase === 'Execution' || phase === 'Initial Access') score += 8;
         });
 
@@ -290,10 +301,21 @@
                 if (!state.exerciseStarted || state.exerciseComplete) return;
 
                 const actionId = button.dataset.remediationButton;
+                const action = REMEDIATION_ACTIONS.find(function (item) {
+                    return item.id === actionId;
+                });
                 state.remediations[actionId] = 'queued';
                 if (actionId === 'restrict-remote-admin') {
-                    if (els.containmentPosture) els.containmentPosture.textContent = 'Remote Restricted';
-                    if (els.analystQuestion) els.analystQuestion.textContent = 'Did remote access activity stop after containment was queued?';
+                    if (els.containmentPosture) els.containmentPosture.textContent = 'Remote Disabled';
+                    if (els.analystQuestion) els.analystQuestion.textContent = 'Which log proves remoting was disabled after containment?';
+                } else if (actionId === 'restore-protection') {
+                    if (els.analystQuestion) els.analystQuestion.textContent = 'Which event proves endpoint protection settings were restored?';
+                } else if (actionId === 'validate-clean-state') {
+                    if (els.analystQuestion) els.analystQuestion.textContent = 'Which verification event proves the endpoint is clean enough to close?';
+                }
+                if (action && action.query) {
+                    if (els.searchInput) els.searchInput.value = action.query;
+                    runSearch(action.query);
                 }
                 renderRemediationActions();
 
@@ -481,14 +503,35 @@
         const key = String(alert.alert_key || '').toLowerCase();
         const title = String(alert.title || '').toLowerCase();
 
-        if (key.includes('credential') || title.includes('credential') || title.includes('lsass')) {
-            return 'event has "credential" or event has "lsass" or event has "procdump" or process_name has "procdump"';
+        if (key.includes('powershell') || title.includes('execution policy') || title.includes('powershell')) {
+            return '(process_name has "powershell" or event has "ExecutionPolicy" or event has "Bypass" or event has "DownloadFile")' + ATTACK_CLEANUP_EXCLUSION;
         }
-        if (key.includes('persistence') || title.includes('scheduled task')) {
-            return 'sourcetype has "taskscheduler" or event has "scheduled task" or task_name != ""';
+        if (key.includes('scheduled') || key.includes('persistence') || title.includes('scheduled task')) {
+            return '(event has "T1053" or event has "OnStartup" or event has "Startup" or event has "schtasks" or event has "Scheduled Task" or event has "Task Scheduler" or sourcetype has "taskscheduler" or task_name != "") and not event has "cleanup.ps1" and not event has "Unregister-ScheduledTask" and not event has "Remove-Item" and not event has "Remove-ItemProperty"';
         }
-        if (key.includes('c2') || title.includes('tls') || title.includes('outbound')) {
-            return 'event has "tls" or event has "user-agent" or event has "exfil" or dest_ip != ""';
+        if (key.includes('defender') || key.includes('tamper') || title.includes('protection') || title.includes('tamper')) {
+            return '(event has "Set-MpPreference" or event has "DisableRealtimeMonitoring" or event has "DisableIOAVProtection" or event has "DisableScriptScanning" or event has "ControlledFolderAccess" or event has "Tamper" or event has "Disable") and not event has "cleanup.ps1" and not event has "WinDefend" and not event has "Get-MpComputerStatus" and not event has "RealTimeProtectionEnabled" and not event has "AntivirusEnabled"';
+        }
+        if (key.includes('fodhelper') || title.includes('fodhelper')) {
+            return '(event has "fodhelper" or event has "ms-settings" or event has "DelegateExecute" or event has "HKCU\\\\Software\\\\Classes\\\\ms-settings" or event has "Registry value set" or event has "SetValue") and not event has "cleanup.ps1" and not event has "Remove-Item" and not event has "Remove-ItemProperty"';
+        }
+        if (key.includes('eventvwr') || title.includes('mscfile') || title.includes('event viewer')) {
+            return '(event has "eventvwr" or event has "eventvwr.msc" or event has "mscfile" or event has "HKCU\\\\Software\\\\Classes\\\\mscfile" or event has "Registry value set" or event has "SetValue") and not event has "cleanup.ps1" and not event has "Remove-Item" and not event has "Remove-ItemProperty"';
+        }
+        if (key.includes('hidden-user') || title.includes('local user')) {
+            return 'event has "net user" or event has "/add" or event has "/active:yes"';
+        }
+        if (key.includes('ransom') || title.includes('ransom-note') || title.includes('ransom')) {
+            return '(event has "READ_ME_NOW" or event has "notepad.exe" or event has "ransom") and not event has "cleanup.ps1" and not event has "Remove-Item" and not event has "Remove-ItemProperty"';
+        }
+        if (key.includes('download') || key.includes('staging') || title.includes('staged')) {
+            return '(event has "DownloadFile" or event has "raw.githubusercontent.com" or event has "LICENSE.txt" or event has "T1560-data-ps.zip") and not event has "cleanup.ps1" and not event has "Remove-Item" and not event has "Remove-ItemProperty"';
+        }
+        if (key.includes('credential') || title.includes('credential') || title.includes('password') || title.includes('history') || title.includes('lsass')) {
+            return 'event has "password" or event has "credential" or event has "registry" or event has "history" or event has "lsass"';
+        }
+        if (key.includes('remote') || key.includes('lateral') || title.includes('remote') || title.includes('winrm')) {
+            return '(event has "WinRM" or event has "Invoke-Command" or event has "remote" or event has "RDP" or event has "SSH") and not event has "cleanup.ps1" and not event has "Disable-PSRemoting" and not event has "Stop-Service" and not event has "Set-Service"';
         }
 
         return alert.host ? 'host == "' + alert.host + '"' : DEFAULT_QUERY;
@@ -506,6 +549,9 @@
             if (els.drilldownSourcetype) els.drilldownSourcetype.textContent = '--';
             if (els.drilldownUser) els.drilldownUser.textContent = '--';
             if (els.drilldownEventId) els.drilldownEventId.textContent = '--';
+            if (els.drilldownTask) els.drilldownTask.textContent = '--';
+            if (els.drilldownProcess) els.drilldownProcess.textContent = '--';
+            if (els.drilldownParent) els.drilldownParent.textContent = '--';
             if (els.drilldownJson) els.drilldownJson.textContent = '{}';
             if (els.drilldownFields) els.drilldownFields.textContent = 'Select a search result.';
             return;
@@ -515,6 +561,9 @@
         if (els.drilldownSourcetype) els.drilldownSourcetype.textContent = record.sourcetype || '--';
         if (els.drilldownUser) els.drilldownUser.textContent = record.user || '--';
         if (els.drilldownEventId) els.drilldownEventId.textContent = record.event_id || '--';
+        if (els.drilldownTask) els.drilldownTask.textContent = record.task_name || '--';
+        if (els.drilldownProcess) els.drilldownProcess.textContent = record.process_name || '--';
+        if (els.drilldownParent) els.drilldownParent.textContent = record.parent_process || '--';
         if (els.drilldownJson) els.drilldownJson.textContent = JSON.stringify(record, null, 2);
         if (els.drilldownFields) els.drilldownFields.textContent = fieldsText(record);
     }
@@ -569,7 +618,7 @@
         }
 
         els.resultsBody.innerHTML = results.map(function (item, index) {
-            return '<tr data-result-index="' + index + '" tabindex="0">'
+            return '<tr class="is-selectable-row" data-result-index="' + index + '" tabindex="0">'
                 + '<td class="mono">' + escapeHtml(formatTimestamp(item.timestamp)) + '</td>'
                 + '<td class="mono">' + escapeHtml(item.host) + '</td>'
                 + '<td>' + escapeHtml(item.sourcetype) + '</td>'
@@ -580,6 +629,10 @@
 
         Array.from(els.resultsBody.querySelectorAll('[data-result-index]')).forEach(function (row) {
             row.addEventListener('click', function () {
+                Array.from(els.resultsBody.querySelectorAll('[data-result-index]')).forEach(function (otherRow) {
+                    otherRow.classList.remove('selected');
+                });
+                row.classList.add('selected');
                 updateDrilldown(results[Number(row.dataset.resultIndex)]);
             });
             row.addEventListener('keydown', function (event) {
@@ -590,6 +643,8 @@
             });
         });
 
+        const firstRow = els.resultsBody.querySelector('[data-result-index="0"]');
+        if (firstRow) firstRow.classList.add('selected');
         updateDrilldown(results[0]);
     }
 

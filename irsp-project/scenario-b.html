@@ -92,16 +92,20 @@
         </div>
         <div class="command-chips" style="grid-column:1 / -1;margin-top:0;">
             <button class="chip-btn active" type="button" data-scenario-b-query='host in ("192.168.32.130", "192.168.32.129", "DESKTOP-GRQ4G1E") or sourcetype has "sysmon" or sourcetype has "security" or sourcetype has "taskscheduler"'>Host Activity</button>
-            <button class="chip-btn" type="button" data-scenario-b-query='event has "phish" or event has "invoice" or event has "powershell" or process_name has "powershell"'>Initial Access</button>
-            <button class="chip-btn" type="button" data-scenario-b-query='process_name has "powershell" or event has "Invoke" or event has "ExecutionPolicy"'>Execution</button>
-            <button class="chip-btn" type="button" data-scenario-b-query='sourcetype has "taskscheduler" or event has "scheduled task" or task_name != ""'>Persistence</button>
-            <button class="chip-btn" type="button" data-scenario-b-query='event has "fodhelper" or event has "computerdefaults" or event has "UAC"'>Privilege Escalation</button>
-            <button class="chip-btn" type="button" data-scenario-b-query='event has "Defender" or event has "security service" or event has "tamper"'>Defense Evasion</button>
+            <button class="chip-btn" type="button" data-scenario-b-query='(event has "PhishingAttachment.xlsm" or event has "phish" or event has "invoice" or event has "attachment" or event has "xlsm" or process_name has "powershell" or event has "ExecutionPolicy" or event has "Bypass" or event has "DownloadFile" or event has "WebClient" or event has "raw.githubusercontent.com" or event has "LICENSE.txt") and not event has "cleanup.ps1" and not event has "Remove-Item" and not event has "Remove-ItemProperty" and not event has "Remove-LocalUser" and not event has "Disable-PSRemoting" and not event has "Set-NetFirewallProfile" and not event has "Remove-NetFirewallRule" and not event has "Set-ExecutionPolicy" and not event has "RemoteSigned"'>Initial Access</button>
+            <button class="chip-btn" type="button" data-scenario-b-query='(process_name has "powershell" or event has "ExecutionPolicy" or event has "Bypass" or event has "DownloadFile") and not event has "cleanup.ps1" and not event has "Remove-Item" and not event has "Remove-ItemProperty" and not event has "Disable-PSRemoting" and not event has "Set-NetFirewallProfile" and not event has "Remove-NetFirewallRule" and not event has "Set-ExecutionPolicy" and not event has "RemoteSigned"'>Execution</button>
+            <button class="chip-btn" type="button" data-scenario-b-query='(event has "T1053" or event has "OnStartup" or event has "Startup" or event has "schtasks" or event has "Scheduled Task" or event has "Task Scheduler" or sourcetype has "taskscheduler" or task_name != "") and not event has "cleanup.ps1" and not event has "Unregister-ScheduledTask" and not event has "Remove-Item" and not event has "Remove-ItemProperty"'>Persistence</button>
+            <button class="chip-btn" type="button" data-scenario-b-query='(event has "fodhelper" or event has "ms-settings" or event has "DelegateExecute" or event has "eventvwr" or event has "mscfile" or event has "Registry value set" or event has "SetValue") and not event has "cleanup.ps1" and not event has "Remove-Item" and not event has "Remove-ItemProperty"'>UAC Bypass</button>
+            <button class="chip-btn" type="button" data-scenario-b-query='(event has "Set-MpPreference" or event has "DisableRealtimeMonitoring" or event has "DisableIOAVProtection" or event has "DisableScriptScanning" or event has "ControlledFolderAccess" or event has "Tamper") and not event has "cleanup.ps1" and not event has "WinDefend" and not event has "Get-MpComputerStatus" and not event has "RealTimeProtectionEnabled" and not event has "AntivirusEnabled"'>Defense Evasion</button>
             <button class="chip-btn" type="button" data-scenario-b-query='event has "password" or event has "credential" or event has "registry" or event has "history"'>Credential Access</button>
-            <button class="chip-btn" type="button" data-scenario-b-query='event has "ipconfig" or event has "tasklist" or event has "systeminfo" or event has "netstat" or event has "whoami"'>Discovery</button>
-            <button class="chip-btn" type="button" data-scenario-b-query='event has "WinRM" or event has "Invoke-Command" or event has "remote"'>Lateral Movement</button>
-            <button class="chip-btn" type="button" data-scenario-b-query='event has "Compress" or event has "archive" or event has "exfil" or event has "user-agent"'>Collection / Exfil</button>
-            <button class="chip-btn" type="button" data-scenario-b-query='event has "CPU" or event has "ransom" or event has "note"'>Impact</button>
+            <button class="chip-btn" type="button" data-scenario-b-query='event has "ipconfig" or event has "tasklist" or event has "systeminfo" or event has "netstat" or event has "whoami" or event has "Process Create" or event has "CommandLine" or event has "Network connection detected"'>Discovery</button>
+            <button class="chip-btn" type="button" data-scenario-b-query='(event has "WinRM" or event has "Invoke-Command" or event has "RDP" or event has "SSH") and not event has "cleanup.ps1" and not event has "Disable-PSRemoting" and not event has "Stop-Service" and not event has "Set-Service" and not event has "Set-PSSessionConfiguration"'>Lateral Movement</button>
+            <button class="chip-btn" type="button" data-scenario-b-query='(event has "DownloadFile" or event has "raw.githubusercontent.com" or event has "LICENSE.txt" or event has "T1560-data-ps.zip") and not event has "cleanup.ps1" and not event has "Remove-Item" and not event has "Remove-ItemProperty"'>Download / Staging</button>
+            <button class="chip-btn" type="button" data-scenario-b-query='(event has "READ_ME_NOW" or event has "notepad.exe" or event has "ransom") and not event has "cleanup.ps1" and not event has "Remove-Item" and not event has "Remove-ItemProperty"'>Impact</button>
+            <button class="chip-btn" type="button" data-scenario-b-query='event has "Remove-Item" or event has "Remove-ItemProperty" or event has "PhishingAttachment.xlsm" or event has "T1560-data-ps.zip" or event has "message.txt" or event has "staged" or event has "TargetFilename" or event has "File created" or event has "AppData\\Local\\Temp"'>Artifact Cleanup</button>
+            <button class="chip-btn" type="button" data-scenario-b-query='event has "WinDefend" or event has "Get-MpComputerStatus" or event has "RealTimeProtectionEnabled" or event has "AntivirusEnabled"'>Protection Restore</button>
+            <button class="chip-btn" type="button" data-scenario-b-query='event has "Disable-PSRemoting" or event has "WinRM" or event has "Stop-Service" or event has "Set-Service"'>Remote Lockdown</button>
+            <button class="chip-btn" type="button" data-scenario-b-query='event has "Set-NetFirewallProfile" or event has "Remove-NetFirewallRule" or event has "Set-ExecutionPolicy" or event has "RemoteSigned"'>Policy Restore</button>
         </div>
         <div class="console-status">
             <span id="scenario-b-search-status">Ready to search Scenario B telemetry.</span>
@@ -208,7 +212,7 @@
             <section class="card" aria-labelledby="scenario-b-remediation-title">
                 <div class="toolbar" style="margin-bottom:0.85rem;">
                     <div class="card-title" id="scenario-b-remediation-title"><i data-lucide="shield-check"></i> Response Actions</div>
-                    <div class="surface-note">Demo-safe actions with validation pivots.</div>
+                    <div class="surface-note">Blue-team cleanup actions with validation pivots from endpoint logs.</div>
                 </div>
                 <div class="action-stack" id="scenario-b-remediation-actions">
                     <div class="surface-note">Loading response actions...</div>
@@ -222,7 +226,7 @@
             <section class="card" aria-labelledby="scenario-b-alerts-title">
                 <div class="toolbar" style="margin-bottom:0.85rem;">
                     <div class="card-title" id="scenario-b-alerts-title"><i data-lucide="siren"></i> Triage Queue</div>
-                    <div class="surface-note">Scenario B alerts with KQL pivots.</div>
+                    <div class="surface-note">Endpoint-focused alerts for the current trainee investigation.</div>
                 </div>
                 <div class="table-wrap">
                     <table class="dense-table">
@@ -320,6 +324,18 @@
                     <div class="key-value-item">
                         <span class="key">Event ID</span>
                         <span class="value" id="scenario-b-drilldown-event-id">--</span>
+                    </div>
+                    <div class="key-value-item">
+                        <span class="key">Task Name</span>
+                        <span class="value" id="scenario-b-drilldown-task">--</span>
+                    </div>
+                    <div class="key-value-item">
+                        <span class="key">Process</span>
+                        <span class="value" id="scenario-b-drilldown-process">--</span>
+                    </div>
+                    <div class="key-value-item">
+                        <span class="key">Parent Process</span>
+                        <span class="value" id="scenario-b-drilldown-parent">--</span>
                     </div>
                 </div>
                 <div class="shell-window" data-shell-group="scenario-b-drilldown-shell">
