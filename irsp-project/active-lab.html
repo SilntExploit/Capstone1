@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -82,7 +82,7 @@
 <nav aria-label="Primary navigation">
     <a href="dashboard.html" class="logo"><i data-lucide="shield-alert"></i> ResponseGrid</a>
     <a href="dashboard.html" class="nav-item"><i data-lucide="layout-dashboard"></i> Dashboard</a>
-    <a href="active-lab.html" class="nav-item"><i data-lucide="terminal"></i> Active Lab</a>
+    <a href="active-lab.html" class="nav-item"><i data-lucide="terminal"></i> Labs</a>
     <a href="reports.html" class="nav-item"><i data-lucide="file-text"></i> Reports</a>
     <a href="team.html" class="nav-item"><i data-lucide="users"></i> Team</a>
     <a href="mitre.html" class="nav-item"><i data-lucide="shield"></i> MITRE ATT&amp;CK</a>
@@ -1108,7 +1108,7 @@ scenario-f status=ready owner=Cloud IAM Team readiness=57</pre>
                 const bp = pinnedIds.includes(b.dataset.scenarioId) ? 1 : 0;
                 if (ap !== bp) return bp - ap;
                 if (a.dataset.status !== b.dataset.status) return a.dataset.status === 'available' ? -1 : 1;
-                return a.dataset.title.localeCompare(b.dataset.title);
+                return a.dataset.scenarioId.localeCompare(b.dataset.scenarioId);
             })
             .forEach(card => scenarioGrid.appendChild(card));
     }
