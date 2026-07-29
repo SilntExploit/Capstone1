@@ -240,8 +240,129 @@
 
     // ── Live-report hydration ─────────────────────────────────────────────────
 
+    function enrichScenarioAReport(report) {
+        if (!report || String(report.scenario).toUpperCase() !== 'A') return report;
+
+        var legacy = readJSON('responsegrid_lab_result') || {};
+        var stages = legacy.stages || {};
+        var questionResults = legacy.questionResults || {};
+        var stageDefinitions = [
+            { id: 1, title: 'Detection and scoping', maxScore: 31 },
+            { id: 2, title: 'Containment', maxScore: 31 },
+            { id: 3, title: 'Recovery', maxScore: 38 }
+        ];
+
+        function stageData(id) {
+            return stages[id] || stages[String(id)] || {};
+        }
+
+        function stageScore(id) {
+            return Number(stageData(id).score || 0);
+        }
+
+        function stagePercent(id, maxScore) {
+            return Math.max(0, Math.min(100, Math.round((stageScore(id) / maxScore) * 100)));
+        }
+
+        var investigation = stagePercent(1, 31);
+        var containment = stagePercent(2, 31);
+        var recovery = stagePercent(3, 38);
+        var answeredCount = Object.keys(questionResults).filter(function (key) {
+            return questionResults[key] && questionResults[key].answered;
+        }).length;
+        var totalQuestions = Object.keys(questionResults).length || 13;
+        var completedStages = stageDefinitions.filter(function (stage) {
+            return stageScore(stage.id) > 0 && stageData(stage.id).time != null;
+        }).length;
+        var strengths = [];
+        var gaps = [];
+
+        if (investigation >= 60) strengths.push('Detection and scoping evidence was identified successfully.');
+        if (containment >= 60) strengths.push('Containment actions demonstrated a usable incident response sequence.');
+        if (recovery >= 60) strengths.push('Recovery tasks showed effective restoration and validation work.');
+        if (answeredCount > 0) strengths.push(answeredCount + ' of ' + totalQuestions + ' investigation questions were answered correctly.');
+        if (!strengths.length) strengths.push('The Scenario A run was launched and its result was captured for review.');
+
+        if (investigation < 60) gaps.push('Complete more detection and scoping tasks before ending the lab.');
+        if (containment < 60) gaps.push('Validate process termination, isolation, and persistence-removal evidence.');
+        if (recovery < 60) gaps.push('Finish backup validation, restoration, and recovery verification tasks.');
+        if (answeredCount < totalQuestions) gaps.push((totalQuestions - answeredCount) + ' investigation question' + (totalQuestions - answeredCount === 1 ? ' remains' : 's remain') + ' incomplete.');
+
+        var next = completedStages === 3
+            ? 'Review the completed evidence and repeat Scenario A to improve speed and score consistency.'
+            : 'Resume Scenario A and complete the remaining ' + (3 - completedStages) + ' stage' + (3 - completedStages === 1 ? '' : 's') + ', starting with ' + gaps[0].toLowerCase();
+
+        var enriched = Object.assign({}, report, {
+            summary: 'Scenario A assessed ransomware detection, host scoping, containment, persistence removal, backup validation, and recovery across a timed Linux incident response exercise.',
+            containment: containment,
+            investigation: investigation,
+            comms: recovery,
+            strengths: strengths,
+            gaps: gaps,
+            next: next,
+            metrics: Object.assign({}, report.metrics || {}, {
+                labStepsComplete: completedStages,
+                totalLabSteps: 3,
+                questionsAnswered: answeredCount,
+                totalQuestions: totalQuestions,
+                detectionScore: stageScore(1),
+                containmentScore: stageScore(2),
+                recoveryScore: stageScore(3)
+            }),
+            labSteps: stageDefinitions.map(function (stage) {
+                var score = stageScore(stage.id);
+                var complete = score > 0 && stageData(stage.id).time != null;
+                return {
+                    title: stage.title,
+                    status: complete ? 'Complete' : 'Open',
+                    feedback: complete
+                        ? stage.title + ' evidence was recorded with ' + score + ' of ' + stage.maxScore + ' available points.'
+                        : 'Complete the ' + stage.title.toLowerCase() + ' tasks and submit the required evidence.'
+                };
+            }),
+            feedback: {
+                title: 'Latest Feedback - Scenario A',
+                cards: [
+                    {
+                        tone: investigation >= 60 ? 'success' : 'warning',
+                        heading: 'Detection and investigation: ' + investigation + '%',
+                        body: investigation >= 60 ? 'The run captured useful ransomware identification and scope evidence.' : 'More detection and scoping evidence is needed before containment.'
+                    },
+                    {
+                        tone: containment >= 60 ? 'success' : 'warning',
+                        heading: 'Containment execution: ' + containment + '%',
+                        body: containment >= 60 ? 'Containment tasks were completed with usable response evidence.' : 'Isolation and persistence-removal steps need additional validation.'
+                    },
+                    {
+                        tone: recovery >= 60 ? 'success' : 'warning',
+                        heading: 'Recovery readiness: ' + recovery + '%',
+                        body: recovery >= 60 ? 'Recovery and restoration tasks were completed successfully.' : 'Backup restoration and recovery verification remain incomplete.'
+                    }
+                ],
+                nextSteps: gaps.length ? gaps : [next],
+                checklist: stageDefinitions.map(function (stage) {
+                    var complete = stageScore(stage.id) > 0 && stageData(stage.id).time != null;
+                    return {
+                        title: stage.title,
+                        note: complete ? 'Evidence recorded for this stage.' : 'This stage still needs evidence.',
+                        done: complete
+                    };
+                })
+            }
+        });
+
+        try {
+            localStorage.setItem('irsp-scenario-a-report', JSON.stringify(enriched));
+        } catch (_) {
+            // The in-memory enriched report still renders if storage is unavailable.
+        }
+
+        return enriched;
+    }
+
     function upsertLiveReportRow(report) {
         if (!historyTableBody || !report) return;
+        report = enrichScenarioAReport(report);
 
         var existing = document.querySelector('[data-report-id="' + report.id + '"]');
         var row      = existing || document.createElement('tr');
@@ -275,6 +396,7 @@
 
         detailData[report.id] = {
             title:       report.title,
+            scenario:    report.scenario,
             summary:     report.summary     || '',
             strengths:   Array.isArray(report.strengths) ? report.strengths : [],
             gaps:        Array.isArray(report.gaps)      ? report.gaps      : [],
@@ -422,6 +544,18 @@
     function renderScenarioBDetailSections(item) {
         var sections = '';
 
+        if (String(item.scenario).toUpperCase() === 'A' && item.metrics) {
+            return '<div style="margin-bottom:1rem;">' +
+                '<div style="font-weight:600;font-size:0.9rem;margin-bottom:0.4rem;">Scenario A Report Metrics</div>' +
+                '<div class="key-value-list">' +
+                    '<div class="key-value-item"><span class="key">Stage Scores</span><span class="value">Detection ' + escapeHtml(item.metrics.detectionScore || 0) + '/31, containment ' + escapeHtml(item.metrics.containmentScore || 0) + '/31, recovery ' + escapeHtml(item.metrics.recoveryScore || 0) + '/38</span></div>' +
+                    '<div class="key-value-item"><span class="key">Questions Answered</span><span class="value">' + escapeHtml(item.metrics.questionsAnswered || 0) + '/' + escapeHtml(item.metrics.totalQuestions || 13) + '</span></div>' +
+                    '<div class="key-value-item"><span class="key">Stages Completed</span><span class="value">' + escapeHtml(item.metrics.labStepsComplete || 0) + '/' + escapeHtml(item.metrics.totalLabSteps || 3) + '</span></div>' +
+                    '<div class="key-value-item"><span class="key">Completion</span><span class="value">' + escapeHtml(item.metrics.completionReason === 'completed' ? 'Completed' : 'Ended Early') + '</span></div>' +
+                '</div>' +
+            '</div>';
+        }
+
         if (item.metrics) {
             sections +=
                 '<div style="margin-bottom:1rem;">' +
@@ -460,6 +594,29 @@
 
     function renderScenarioBPrintSections(item) {
         var sections = '';
+
+        if (String(item.scenario).toUpperCase() === 'A' && item.metrics) {
+            sections +=
+                '<div class="card" style="margin-bottom:1rem;"><div class="card-title">Scenario A Report Metrics</div>' +
+                    '<div class="key-value-list">' +
+                        '<div class="key-value-item"><span class="key">Stage Scores</span><span class="value">Detection ' + escapeHtml(item.metrics.detectionScore || 0) + '/31, containment ' + escapeHtml(item.metrics.containmentScore || 0) + '/31, recovery ' + escapeHtml(item.metrics.recoveryScore || 0) + '/38</span></div>' +
+                        '<div class="key-value-item"><span class="key">Questions Answered</span><span class="value">' + escapeHtml(item.metrics.questionsAnswered || 0) + '/' + escapeHtml(item.metrics.totalQuestions || 13) + '</span></div>' +
+                        '<div class="key-value-item"><span class="key">Stages Completed</span><span class="value">' + escapeHtml(item.metrics.labStepsComplete || 0) + '/' + escapeHtml(item.metrics.totalLabSteps || 3) + '</span></div>' +
+                        '<div class="key-value-item"><span class="key">Completion</span><span class="value">' + escapeHtml(item.metrics.completionReason === 'completed' ? 'Completed' : 'Ended Early') + '</span></div>' +
+                    '</div></div>';
+
+            if (item.labSteps && item.labSteps.length) {
+                sections +=
+                    '<div class="card" style="margin-bottom:1rem;"><div class="card-title">Scenario A Stage Outcomes</div>' +
+                        '<ul class="list-clean" style="font-size:0.95rem;line-height:1.8;">' +
+                            item.labSteps.map(function (step) {
+                                return '<li><strong>' + escapeHtml(step.status) + ':</strong> ' + escapeHtml(step.title) + ' - ' + escapeHtml(step.feedback) + '</li>';
+                            }).join('') +
+                        '</ul></div>';
+            }
+
+            return sections;
+        }
 
         if (item.metrics) {
             sections +=

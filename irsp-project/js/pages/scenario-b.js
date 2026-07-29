@@ -363,6 +363,7 @@
             scenario: 'B',
             team: 'Scenario B Trainee',
             date: new Date().toISOString().slice(0, 10),
+            completedAt: new Date().toISOString(),
             duration: formatScenarioDuration(),
             score: score.total,
             status: reportStatus(score.total),

@@ -333,6 +333,22 @@
         .launcher-card {
             background: #ffffff;
             border: 2px solid rgba(249, 115, 22, 0.18);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+
+        .launcher-card .subtitle {
+            max-width: 720px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .launcher-card .note {
+            width: 100%;
+            max-width: 720px;
         }
 
         .side-card {
@@ -415,10 +431,9 @@
 <nav aria-label="Primary navigation">
     <a href="../dashboard.html" class="logo"><i data-lucide="shield-alert"></i> ResponseGrid</a>
     <a href="../dashboard.html" class="nav-item"><i data-lucide="layout-dashboard"></i> Dashboard</a>
-    <a href="../active-lab.html" class="nav-item active"><i data-lucide="terminal"></i> Active Lab</a>
+    <a href="../active-lab.html" class="nav-item active"><i data-lucide="terminal"></i> Labs</a>
     <a href="../reports.html" class="nav-item"><i data-lucide="file-text"></i> Reports</a>
     <a href="../team.html" class="nav-item"><i data-lucide="users"></i> Team</a>
-    <a href="../mitre.html" class="nav-item"><i data-lucide="shield"></i> MITRE ATT&amp;CK</a>
     <div class="nav-bottom">
         <a href="../settings.html" class="nav-item"><i data-lucide="settings"></i> Settings</a>
     </div>

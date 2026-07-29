@@ -111,12 +111,30 @@ async function requestKioskFullscreen() {
 }
 
 function handleEndLab() {
-    const shouldEnd = window.confirm('Are you sure you want to end the lab? Your progress will be lost.');
+    const shouldEnd = window.confirm('End this lab and save your current score to the dashboard?');
     if (!shouldEnd) return;
 
     hasIntentionalExit = true;
+    clearInterval(timerInterval);
+    exportResultsToDashboard('Ended early', 'ended');
     window.removeEventListener('beforeunload', beforeUnloadHandler);
-    window.location.href = 'scenario-a.html';
+
+    if (window.opener && !window.opener.closed) {
+        window.opener.focus();
+    }
+
+    window.close();
+
+    window.setTimeout(() => {
+        if (window.closed) return;
+        document.title = 'Scenario A - Lab Ended';
+        document.body.innerHTML =
+            '<main style="min-height:100vh;display:grid;place-items:center;padding:2rem;background:#eef2f7;font-family:Arial,sans-serif;">'
+            + '<section style="max-width:520px;padding:2rem;text-align:center;background:#fff;border-radius:16px;box-shadow:0 12px 36px rgba(15,23,42,.12);">'
+            + '<h1 style="margin:0 0 .75rem;color:#0f172a;">Lab ended</h1>'
+            + '<p style="margin:0;color:#475569;">Your result was saved. You can safely close this tab.</p>'
+            + '</section></main>';
+    }, 150);
 }
 
 function shouldBlockShortcut(e) {
@@ -418,7 +436,7 @@ function showFinalScore() {
     }, 500);
 
     /* ── Dashboard Export ── */
-    exportResultsToDashboard(grade);
+    exportResultsToDashboard(grade, 'completed');
 }
 
 /* ══════════════════════════════════════════
@@ -451,11 +469,39 @@ function buildResultsPayload(grade) {
     };
 }
 
-function exportResultsToDashboard(grade) {
+function exportResultsToDashboard(grade, completionReason = 'completed') {
     const payload = buildResultsPayload(grade);
+    const completedStages = Object.values(stageTimes).filter(time => time !== null).length;
+    const dashboardReport = {
+        id: 'live-scenario-a',
+        title: 'Scenario A - Ransomware Containment',
+        scenario: 'A',
+        team: 'Scenario A Trainee',
+        date: new Date().toISOString().slice(0, 10),
+        completedAt: payload.completedAt,
+        duration: payload.totalTimeFormatted,
+        score: payload.totalScore,
+        status: completionReason === 'completed' ? 'Completed' : 'Ended Early',
+        summary: 'Scenario A result saved locally from the browser-based incident response lab.',
+        metrics: {
+            labStepsComplete: completedStages,
+            totalLabSteps: 3,
+            completionReason: completionReason,
+            questionsAnswered: Object.values(answered).filter(Boolean).length,
+            totalQuestions: Object.keys(ANSWERS).length
+        }
+    };
 
     /* 1. localStorage — persists across tabs & browser restarts */
-    try { localStorage.setItem('responsegrid_lab_result', JSON.stringify(payload)); } catch (e) { /* private mode */ }
+    try {
+        localStorage.setItem('responsegrid_lab_result', JSON.stringify(payload));
+        localStorage.setItem('irsp-scenario-a-report', JSON.stringify(dashboardReport));
+        localStorage.setItem('irsp-last-scenario', JSON.stringify({
+            id: 'scenario-a',
+            title: dashboardReport.title,
+            url: 'eapen-scenario-a/lab_a.html'
+        }));
+    } catch (e) { /* private mode */ }
 
     /* 2. sessionStorage — available to same-tab / same-origin pages */
     try { sessionStorage.setItem('responsegrid_lab_result', JSON.stringify(payload)); } catch (e) { /* private mode */ }

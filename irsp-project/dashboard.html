@@ -3,189 +3,521 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ResponseGrid - Home</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/lucide/0.263.0/lucide.min.js"></script>
-    <link rel="stylesheet" href="css/shared.css">
+    <title>ResponseGrid - Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #e8eef6;
+            color: #1a202c;
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* ── Sidebar ─────────────────────────────────────────── */
+        .sidebar {
+            width: 220px;
+            background: #fff;
+            display: flex;
+            flex-direction: column;
+            padding: 28px 16px 24px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            z-index: 100;
+            border-right: 1px solid #e8eef6;
+        }
+
+        .sidebar-logo {
+            font-size: 1.05rem;
+            font-weight: 800;
+            color: #0f172a;
+            text-decoration: none;
+            padding: 0 10px;
+            margin-bottom: 28px;
+            display: block;
+        }
+
+        .sidebar-nav {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            flex: 1;
+        }
+
+        .nav-link {
+            text-decoration: none;
+            padding: 9px 12px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: #64748b;
+            transition: background 0.12s, color 0.12s;
+        }
+
+        .nav-link:hover {
+            background: #f1f5f9;
+            color: #1e293b;
+        }
+
+        .nav-link.active {
+            background: #3b82f6;
+            color: #fff;
+            font-weight: 600;
+        }
+
+        .sidebar-bottom {
+            padding-top: 12px;
+            border-top: 1px solid #f1f5f9;
+        }
+
+        /* ── Main ────────────────────────────────────────────── */
+        .main {
+            margin-left: 220px;
+            flex: 1;
+            padding: 36px 36px 48px;
+            min-height: 100vh;
+        }
+
+        /* ── Page header ─────────────────────────────────────── */
+        .page-header {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            margin-bottom: 28px;
+        }
+
+        .score-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 4px 14px;
+            border-radius: 20px;
+            border: 1.5px solid #bfdbfe;
+            background: #eff6ff;
+            color: #3b82f6;
+            font-size: 0.78rem;
+            font-weight: 600;
+            letter-spacing: 0.01em;
+            margin-bottom: 8px;
+        }
+
+        .page-title {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: #0f172a;
+            line-height: 1.15;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            padding-top: 4px;
+        }
+
+        .btn {
+            padding: 9px 22px;
+            border-radius: 8px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            font-family: inherit;
+            transition: opacity 0.15s, box-shadow 0.15s;
+        }
+
+        .btn:hover { opacity: 0.88; }
+
+        .btn-outline {
+            background: #fff;
+            border: 1.5px solid #cbd5e1;
+            color: #374151;
+        }
+
+        .btn-primary {
+            background: #3b82f6;
+            color: #fff;
+            box-shadow: 0 1px 4px rgba(59,130,246,0.25);
+        }
+
+        /* ── Stat cards ──────────────────────────────────────── */
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .stat-card {
+            background: #fff;
+            border-radius: 18px;
+            padding: 24px 26px 22px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+        }
+
+        .stat-blob {
+            position: absolute;
+            top: -18px;
+            right: -18px;
+            width: 90px;
+            height: 90px;
+            border-radius: 50%;
+        }
+
+        .stat-card:nth-child(1) .stat-blob { background: #c4b5fd; opacity: 0.55; }
+        .stat-card:nth-child(2) .stat-blob { background: #86efac; opacity: 0.55; }
+        .stat-card:nth-child(3) .stat-blob { background: #d8b4fe; opacity: 0.55; }
+
+        .stat-label {
+            font-size: 0.83rem;
+            color: #64748b;
+            font-weight: 500;
+            margin-bottom: 10px;
+            position: relative;
+        }
+
+        .stat-value {
+            font-size: 2.1rem;
+            font-weight: 800;
+            color: #0f172a;
+            line-height: 1;
+            position: relative;
+        }
+
+        /* ── Card ────────────────────────────────────────────── */
+        .card {
+            background: #fff;
+            border-radius: 18px;
+            padding: 28px 30px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+            margin-bottom: 20px;
+        }
+
+        .card-title {
+            font-size: 1rem;
+            font-weight: 700;
+            color: #0f172a;
+            margin-bottom: 5px;
+        }
+
+        .card-subtitle {
+            font-size: 0.845rem;
+            color: #64748b;
+            margin-bottom: 26px;
+            line-height: 1.5;
+        }
+
+        /* ── Progress overview ───────────────────────────────── */
+        .progress-layout {
+            display: flex;
+            align-items: center;
+            gap: 44px;
+        }
+
+        /* Donut chart */
+        .donut-wrap {
+            position: relative;
+            width: 150px;
+            height: 150px;
+            flex-shrink: 0;
+        }
+
+        .donut-wrap svg {
+            width: 150px;
+            height: 150px;
+        }
+
+        .donut-track {
+            fill: none;
+            stroke: #e2e8f0;
+            stroke-width: 13;
+        }
+
+        .donut-arc {
+            fill: none;
+            stroke: #3b82f6;
+            stroke-width: 13;
+            stroke-linecap: round;
+            transform-origin: center;
+            transform: rotate(-90deg);
+            transition: stroke-dashoffset 0.7s cubic-bezier(0.4,0,0.2,1);
+        }
+
+        .donut-center {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.45rem;
+            font-weight: 800;
+            color: #0f172a;
+        }
+
+        .progress-info {
+            flex: 1;
+        }
+
+        .progress-heading {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #0f172a;
+            margin-bottom: 6px;
+        }
+
+        .progress-desc {
+            font-size: 0.86rem;
+            color: #64748b;
+            margin-bottom: 18px;
+            line-height: 1.55;
+        }
+
+        .pills-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .pill {
+            padding: 5px 13px;
+            border-radius: 20px;
+            background: #f8fafc;
+            border: 1.5px solid #e2e8f0;
+            font-size: 0.79rem;
+            color: #374151;
+            font-weight: 500;
+            white-space: nowrap;
+        }
+
+        /* ── Table ───────────────────────────────────────────── */
+        .table-wrap {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        thead tr {
+            border-bottom: 1.5px solid #f1f5f9;
+        }
+
+        th {
+            text-align: left;
+            font-size: 0.7rem;
+            font-weight: 700;
+            color: #94a3b8;
+            text-transform: uppercase;
+            letter-spacing: 0.07em;
+            padding: 0 16px 13px;
+        }
+
+        td {
+            padding: 14px 16px;
+            font-size: 0.865rem;
+            color: #374151;
+            border-bottom: 1px solid #f8fafc;
+        }
+
+        tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        .score-pill {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 3px 11px;
+            border-radius: 20px;
+            background: #d1fae5;
+            color: #065f46;
+            font-size: 0.78rem;
+            font-weight: 700;
+            min-width: 42px;
+        }
+
+        .score-pill.low {
+            background: #fef9c3;
+            color: #713f12;
+        }
+
+        .score-pill.zero {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+    </style>
 </head>
 <body>
 
-<nav aria-label="Primary navigation">
-    <a href="dashboard.html" class="logo"><i data-lucide="shield-alert"></i> ResponseGrid</a>
-    <a href="dashboard.html" class="nav-item"><i data-lucide="layout-dashboard"></i> Dashboard</a>
-    <a href="active-lab.html" class="nav-item"><i data-lucide="terminal"></i> Active Lab</a>
-    <a href="reports.html" class="nav-item"><i data-lucide="file-text"></i> Reports</a>
-    <a href="team.html" class="nav-item"><i data-lucide="users"></i> Team</a>
-    <a href="mitre.html" class="nav-item"><i data-lucide="shield"></i> MITRE ATT&amp;CK</a>
-    <div class="nav-bottom">
-        <a href="settings.html" class="nav-item"><i data-lucide="settings"></i> Settings</a>
+<!-- Sidebar -->
+<aside class="sidebar">
+    <a href="dashboard.html" class="sidebar-logo">ResponseGrid</a>
+    <nav class="sidebar-nav">
+        <a href="dashboard.html" class="nav-link active">Dashboard</a>
+        <a href="active-lab.html" class="nav-link">Labs</a>
+        <a href="reports.html" class="nav-link">Reports</a>
+        <a href="team.html" class="nav-link">Team</a>
+    </nav>
+    <div class="sidebar-bottom">
+        <a href="settings.html" class="nav-link">Settings</a>
     </div>
-</nav>
+</aside>
 
-<main>
-    <header>
+<!-- Main content -->
+<main class="main">
+
+    <!-- Page header -->
+    <div class="page-header">
         <div>
-            <div class="status-badge blue">Training Home</div>
-            <h1>ResponseGrid Home</h1>
-            <p class="subtitle">Resume the most recent lab, review investigation progress, and jump into the supporting MITRE and report pages.</p>
+            <div class="score-badge">Score summary</div>
+            <h1 class="page-title">Dashboard</h1>
         </div>
-        <div class="header-panel">
-            <div class="eyebrow">Most Recent Lab</div>
-            <div class="value" id="dashboard-recent-lab-name">Scenario B</div>
-            <div class="surface-note" id="dashboard-last-run">Endpoint investigation ready</div>
-        </div>
-    </header>
-
-    <section class="card section-space" aria-labelledby="recent-lab-title">
-        <div class="toolbar" style="margin-bottom:1rem;">
-            <div>
-                <div class="card-title" id="recent-lab-title"><i data-lucide="monitor-dot"></i> Most Recent Lab Summary</div>
-                <div class="surface-note" id="dashboard-recent-lab-summary">Scenario B is the primary demo: a timed trainee incident-response exercise.</div>
-            </div>
-            <div class="console-actions">
-                <a class="btn" id="dashboard-resume-lab" href="scenario-b.html"><i data-lucide="play"></i> Resume Scenario B</a>
-                <a class="btn btn-secondary" href="active-lab.html"><i data-lucide="terminal"></i> Lab Launcher</a>
-            </div>
-        </div>
-
-        <div class="grid-3">
-            <div class="metric-tile">
-                <div class="label">Exercise Mode</div>
-                <div class="value" id="dashboard-exercise-mode" style="font-size:1.25rem;">Timed</div>
-                <div class="subtext" id="dashboard-exercise-mode-note">Score is hidden until submit or timeout.</div>
-            </div>
-            <div class="metric-tile">
-                <div class="label" id="dashboard-primary-label">Primary Endpoint</div>
-                <div class="value mono" id="dashboard-primary-target" style="font-size:1.25rem;">192.168.32.130</div>
-                <div class="subtext" id="dashboard-primary-note">Initial triage and execution focus.</div>
-            </div>
-            <div class="metric-tile">
-                <div class="label" id="dashboard-secondary-label">Secondary Endpoint</div>
-                <div class="value mono" id="dashboard-secondary-target" style="font-size:1.25rem;">192.168.32.129</div>
-                <div class="subtext" id="dashboard-secondary-note">Lateral movement validation target.</div>
-            </div>
-        </div>
-    </section>
-
-    <section class="metric-strip section-space">
-        <div class="metric-tile">
-            <div class="label" id="dashboard-alerts-label">Scenario B Alerts</div>
-            <div class="value" id="dashboard-metric-alerts" style="color:var(--accent-red);">--</div>
-            <div class="subtext" id="dashboard-metric-alerts-note">Loading alert summary</div>
-        </div>
-        <div class="metric-tile">
-            <div class="label" id="dashboard-events-label">Telemetry Events</div>
-            <div class="value" id="dashboard-metric-events" style="color:var(--accent-primary);">--</div>
-            <div class="subtext" id="dashboard-metric-events-note">Loading event count</div>
-        </div>
-        <div class="metric-tile">
-            <div class="label">Response Actions</div>
-            <div class="value" style="color:var(--accent-green);">06</div>
-            <div class="subtext">Evidence, containment, persistence, protection, credentials, validation.</div>
-        </div>
-        <div class="metric-tile">
-            <div class="label">Supporting Pages</div>
-            <div class="value" style="color:var(--accent-blue);">03</div>
-            <div class="subtext">Active Lab, MITRE ATT&amp;CK, Reports.</div>
-        </div>
-    </section>
-
-    <div class="grid-2-1">
-        <div class="stack">
-            <section class="card" aria-labelledby="dashboard-flow-title">
-                <div class="toolbar" style="margin-bottom:0.85rem;">
-                    <div class="card-title" id="dashboard-flow-title"><i data-lucide="route"></i> Recommended Demo Flow</div>
-                    <div class="surface-note">Use this order when explaining the project.</div>
-                </div>
-                <div class="timeline">
-                    <div class="timeline-item">
-                        <div class="time">1. Enter Lab</div>
-                        <div class="desc">Open the lab launcher and show the student is entering a controlled endpoint investigation scenario.</div>
-                    </div>
-                    <div class="timeline-item">
-                        <div class="time">2. Run Scenario B</div>
-                        <div class="desc">Start the timer, review alerts, run pivots, validate response actions, and submit the incident.</div>
-                    </div>
-                    <div class="timeline-item">
-                        <div class="time">3. Explain ATT&amp;CK</div>
-                        <div class="desc">Use MITRE coverage to connect endpoint evidence to attacker tactics and techniques.</div>
-                    </div>
-                    <div class="timeline-item">
-                        <div class="time">4. Report</div>
-                        <div class="desc">Use the report page to explain how findings, evidence, and remediation would be documented.</div>
-                    </div>
-                </div>
-            </section>
-
-            <section class="card" aria-labelledby="dashboard-alerts-title">
-                <div class="toolbar" style="margin-bottom:0.85rem;">
-                    <div class="card-title" id="dashboard-alerts-title"><i data-lucide="siren"></i> <span id="dashboard-alerts-title-text">Recent Scenario B Alerts</span></div>
-                    <div class="surface-note">High-level summary only. Investigation happens inside Scenario B.</div>
-                </div>
-                <div class="table-wrap">
-                    <table class="dense-table">
-                        <thead>
-                        <tr>
-                            <th>Priority</th>
-                            <th id="dashboard-alert-table-title">Alert</th>
-                            <th>Host</th>
-                            <th>Technique</th>
-                        </tr>
-                        </thead>
-                        <tbody id="dashboard-alerts-body">
-                        <tr>
-                            <td colspan="4" class="surface-note" style="padding:0.75rem;">Loading Scenario B alerts...</td>
-                        </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </section>
-        </div>
-
-        <div class="stack">
-            <section class="card" aria-labelledby="dashboard-progress-title">
-                <div class="card-title" id="dashboard-progress-title"><i data-lucide="target"></i> Scenario B Readiness</div>
-                <div class="key-value-list">
-                    <div class="key-value-item">
-                        <span class="key">Primary Page</span>
-                        <span class="value" id="dashboard-primary-page">Scenario B Endpoint Investigation</span>
-                    </div>
-                    <div class="key-value-item">
-                        <span class="key">Mode</span>
-                        <span class="value" id="dashboard-mode-value">Timed trainee exercise</span>
-                    </div>
-                    <div class="key-value-item">
-                        <span class="key">Evaluation</span>
-                        <span class="value" id="dashboard-evaluation-value">Hidden score revealed on submit or timeout</span>
-                    </div>
-                    <div class="key-value-item">
-                        <span class="key">Status</span>
-                        <span class="value" id="dashboard-connection-status">Connecting to telemetry...</span>
-                    </div>
-                </div>
-                <p class="surface-note" id="dashboard-progress-note" style="margin-top:0.85rem;">Checking Scenario B telemetry and alerts.</p>
-                <div class="progress-bar" aria-label="Scenario B readiness">
-                    <div class="progress-fill" id="dashboard-progress-fill" style="width:35%;"></div>
-                </div>
-            </section>
-
-            <section class="card" aria-labelledby="dashboard-links-title">
-                <div class="toolbar" style="margin-bottom:0.85rem;">
-                    <div class="card-title" id="dashboard-links-title"><i data-lucide="layout-list"></i> Quick Links</div>
-                    <div class="surface-note">No investigation search is performed on this home page.</div>
-                </div>
-                <div class="action-stack">
-                    <a class="btn" id="dashboard-primary-action" href="scenario-b.html"><i data-lucide="shield-alert"></i> Start Endpoint Investigation</a>
-                    <a class="btn btn-secondary" href="mitre.html"><i data-lucide="shield"></i> View MITRE Mapping</a>
-                    <a class="btn btn-secondary" href="reports.html"><i data-lucide="file-text"></i> Open Report Page</a>
-                    <a class="btn btn-secondary" href="active-lab.html"><i data-lucide="terminal"></i> Open Active Lab</a>
-                </div>
-            </section>
+        <div class="header-actions">
+            <button class="btn btn-outline" id="refresh-btn" type="button">Refresh</button>
+            <button class="btn btn-primary" type="button" onclick="window.location.href='active-lab.html'">Launch Lab</button>
         </div>
     </div>
+
+    <!-- Stat cards -->
+    <div class="stats-row">
+        <div class="stat-card">
+            <div class="stat-blob"></div>
+            <div class="stat-label">Total Labs Completed</div>
+            <div class="stat-value" id="stat-total">11</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-blob"></div>
+            <div class="stat-label">Labs Completion %</div>
+            <div class="stat-value" id="stat-completion">0%</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-blob"></div>
+            <div class="stat-label">Average Score</div>
+            <div class="stat-value" id="stat-avg-score">38%</div>
+        </div>
+    </div>
+
+    <!-- Lab Progress Overview -->
+    <div class="card">
+        <div class="card-title">Lab Progress Overview</div>
+        <div class="card-subtitle" id="progress-subtitle">
+            Total completed labs: 11. Labs completion: 0%. Average score: 38%.
+        </div>
+        <div class="progress-layout">
+            <div class="donut-wrap">
+                <svg viewBox="0 0 120 120" aria-hidden="true">
+                    <circle class="donut-track" cx="60" cy="60" r="50"/>
+                    <circle class="donut-arc" cx="60" cy="60" r="50" id="donut-arc"/>
+                </svg>
+                <div class="donut-center" id="donut-label">38%</div>
+            </div>
+            <div class="progress-info">
+                <div class="progress-heading" id="progress-heading">11 completed labs</div>
+                <div class="progress-desc" id="progress-desc">
+                    Latest completion by trainee@irsp.local with a score of 5% in 23s.
+                </div>
+                <div class="pills-row">
+                    <span class="pill" id="pill-latest">Latest: Jun 29, 2026 at 08:44 AM</span>
+                    <span class="pill" id="pill-avgtime">Avg Time: 7m 26s</span>
+                    <span class="pill" id="pill-standing">Standing: Incomplete</span>
+                    <span class="pill" id="pill-progress">Progress: 0/3 stages</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Completed Labs -->
+    <div class="card">
+        <div class="card-title" style="margin-bottom:18px;">Recent Completed Labs</div>
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Date Completed</th>
+                        <th>User</th>
+                        <th>Lab</th>
+                        <th>Time Taken</th>
+                        <th>Progress</th>
+                        <th>Score</th>
+                        <th>Standing</th>
+                    </tr>
+                </thead>
+                <tbody id="runs-tbody">
+                    <tr>
+                        <td>Jun 29, 2026 at 08:44 AM</td>
+                        <td>trainee@irsp.local</td>
+                        <td>lab-a</td>
+                        <td>23s</td>
+                        <td>0/3 stages</td>
+                        <td><span class="score-pill low">5%</span></td>
+                        <td>Incomplete</td>
+                    </tr>
+                    <tr>
+                        <td>Jun 29, 2026 at 08:00 AM</td>
+                        <td>trainee@irsp.local</td>
+                        <td>lab-a</td>
+                        <td>1m 17s</td>
+                        <td>1/3 stages</td>
+                        <td><span class="score-pill">20%</span></td>
+                        <td>Incomplete</td>
+                    </tr>
+                    <tr>
+                        <td>Jun 16, 2026 at 09:27 AM</td>
+                        <td>trainee@irsp.local</td>
+                        <td>lab-a</td>
+                        <td>1m 23s</td>
+                        <td>0/3 stages</td>
+                        <td><span class="score-pill zero">0%</span></td>
+                        <td>Incomplete</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
 </main>
 
-<script src="js/shared.js"></script>
-<script src="js/services/api-client.js"></script>
-<script src="js/pages/dashboard.js"></script>
+<script>
+(function () {
+    /* ── Donut chart ─────────────────────────────────────────── */
+    const arc = document.getElementById('donut-arc');
+    const label = document.getElementById('donut-label');
+
+    function setDonut(pct) {
+        const r = 50;
+        const circumference = 2 * Math.PI * r; // ≈ 314.16
+        arc.style.strokeDasharray  = circumference;
+        arc.style.strokeDashoffset = circumference * (1 - Math.min(Math.max(pct, 0), 100) / 100);
+        label.textContent = pct + '%';
+    }
+
+    // Read the average-score stat and drive the donut from it
+    const rawScore = parseInt(document.getElementById('stat-avg-score').textContent, 10) || 0;
+    // Trigger after paint so the CSS transition fires
+    requestAnimationFrame(function () {
+        requestAnimationFrame(function () { setDonut(rawScore); });
+    });
+
+    /* ── Refresh button ──────────────────────────────────────── */
+    document.getElementById('refresh-btn').addEventListener('click', function () {
+        this.textContent = 'Refreshing…';
+        this.disabled = true;
+        const self = this;
+        setTimeout(function () {
+            self.textContent = 'Refresh';
+            self.disabled = false;
+        }, 1200);
+    });
+})();
+</script>
+<script src="js/pages/dashboard-summary.js"></script>
 </body>
 </html>

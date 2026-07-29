@@ -346,7 +346,7 @@
             document.body.classList.toggle('compact-sidebar', !!appearance.compactSidebar);
             document.body.classList.toggle('hide-header-timers', appearance.showTimer === false);
             document.body.classList.toggle('dark-mode', appearance.darkMode === true);
-            document.documentElement.style.colorScheme = appearance.darkMode === false ? 'light' : 'dark';
+            document.documentElement.style.colorScheme = 'light';
         },
 
         getTimestamp() {
