@@ -18,7 +18,10 @@ function getMongoClientClass() {
 async function connectClient() {
     if (!clientPromise) {
         const Client = getMongoClientClass();
-        const client = new Client(MONGO_URI);
+        const client = new Client(MONGO_URI, {
+            serverSelectionTimeoutMS: 1500,
+            connectTimeoutMS: 1500
+        });
         clientPromise = client.connect();
     }
 

@@ -2,6 +2,7 @@
     'use strict';
 
     const SCENARIO_ID = 'scenario-b';
+    const REPORT_KEY = 'irsp-scenario-b-report';
     const DEFAULT_QUERY = 'host in ("192.168.32.130", "192.168.32.129", "DESKTOP-GRQ4G1E") or sourcetype has "sysmon" or sourcetype has "security" or sourcetype has "taskscheduler"';
     const ATTACK_CLEANUP_EXCLUSION = ' and not event has "cleanup.ps1" and not event has "Remove-Item" and not event has "Remove-ItemProperty" and not event has "Remove-LocalUser" and not event has "Disable-PSRemoting" and not event has "Set-NetFirewallProfile" and not event has "Remove-NetFirewallRule" and not event has "Set-ExecutionPolicy" and not event has "RemoteSigned"';
     const EXERCISE_SECONDS = 10 * 60;
@@ -54,7 +55,11 @@
         drilldownProcess: document.getElementById('scenario-b-drilldown-process'),
         drilldownParent: document.getElementById('scenario-b-drilldown-parent'),
         drilldownJson: document.getElementById('scenario-b-drilldown-json'),
-        drilldownFields: document.getElementById('scenario-b-drilldown-fields')
+        drilldownFields: document.getElementById('scenario-b-drilldown-fields'),
+        labProgress: document.getElementById('scenario-b-lab-progress'),
+        labFeedback: document.getElementById('scenario-b-lab-feedback'),
+        reportSummary: document.getElementById('scenario-b-report-summary'),
+        completionStatus: document.getElementById('scenario-b-completion-status')
     };
 
     const state = {
@@ -69,6 +74,7 @@
         timerId: null,
         searchesRun: 0,
         alertsPivoted: 0,
+        telemetryConnected: false,
         completionReason: ''
     };
 
@@ -114,6 +120,77 @@
             detail: 'Confirm artifacts, registry hijacks, firewall state, remoting state, and execution policy were restored after containment.',
             validation: 'Pivot on file removal, firewall restore, registry cleanup, execution-policy restore, and final verification logs.',
             query: 'event has "Remove-Item" or event has "Remove-ItemProperty" or event has "Set-NetFirewallProfile" or event has "Remove-NetFirewallRule" or event has "Set-ExecutionPolicy" or event has "RemoteSigned"'
+        }
+    ];
+
+    const LAB_STEPS = [
+        {
+            title: 'Confirm endpoint telemetry',
+            expected: 'Endpoint logs are available and the host activity search returns events.',
+            metric: function () {
+                return state.telemetryConnected || state.totalMatches > 0;
+            },
+            feedback: 'Refresh or run Host Activity until the endpoint telemetry count is visible.'
+        },
+        {
+            title: 'Triage high-priority alerts',
+            expected: 'Pivot on multiple Scenario B alerts before deciding on containment.',
+            metric: function () {
+                return state.alertsPivoted >= 3;
+            },
+            feedback: 'Pivot on at least three alert rows to prove the investigation was alert-driven.'
+        },
+        {
+            title: 'Build the attack timeline',
+            expected: 'Use KQL-style filters to show initial access, execution, persistence, privilege escalation, defense evasion, credential access, and impact evidence.',
+            metric: function () {
+                return getObservedPhases().filter(function (phase) {
+                    return phase !== 'Recovery / Remediation';
+                }).length >= 4;
+            },
+            feedback: 'Use the attack-stage chips until the timeline covers at least four attack phases.'
+        },
+        {
+            title: 'Map the incident to MITRE ATT&CK',
+            expected: 'Explain the compromise with techniques such as PowerShell execution, scheduled task persistence, UAC bypass, defense evasion, credential access, staging, and impact.',
+            metric: function () {
+                return state.alertsPivoted >= 4 || getObservedPhases().length >= 5;
+            },
+            feedback: 'Pivot across more alert types so the final report has ATT&CK technique coverage.'
+        },
+        {
+            title: 'Contain remote administration',
+            expected: 'Validate remoting shutdown evidence before closing containment.',
+            metric: function () {
+                return state.remediations['restrict-remote-admin'] === 'validated';
+            },
+            feedback: 'Run the remote lockdown response action and confirm WinRM/remoting evidence.'
+        },
+        {
+            title: 'Remove persistence and unauthorized access',
+            expected: 'Validate scheduled task cleanup and unauthorized local-user cleanup.',
+            metric: function () {
+                return state.remediations['remove-persistence'] === 'validated'
+                    && state.remediations['rotate-credentials'] === 'validated';
+            },
+            feedback: 'Validate both persistence removal and unauthorized local-user cleanup.'
+        },
+        {
+            title: 'Restore protections and clean state',
+            expected: 'Validate endpoint protection restore, policy restore, artifact cleanup, and final clean-state evidence.',
+            metric: function () {
+                return state.remediations['restore-protection'] === 'validated'
+                    && state.remediations['validate-clean-state'] === 'validated';
+            },
+            feedback: 'Validate protection restore and clean-state checks before submitting.'
+        },
+        {
+            title: 'Submit the incident report',
+            expected: 'Submit before the timer expires and explain the score using actions, pivots, searches, timeline coverage, and time remaining.',
+            metric: function () {
+                return state.exerciseComplete;
+            },
+            feedback: 'Submit the incident once the response steps are validated.'
         }
     ];
 
@@ -207,6 +284,212 @@
         });
 
         return { score: score, phases: phases };
+    }
+
+    function getObservedPhases() {
+        return Array.from(new Set(state.results.map(classifyPhase))).filter(function (phase) {
+            return phase && phase !== 'Endpoint Activity';
+        });
+    }
+
+    function getValidatedActionCount() {
+        return Object.values(state.remediations).filter(function (status) {
+            return status === 'validated';
+        }).length;
+    }
+
+    function getCompletedLabSteps() {
+        return LAB_STEPS.filter(function (step) {
+            return step.metric();
+        });
+    }
+
+    function getOpenLabSteps() {
+        return LAB_STEPS.filter(function (step) {
+            return !step.metric();
+        });
+    }
+
+    function formatScenarioDuration() {
+        return formatDuration(EXERCISE_SECONDS - state.secondsRemaining);
+    }
+
+    function reportStatus(score) {
+        if (score >= 80) return 'Passed';
+        if (score >= 60) return 'Needs Improvement';
+        return 'Failed';
+    }
+
+    function buildScenarioReport(reason) {
+        const score = calculateFinalScore();
+        const completedSteps = getCompletedLabSteps();
+        const openSteps = getOpenLabSteps();
+        const phases = getObservedPhases();
+        const validatedActions = REMEDIATION_ACTIONS.filter(function (action) {
+            return state.remediations[action.id] === 'validated';
+        });
+        const openActions = REMEDIATION_ACTIONS.filter(function (action) {
+            return state.remediations[action.id] !== 'validated';
+        });
+        const strengths = [];
+        const gaps = [];
+
+        if (state.telemetryConnected || state.totalMatches > 0) strengths.push('Endpoint telemetry was loaded and available for investigation.');
+        if (state.alertsPivoted >= 3) strengths.push('The trainee pivoted from high-priority alerts instead of relying only on broad searches.');
+        if (phases.length >= 4) strengths.push('The attack-stage timeline showed coverage across multiple incident phases.');
+        if (validatedActions.length >= 4) strengths.push('Multiple blue-team response actions were validated using endpoint evidence.');
+        if (state.secondsRemaining > 0) strengths.push('The incident was submitted before the scenario timer expired.');
+
+        if (!state.telemetryConnected && !state.totalMatches) gaps.push('Endpoint telemetry was not confirmed before report submission.');
+        if (state.alertsPivoted < 3) gaps.push('More alert pivots are needed to prove a complete triage path.');
+        if (phases.length < 4) gaps.push('The attack timeline needs more phase coverage before the report is considered complete.');
+        if (openActions.length) gaps.push('Open response actions remain: ' + openActions.map(function (action) { return action.title; }).join(', ') + '.');
+        if (reason === 'timeout') gaps.push('The scenario timed out before the trainee submitted the incident.');
+
+        return {
+            id: 'live-scenario-b',
+            title: 'Scenario B - Endpoint Investigation',
+            scenario: 'B',
+            team: 'Scenario B Trainee',
+            date: new Date().toISOString().slice(0, 10),
+            duration: formatScenarioDuration(),
+            score: score.total,
+            status: reportStatus(score.total),
+            summary: 'Scenario B submitted from the live endpoint investigation lab. The report captures alert pivots, KQL-style searches, attack timeline coverage, validated response actions, and time-based scoring.',
+            strengths: strengths.length ? strengths : ['The trainee started the endpoint investigation workflow.'],
+            gaps: gaps.length ? gaps : ['No major gaps remain in the submitted Scenario B run.'],
+            next: openSteps.length
+                ? 'Re-run Scenario B and focus on: ' + openSteps.slice(0, 2).map(function (step) { return step.title; }).join(', ') + '.'
+                : 'Use this run as the completed Scenario B benchmark and explain the final score using the report metrics.',
+            containment: Math.min(100, 45 + (validatedActions.length * 9)),
+            investigation: Math.min(100, 50 + (state.alertsPivoted * 6) + (phases.length * 4)),
+            comms: Math.min(100, 60 + (completedSteps.length * 5)),
+            metrics: {
+                actionScore: score.actionScore,
+                alertScore: score.alertScore,
+                searchScore: score.searchScore,
+                timelineScore: score.timelineScore,
+                timeScore: score.timeScore,
+                validatedActions: validatedActions.length,
+                totalActions: REMEDIATION_ACTIONS.length,
+                alertPivots: state.alertsPivoted,
+                searchesRun: state.searchesRun,
+                labStepsComplete: completedSteps.length,
+                totalLabSteps: LAB_STEPS.length,
+                timeRemaining: formatDuration(state.secondsRemaining),
+                completionReason: reason
+            },
+            attackPhases: phases,
+            responseActions: REMEDIATION_ACTIONS.map(function (action) {
+                return {
+                    title: action.title,
+                    status: state.remediations[action.id] === 'validated' ? 'Validated' : 'Open',
+                    validation: action.validation
+                };
+            }),
+            labSteps: LAB_STEPS.map(function (step) {
+                return {
+                    title: step.title,
+                    status: step.metric() ? 'Complete' : 'Open',
+                    expected: step.expected,
+                    feedback: step.metric() ? 'Evidence accepted for this step.' : step.feedback
+                };
+            }),
+            feedback: {
+                title: 'Latest Feedback - Scenario B',
+                cards: [
+                    {
+                        tone: score.total >= 80 ? 'success' : 'warning',
+                        heading: 'Score outcome: ' + score.total + '%',
+                        body: 'Final score combines response actions, alert pivots, KQL searches, timeline evidence, and remaining time.'
+                    },
+                    {
+                        tone: phases.length >= 4 ? 'success' : 'warning',
+                        heading: 'Attack timeline coverage',
+                        body: phases.length ? 'Observed phases: ' + phases.join(', ') + '.' : 'No attack phases were confirmed in the final result set.'
+                    },
+                    {
+                        tone: validatedActions.length >= 4 ? 'success' : 'warning',
+                        heading: 'Response validation',
+                        body: validatedActions.length + ' of ' + REMEDIATION_ACTIONS.length + ' response actions were validated from endpoint evidence.'
+                    }
+                ],
+                nextSteps: openSteps.length
+                    ? openSteps.map(function (step) { return step.feedback; }).slice(0, 4)
+                    : ['Review the completed run, explain the timeline, and use the exported report as final evidence.'],
+                checklist: LAB_STEPS.map(function (step) {
+                    return {
+                        title: step.title,
+                        note: step.metric() ? 'Completed during this run.' : step.feedback,
+                        done: step.metric()
+                    };
+                })
+            }
+        };
+    }
+
+    function persistScenarioReport(reason) {
+        try {
+            window.localStorage.setItem(REPORT_KEY, JSON.stringify(buildScenarioReport(reason)));
+        } catch (error) {
+            // Reporting should never interrupt the lab flow.
+        }
+    }
+
+    function renderGuidedFeedback() {
+        const completed = getCompletedLabSteps();
+        const percent = Math.round((completed.length / LAB_STEPS.length) * 100);
+        const nextStep = LAB_STEPS.find(function (step) {
+            return !step.metric();
+        });
+        const phases = getObservedPhases();
+        const score = calculateFinalScore();
+
+        if (els.completionStatus) {
+            els.completionStatus.className = 'status-badge ' + (percent >= 100 ? 'green' : percent >= 60 ? 'yellow' : 'blue');
+            els.completionStatus.textContent = percent + '% complete';
+        }
+
+        if (els.labProgress) {
+            els.labProgress.innerHTML = LAB_STEPS.map(function (step, index) {
+                const done = step.metric();
+                return '<div class="alert-item ' + (done ? 'success' : 'info') + '">'
+                    + '<div class="alert-info">'
+                    + '<h4>' + (index + 1) + '. ' + escapeHtml(step.title) + '</h4>'
+                    + '<p>' + escapeHtml(step.expected) + '</p>'
+                    + '<p class="surface-note">' + escapeHtml(done ? 'Evidence accepted for this step.' : step.feedback) + '</p>'
+                    + '</div>'
+                    + '<span class="status-badge ' + (done ? 'green' : 'blue') + '">' + (done ? 'Complete' : 'Open') + '</span>'
+                    + '</div>';
+            }).join('');
+        }
+
+        if (els.reportSummary) {
+            els.reportSummary.innerHTML = [
+                ['Lab Completion', percent + '% (' + completed.length + '/' + LAB_STEPS.length + ' expected steps)'],
+                ['Alert Pivots', state.alertsPivoted + ' pivot(s) completed'],
+                ['KQL Searches', state.searchesRun + ' search(es) run'],
+                ['Validated Response Actions', getValidatedActionCount() + '/' + REMEDIATION_ACTIONS.length],
+                ['Attack Phase Coverage', phases.length ? phases.join(', ') : 'No phase coverage yet'],
+                ['Report Metrics', 'Actions ' + score.actionScore + ', pivots ' + score.alertScore + ', searches ' + score.searchScore + ', timeline ' + score.timelineScore + ', time ' + score.timeScore],
+                ['Current Feedback', nextStep ? nextStep.feedback : 'Lab complete. Submit or review the final score and explain the incident path.']
+            ].map(function (item) {
+                return '<div class="key-value-item">'
+                    + '<span class="key">' + escapeHtml(item[0]) + '</span>'
+                    + '<span class="value">' + escapeHtml(item[1]) + '</span>'
+                    + '</div>';
+            }).join('');
+        }
+
+        if (els.labFeedback) {
+            els.labFeedback.textContent = nextStep
+                ? 'Next expected analyst action: ' + nextStep.feedback
+                : 'Completed lab outcome: the trainee proved the endpoint compromise, validated containment and remediation, and produced report metrics that explain the final score.';
+        }
+
+        if (window.IRSP && typeof window.IRSP.refreshIcons === 'function') {
+            window.IRSP.refreshIcons();
+        }
     }
 
     function updateRiskScore() {
@@ -318,6 +601,7 @@
                     runSearch(action.query);
                 }
                 renderRemediationActions();
+                renderGuidedFeedback();
 
                 window.setTimeout(function () {
                     state.remediations[actionId] = 'validated';
@@ -326,6 +610,7 @@
                     }
                     renderRemediationActions();
                     renderExerciseStatus();
+                    renderGuidedFeedback();
                     if (window.IRSP && typeof window.IRSP.refreshIcons === 'function') {
                         window.IRSP.refreshIcons();
                     }
@@ -420,9 +705,11 @@
             els.containmentPosture.textContent = 'Contained';
         }
 
+        persistScenarioReport(reason);
         updateRiskScore();
         renderRemediationActions();
         renderExerciseStatus();
+        renderGuidedFeedback();
     }
 
     function resetExercise() {
@@ -441,6 +728,7 @@
         renderExerciseStatus();
         renderRemediationActions();
         updateRiskScore();
+        renderGuidedFeedback();
     }
 
     function startExercise() {
@@ -455,6 +743,7 @@
         state.secondsRemaining = EXERCISE_SECONDS;
         renderExerciseStatus();
         renderRemediationActions();
+        renderGuidedFeedback();
 
         state.timerId = window.setInterval(function () {
             state.secondsRemaining -= 1;
@@ -608,6 +897,7 @@
 
         renderTimeline();
         updateRiskScore();
+        renderGuidedFeedback();
 
         if (!els.resultsBody) return;
 
@@ -651,6 +941,7 @@
     function renderAlerts(alerts) {
         state.alerts = alerts;
         updateRiskScore();
+        renderGuidedFeedback();
 
         if (!els.alertsBody) return;
 
@@ -677,6 +968,7 @@
                 if (state.exerciseStarted && !state.exerciseComplete) {
                     state.alertsPivoted += 1;
                     renderExerciseStatus();
+                    renderGuidedFeedback();
                 }
                 if (els.searchInput) els.searchInput.value = query;
                 runSearch(query);
@@ -717,9 +1009,13 @@
             if (els.metricEventsNote) els.metricEventsNote.textContent = 'Events available for Scenario B';
             if (els.sourceStatus) els.sourceStatus.textContent = 'Live telemetry connected';
             if (els.consoleSourceStatus) els.consoleSourceStatus.textContent = 'Live telemetry connected';
+            state.telemetryConnected = count > 0;
+            renderGuidedFeedback();
         } catch (error) {
             if (els.sourceStatus) els.sourceStatus.textContent = 'Telemetry unavailable';
             if (els.consoleSourceStatus) els.consoleSourceStatus.textContent = 'Telemetry unavailable';
+            state.telemetryConnected = false;
+            renderGuidedFeedback();
         }
     }
 
@@ -739,11 +1035,13 @@
             if (els.searchStatus) {
                 els.searchStatus.textContent = 'Search completed at ' + IRSP.getTimestamp() + ' with ' + formatNumber(payload.total_matches || 0) + ' matched events.';
             }
+            renderGuidedFeedback();
         } catch (error) {
             if (els.searchStatus) els.searchStatus.textContent = 'Search unavailable. Check the local telemetry service.';
             if (els.resultsBody) {
                 els.resultsBody.innerHTML = '<tr><td colspan="5" class="surface-note" style="padding:0.75rem;">Search failed for this query.</td></tr>';
             }
+            renderGuidedFeedback();
         } finally {
             setBusy(false);
             if (window.IRSP && typeof window.IRSP.refreshIcons === 'function') {
@@ -805,6 +1103,7 @@
     renderRemediationActions();
     renderTimeline();
     updateRiskScore();
+    renderGuidedFeedback();
     hydrateAlerts();
     hydrateEventCount();
     runSearch(DEFAULT_QUERY);

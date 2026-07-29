@@ -282,7 +282,11 @@
             containment: report.containment,
             investigation: report.investigation,
             comms:       report.comms,
-            feedback:    report.feedback || null
+            feedback:    report.feedback || null,
+            metrics:     report.metrics || null,
+            attackPhases: Array.isArray(report.attackPhases) ? report.attackPhases : [],
+            responseActions: Array.isArray(report.responseActions) ? report.responseActions : [],
+            labSteps: Array.isArray(report.labSteps) ? report.labSteps : []
         };
     }
 
@@ -415,6 +419,88 @@
 
     // ── Report detail panel ───────────────────────────────────────────────────
 
+    function renderScenarioBDetailSections(item) {
+        var sections = '';
+
+        if (item.metrics) {
+            sections +=
+                '<div style="margin-bottom:1rem;">' +
+                    '<div style="font-weight:600;font-size:0.9rem;margin-bottom:0.4rem;">Scenario B Report Metrics</div>' +
+                    '<div class="key-value-list">' +
+                        '<div class="key-value-item"><span class="key">Score Breakdown</span><span class="value">Actions ' + escapeHtml(item.metrics.actionScore) + ', pivots ' + escapeHtml(item.metrics.alertScore) + ', searches ' + escapeHtml(item.metrics.searchScore) + ', timeline ' + escapeHtml(item.metrics.timelineScore) + ', time ' + escapeHtml(item.metrics.timeScore) + '</span></div>' +
+                        '<div class="key-value-item"><span class="key">Validated Actions</span><span class="value">' + escapeHtml(item.metrics.validatedActions) + '/' + escapeHtml(item.metrics.totalActions) + '</span></div>' +
+                        '<div class="key-value-item"><span class="key">Alert Pivots / Searches</span><span class="value">' + escapeHtml(item.metrics.alertPivots) + ' pivots / ' + escapeHtml(item.metrics.searchesRun) + ' searches</span></div>' +
+                        '<div class="key-value-item"><span class="key">Time Remaining</span><span class="value">' + escapeHtml(item.metrics.timeRemaining || '--') + '</span></div>' +
+                    '</div>' +
+                '</div>';
+        }
+
+        if (item.attackPhases && item.attackPhases.length) {
+            sections +=
+                '<div style="margin-bottom:1rem;">' +
+                    '<div style="font-weight:600;font-size:0.9rem;margin-bottom:0.4rem;">Attack Stage Timeline Coverage</div>' +
+                    '<p style="font-size:0.88rem;color:var(--text-dim);">' + escapeHtml(item.attackPhases.join(', ')) + '</p>' +
+                '</div>';
+        }
+
+        if (item.responseActions && item.responseActions.length) {
+            sections +=
+                '<div style="margin-bottom:1rem;">' +
+                    '<div style="font-weight:600;font-size:0.9rem;margin-bottom:0.4rem;">Response Action Validation</div>' +
+                    '<ul class="list-clean" style="font-size:0.88rem;">' +
+                        item.responseActions.map(function (action) {
+                            return '<li>' + escapeHtml(action.status) + ': ' + escapeHtml(action.title) + '</li>';
+                        }).join('') +
+                    '</ul>' +
+                '</div>';
+        }
+
+        return sections;
+    }
+
+    function renderScenarioBPrintSections(item) {
+        var sections = '';
+
+        if (item.metrics) {
+            sections +=
+                '<div class="card" style="margin-bottom:1rem;"><div class="card-title">Scenario B Report Metrics</div>' +
+                    '<div class="key-value-list">' +
+                        '<div class="key-value-item"><span class="key">Score Breakdown</span><span class="value">Actions ' + escapeHtml(item.metrics.actionScore) + ', alert pivots ' + escapeHtml(item.metrics.alertScore) + ', KQL searches ' + escapeHtml(item.metrics.searchScore) + ', timeline ' + escapeHtml(item.metrics.timelineScore) + ', time ' + escapeHtml(item.metrics.timeScore) + '</span></div>' +
+                        '<div class="key-value-item"><span class="key">Lab Completion</span><span class="value">' + escapeHtml(item.metrics.labStepsComplete) + '/' + escapeHtml(item.metrics.totalLabSteps) + ' expected steps</span></div>' +
+                        '<div class="key-value-item"><span class="key">Validated Response Actions</span><span class="value">' + escapeHtml(item.metrics.validatedActions) + '/' + escapeHtml(item.metrics.totalActions) + '</span></div>' +
+                        '<div class="key-value-item"><span class="key">Time Remaining</span><span class="value">' + escapeHtml(item.metrics.timeRemaining || '--') + '</span></div>' +
+                    '</div></div>';
+        }
+
+        if (item.attackPhases && item.attackPhases.length) {
+            sections +=
+                '<div class="card" style="margin-bottom:1rem;"><div class="card-title">Attack Stage Timeline Coverage</div>' +
+                    '<p class="surface-note" style="font-size:1rem;line-height:1.7;">' + escapeHtml(item.attackPhases.join(', ')) + '</p></div>';
+        }
+
+        if (item.responseActions && item.responseActions.length) {
+            sections +=
+                '<div class="card" style="margin-bottom:1rem;"><div class="card-title">Response Action Validation</div>' +
+                    '<ul class="list-clean" style="font-size:0.95rem;line-height:1.8;">' +
+                        item.responseActions.map(function (action) {
+                            return '<li><strong>' + escapeHtml(action.status) + ':</strong> ' + escapeHtml(action.title) + ' - ' + escapeHtml(action.validation) + '</li>';
+                        }).join('') +
+                    '</ul></div>';
+        }
+
+        if (item.labSteps && item.labSteps.length) {
+            sections +=
+                '<div class="card" style="margin-bottom:1rem;"><div class="card-title">Expected Lab Step Outcomes</div>' +
+                    '<ul class="list-clean" style="font-size:0.95rem;line-height:1.8;">' +
+                        item.labSteps.map(function (step) {
+                            return '<li><strong>' + escapeHtml(step.status) + ':</strong> ' + escapeHtml(step.title) + ' - ' + escapeHtml(step.feedback) + '</li>';
+                        }).join('') +
+                    '</ul></div>';
+        }
+
+        return sections;
+    }
+
     function renderReportDetail(row) {
         var item = detailData[row.dataset.reportId];
         if (!item) return;
@@ -443,6 +529,7 @@
                 '<ul class="list-clean" style="font-size:0.88rem;">' +
                     (item.gaps || []).map(function (e) { return '<li>' + escapeHtml(e) + '</li>'; }).join('') +
                 '</ul></div>' +
+            renderScenarioBDetailSections(item) +
             '<div>' +
                 '<div style="font-weight:600;font-size:0.9rem;margin-bottom:0.4rem;">Recommended Follow-up</div>' +
                 '<p style="font-size:0.88rem;color:var(--text-dim);">' + escapeHtml(item.next || '') + '</p>' +
@@ -498,7 +585,8 @@
             '<div class="card"><div class="card-title">Coaching Summary</div>' +
                 '<ul class="list-clean" style="font-size:0.95rem;line-height:1.8;">' +
                     feedbackData.nextSteps.map(function (e) { return '<li>' + escapeHtml(e) + '</li>'; }).join('') +
-                '</ul></div>';
+                '</ul></div>' +
+            renderScenarioBPrintSections(item);
     }
 
     function teardownPrintMode() {
