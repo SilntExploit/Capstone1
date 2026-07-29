@@ -35,51 +35,62 @@
         </div>
     </header>
 
-    <section class="card section-space" aria-labelledby="scenario-b-brief-title">
-        <div class="toolbar" style="margin-bottom:1rem;">
-            <div>
-                <div class="card-title" id="scenario-b-brief-title"><i data-lucide="radio-tower"></i> Trainee Mission Brief</div>
-                <div class="surface-note">Target hosts: <code>192.168.32.130</code> and <code>192.168.32.129</code>. Final score is hidden until you submit or time expires.</div>
+    <section class="scenario-b-cockpit section-space" aria-label="Scenario B command center">
+        <section class="card scenario-b-command" aria-labelledby="scenario-b-command-title">
+            <div class="toolbar" style="margin-bottom:0.85rem;">
+                <div>
+                    <div class="card-title" id="scenario-b-command-title"><i data-lucide="clipboard-check"></i> What To Do</div>
+                    <div class="surface-note">Work left to right: start, pivot alerts, inspect evidence, validate response, then submit.</div>
+                </div>
+                <span class="status-badge blue" id="scenario-b-completion-status">Not started</span>
             </div>
-            <div class="console-actions">
-                <button class="btn btn-secondary" id="scenario-b-start-exercise" type="button"><i data-lucide="timer"></i> Start Scenario</button>
+            <div class="scenario-b-controls">
+                <button class="btn" id="scenario-b-start-exercise" type="button"><i data-lucide="timer"></i> Start Scenario</button>
                 <button class="btn btn-secondary" id="scenario-b-submit-exercise" type="button" disabled><i data-lucide="flag"></i> Submit Incident</button>
+                <button class="btn btn-secondary" id="scenario-b-refresh-logs" type="button"><i data-lucide="refresh-cw"></i> Refresh Logs</button>
             </div>
-        </div>
-        <div class="grid-3">
-            <div class="metric-tile">
-                <div class="label">Step 1</div>
-                <div class="value" style="font-size:1.1rem;">Identify</div>
-                <div class="subtext">Pivot from high-priority alerts into the endpoint event trail.</div>
+            <div class="key-value-list scenario-b-brief-list">
+                <div class="key-value-item">
+                    <span class="key">Current Task</span>
+                    <span class="value" id="scenario-b-lab-feedback">Start the lab, pivot on alerts, and validate response actions.</span>
+                </div>
+                <div class="key-value-item">
+                    <span class="key">Analyst Question</span>
+                    <span class="value" id="scenario-b-analyst-question">Which endpoint event created the first confirmed compromise signal?</span>
+                </div>
+                <div class="key-value-item">
+                    <span class="key">Containment</span>
+                    <span class="value" id="scenario-b-containment-posture">Monitoring</span>
+                </div>
+                <div class="key-value-item">
+                    <span class="key">Score</span>
+                    <span class="value" id="scenario-b-final-score">Locked until submission</span>
+                </div>
+                <div class="key-value-item">
+                    <span class="key">Breakdown</span>
+                    <span class="value" id="scenario-b-score-breakdown">Start the scenario to begin assessment.</span>
+                </div>
             </div>
-            <div class="metric-tile">
-                <div class="label">Step 2</div>
-                <div class="value" style="font-size:1.1rem;">Contain</div>
-                <div class="subtext">Validate remote access, persistence, protection, and credential actions.</div>
+        </section>
+
+        <section class="card" aria-labelledby="scenario-b-progress-title">
+            <div class="toolbar" style="margin-bottom:0.85rem;">
+                <div class="card-title" id="scenario-b-progress-title"><i data-lucide="list-checks"></i> Lab Checklist</div>
+                <span class="status-badge yellow" id="scenario-b-investigation-phase">Triage</span>
             </div>
-            <div class="metric-tile">
-                <div class="label">Step 3</div>
-                <div class="value" style="font-size:1.1rem;">Report</div>
-                <div class="subtext">Submit before time runs out to reveal the trainee score.</div>
+            <div id="scenario-b-lab-progress" class="scenario-b-compact-checklist">
+                <div class="surface-note">Start the scenario to load the checklist.</div>
             </div>
-        </div>
-        <div class="key-value-list" style="margin-top:1rem;">
-            <div class="key-value-item">
-                <span class="key">Scoring Rule</span>
-                <span class="value">Investigate alerts, prove the timeline, validate response actions, and preserve time.</span>
+            <div class="key-value-list scenario-b-report-summary" id="scenario-b-report-summary">
+                <div class="key-value-item">
+                    <span class="key">Report Metrics</span>
+                    <span class="value">Begin the lab to collect scoring evidence.</span>
+                </div>
             </div>
-            <div class="key-value-item">
-                <span class="key">Final Score</span>
-                <span class="value" id="scenario-b-final-score">Locked until submission</span>
-            </div>
-            <div class="key-value-item">
-                <span class="key">Score Breakdown</span>
-                <span class="value" id="scenario-b-score-breakdown">Start the scenario to begin assessment.</span>
-            </div>
-        </div>
+        </section>
     </section>
 
-    <section class="card console-bar section-space" aria-label="Scenario B search console">
+    <section class="card console-bar section-space scenario-b-query-card" aria-label="Scenario B query pivots">
         <div class="console-search">
             <i data-lucide="search"></i>
             <input id="scenario-b-search-input" type="text" value='host in ("192.168.32.130", "192.168.32.129", "DESKTOP-GRQ4G1E") or sourcetype has "sysmon" or sourcetype has "security" or sourcetype has "taskscheduler"' aria-label="Scenario B KQL search">
@@ -88,24 +99,30 @@
             <span class="status-badge red" id="scenario-b-notable-count">-- Notable</span>
             <span class="status-badge yellow" id="scenario-b-escalated-count">-- Escalated</span>
             <button class="btn btn-secondary" id="scenario-b-run-search" type="button"><i data-lucide="play"></i> Run Search</button>
-            <button class="btn btn-secondary" id="scenario-b-refresh-logs" type="button"><i data-lucide="refresh-cw"></i> Refresh</button>
         </div>
-        <div class="command-chips" style="grid-column:1 / -1;margin-top:0;">
-            <button class="chip-btn active" type="button" data-scenario-b-query='host in ("192.168.32.130", "192.168.32.129", "DESKTOP-GRQ4G1E") or sourcetype has "sysmon" or sourcetype has "security" or sourcetype has "taskscheduler"'>Host Activity</button>
-            <button class="chip-btn" type="button" data-scenario-b-query='(event has "PhishingAttachment.xlsm" or event has "phish" or event has "invoice" or event has "attachment" or event has "xlsm" or process_name has "powershell" or event has "ExecutionPolicy" or event has "Bypass" or event has "DownloadFile" or event has "WebClient" or event has "raw.githubusercontent.com" or event has "LICENSE.txt") and not event has "cleanup.ps1" and not event has "Remove-Item" and not event has "Remove-ItemProperty" and not event has "Remove-LocalUser" and not event has "Disable-PSRemoting" and not event has "Set-NetFirewallProfile" and not event has "Remove-NetFirewallRule" and not event has "Set-ExecutionPolicy" and not event has "RemoteSigned"'>Initial Access</button>
-            <button class="chip-btn" type="button" data-scenario-b-query='(process_name has "powershell" or event has "ExecutionPolicy" or event has "Bypass" or event has "DownloadFile") and not event has "cleanup.ps1" and not event has "Remove-Item" and not event has "Remove-ItemProperty" and not event has "Disable-PSRemoting" and not event has "Set-NetFirewallProfile" and not event has "Remove-NetFirewallRule" and not event has "Set-ExecutionPolicy" and not event has "RemoteSigned"'>Execution</button>
-            <button class="chip-btn" type="button" data-scenario-b-query='(event has "T1053" or event has "OnStartup" or event has "Startup" or event has "schtasks" or event has "Scheduled Task" or event has "Task Scheduler" or sourcetype has "taskscheduler" or task_name != "") and not event has "cleanup.ps1" and not event has "Unregister-ScheduledTask" and not event has "Remove-Item" and not event has "Remove-ItemProperty"'>Persistence</button>
-            <button class="chip-btn" type="button" data-scenario-b-query='(event has "fodhelper" or event has "ms-settings" or event has "DelegateExecute" or event has "eventvwr" or event has "mscfile" or event has "Registry value set" or event has "SetValue") and not event has "cleanup.ps1" and not event has "Remove-Item" and not event has "Remove-ItemProperty"'>UAC Bypass</button>
-            <button class="chip-btn" type="button" data-scenario-b-query='(event has "Set-MpPreference" or event has "DisableRealtimeMonitoring" or event has "DisableIOAVProtection" or event has "DisableScriptScanning" or event has "ControlledFolderAccess" or event has "Tamper") and not event has "cleanup.ps1" and not event has "WinDefend" and not event has "Get-MpComputerStatus" and not event has "RealTimeProtectionEnabled" and not event has "AntivirusEnabled"'>Defense Evasion</button>
-            <button class="chip-btn" type="button" data-scenario-b-query='event has "password" or event has "credential" or event has "registry" or event has "history"'>Credential Access</button>
-            <button class="chip-btn" type="button" data-scenario-b-query='event has "ipconfig" or event has "tasklist" or event has "systeminfo" or event has "netstat" or event has "whoami" or event has "Process Create" or event has "CommandLine" or event has "Network connection detected"'>Discovery</button>
-            <button class="chip-btn" type="button" data-scenario-b-query='(event has "WinRM" or event has "Invoke-Command" or event has "RDP" or event has "SSH") and not event has "cleanup.ps1" and not event has "Disable-PSRemoting" and not event has "Stop-Service" and not event has "Set-Service" and not event has "Set-PSSessionConfiguration"'>Lateral Movement</button>
-            <button class="chip-btn" type="button" data-scenario-b-query='(event has "DownloadFile" or event has "raw.githubusercontent.com" or event has "LICENSE.txt" or event has "T1560-data-ps.zip") and not event has "cleanup.ps1" and not event has "Remove-Item" and not event has "Remove-ItemProperty"'>Download / Staging</button>
-            <button class="chip-btn" type="button" data-scenario-b-query='(event has "READ_ME_NOW" or event has "notepad.exe" or event has "ransom") and not event has "cleanup.ps1" and not event has "Remove-Item" and not event has "Remove-ItemProperty"'>Impact</button>
-            <button class="chip-btn" type="button" data-scenario-b-query='event has "Remove-Item" or event has "Remove-ItemProperty" or event has "PhishingAttachment.xlsm" or event has "T1560-data-ps.zip" or event has "message.txt" or event has "staged" or event has "TargetFilename" or event has "File created" or event has "AppData\\Local\\Temp"'>Artifact Cleanup</button>
-            <button class="chip-btn" type="button" data-scenario-b-query='event has "WinDefend" or event has "Get-MpComputerStatus" or event has "RealTimeProtectionEnabled" or event has "AntivirusEnabled"'>Protection Restore</button>
-            <button class="chip-btn" type="button" data-scenario-b-query='event has "Disable-PSRemoting" or event has "WinRM" or event has "Stop-Service" or event has "Set-Service"'>Remote Lockdown</button>
-            <button class="chip-btn" type="button" data-scenario-b-query='event has "Set-NetFirewallProfile" or event has "Remove-NetFirewallRule" or event has "Set-ExecutionPolicy" or event has "RemoteSigned"'>Policy Restore</button>
+        <div class="scenario-b-pivot-group">
+            <div class="scenario-b-pivot-label">Investigation pivots</div>
+            <div class="command-chips">
+                <button class="chip-btn active" type="button" data-scenario-b-query='host in ("192.168.32.130", "192.168.32.129", "DESKTOP-GRQ4G1E") or sourcetype has "sysmon" or sourcetype has "security" or sourcetype has "taskscheduler"'>Host Activity</button>
+                <button class="chip-btn" type="button" data-scenario-b-query='(event has "PhishingAttachment.xlsm" or event has "phish" or event has "invoice" or event has "attachment" or event has "xlsm" or process_name has "powershell" or event has "ExecutionPolicy" or event has "Bypass" or event has "DownloadFile" or event has "WebClient" or event has "raw.githubusercontent.com" or event has "LICENSE.txt") and not event has "cleanup.ps1" and not event has "Remove-Item" and not event has "Remove-ItemProperty" and not event has "Remove-LocalUser" and not event has "Disable-PSRemoting" and not event has "Set-NetFirewallProfile" and not event has "Remove-NetFirewallRule" and not event has "Set-ExecutionPolicy" and not event has "RemoteSigned"'>Initial Access</button>
+                <button class="chip-btn" type="button" data-scenario-b-query='(process_name has "powershell" or event has "ExecutionPolicy" or event has "Bypass" or event has "DownloadFile") and not event has "cleanup.ps1" and not event has "Remove-Item" and not event has "Remove-ItemProperty" and not event has "Disable-PSRemoting" and not event has "Set-NetFirewallProfile" and not event has "Remove-NetFirewallRule" and not event has "Set-ExecutionPolicy" and not event has "RemoteSigned"'>Execution</button>
+                <button class="chip-btn" type="button" data-scenario-b-query='(event has "T1053" or event has "OnStartup" or event has "Startup" or event has "schtasks" or event has "Scheduled Task" or event has "Task Scheduler" or sourcetype has "taskscheduler" or task_name != "") and not event has "cleanup.ps1" and not event has "Unregister-ScheduledTask" and not event has "Remove-Item" and not event has "Remove-ItemProperty"'>Persistence</button>
+                <button class="chip-btn" type="button" data-scenario-b-query='(event has "fodhelper" or event has "ms-settings" or event has "DelegateExecute" or event has "eventvwr" or event has "mscfile" or event has "Registry value set" or event has "SetValue") and not event has "cleanup.ps1" and not event has "Remove-Item" and not event has "Remove-ItemProperty"'>UAC Bypass</button>
+                <button class="chip-btn" type="button" data-scenario-b-query='(event has "Set-MpPreference" or event has "DisableRealtimeMonitoring" or event has "DisableIOAVProtection" or event has "DisableScriptScanning" or event has "ControlledFolderAccess" or event has "Tamper") and not event has "cleanup.ps1" and not event has "WinDefend" and not event has "Get-MpComputerStatus" and not event has "RealTimeProtectionEnabled" and not event has "AntivirusEnabled"'>Defense Evasion</button>
+                <button class="chip-btn" type="button" data-scenario-b-query='event has "password" or event has "credential" or event has "registry" or event has "history"'>Credentials</button>
+                <button class="chip-btn" type="button" data-scenario-b-query='event has "ipconfig" or event has "tasklist" or event has "systeminfo" or event has "netstat" or event has "whoami" or event has "Process Create" or event has "CommandLine" or event has "Network connection detected"'>Discovery</button>
+                <button class="chip-btn" type="button" data-scenario-b-query='(event has "WinRM" or event has "Invoke-Command" or event has "RDP" or event has "SSH") and not event has "cleanup.ps1" and not event has "Disable-PSRemoting" and not event has "Stop-Service" and not event has "Set-Service" and not event has "Set-PSSessionConfiguration"'>Lateral Movement</button>
+                <button class="chip-btn" type="button" data-scenario-b-query='(event has "READ_ME_NOW" or event has "notepad.exe" or event has "ransom") and not event has "cleanup.ps1" and not event has "Remove-Item" and not event has "Remove-ItemProperty"'>Impact</button>
+            </div>
+        </div>
+        <div class="scenario-b-pivot-group">
+            <div class="scenario-b-pivot-label">Response validation pivots</div>
+            <div class="command-chips">
+                <button class="chip-btn" type="button" data-scenario-b-query='event has "Remove-Item" or event has "Remove-ItemProperty" or event has "PhishingAttachment.xlsm" or event has "T1560-data-ps.zip" or event has "message.txt" or event has "staged" or event has "TargetFilename" or event has "File created" or event has "AppData\\Local\\Temp"'>Artifact Cleanup</button>
+                <button class="chip-btn" type="button" data-scenario-b-query='event has "WinDefend" or event has "Get-MpComputerStatus" or event has "RealTimeProtectionEnabled" or event has "AntivirusEnabled"'>Protection Restore</button>
+                <button class="chip-btn" type="button" data-scenario-b-query='event has "Disable-PSRemoting" or event has "WinRM" or event has "Stop-Service" or event has "Set-Service"'>Remote Lockdown</button>
+                <button class="chip-btn" type="button" data-scenario-b-query='event has "Set-NetFirewallProfile" or event has "Remove-NetFirewallRule" or event has "Set-ExecutionPolicy" or event has "RemoteSigned"'>Policy Restore</button>
+            </div>
         </div>
         <div class="console-status">
             <span id="scenario-b-search-status">Ready to search Scenario B telemetry.</span>
@@ -113,149 +130,7 @@
         </div>
     </section>
 
-    <section class="metric-strip section-space">
-        <div class="metric-tile">
-            <div class="label">High Priority Alerts</div>
-            <div class="value" id="scenario-b-metric-alerts" style="color:var(--accent-red);">--</div>
-            <div class="subtext" id="scenario-b-metric-alerts-note">Scenario B triage queue</div>
-        </div>
-        <div class="metric-tile">
-            <div class="label">Events Indexed</div>
-            <div class="value" id="scenario-b-metric-events" style="color:var(--accent-primary);">--</div>
-            <div class="subtext" id="scenario-b-metric-events-note">Live telemetry rows</div>
-        </div>
-        <div class="metric-tile">
-            <div class="label">KQL Results</div>
-            <div class="value" id="scenario-b-metric-results" style="color:var(--accent-green);">--</div>
-            <div class="subtext" id="scenario-b-metric-results-note">Matches for current query</div>
-        </div>
-        <div class="metric-tile">
-            <div class="label">Records Shown</div>
-            <div class="value" id="scenario-b-log-count" style="color:var(--accent-blue);">--</div>
-            <div class="subtext" id="scenario-b-source-status">Connecting to live telemetry...</div>
-        </div>
-    </section>
-
-    <section class="grid-2-1 section-space" aria-label="Scenario B completed lab guide">
-        <section class="card" aria-labelledby="scenario-b-lab-guide-title">
-            <div class="toolbar" style="margin-bottom:0.85rem;">
-                <div class="card-title" id="scenario-b-lab-guide-title"><i data-lucide="clipboard-check"></i> Completed Lab Runbook</div>
-                <span class="status-badge blue" id="scenario-b-completion-status">Not started</span>
-            </div>
-            <div class="surface-note" style="margin-bottom:0.85rem;">
-                Scenario B is complete when the trainee proves the compromise path, validates response actions from endpoint telemetry, and submits an explainable report.
-            </div>
-            <div class="action-stack" id="scenario-b-lab-progress">
-                <div class="surface-note">Start the scenario to load the lab runbook.</div>
-            </div>
-        </section>
-
-        <section class="card" aria-labelledby="scenario-b-feedback-title">
-            <div class="toolbar" style="margin-bottom:0.85rem;">
-                <div class="card-title" id="scenario-b-feedback-title"><i data-lucide="graduation-cap"></i> Guided Feedback Loop</div>
-                <div class="surface-note">Report metrics update as the trainee investigates.</div>
-            </div>
-            <div class="key-value-list" id="scenario-b-report-summary">
-                <div class="key-value-item">
-                    <span class="key">Current Feedback</span>
-                    <span class="value">Begin the lab, pivot on alerts, and validate response actions.</span>
-                </div>
-            </div>
-            <div class="alert-item info" style="margin-top:0.85rem;margin-bottom:0;">
-                <div class="alert-info">
-                    <h4>Expected Final Outcome</h4>
-                    <p id="scenario-b-lab-feedback">The trainee should identify the endpoint compromise, map the activity to MITRE ATT&amp;CK stages, contain remote administration, remove persistence and unauthorized access, restore endpoint protections, and preserve evidence for the report.</p>
-                </div>
-            </div>
-        </section>
-    </section>
-
-    <section class="grid-2-1 section-space" aria-label="Endpoint investigation workspace">
-        <div class="stack">
-            <section class="card" aria-labelledby="scenario-b-endpoint-title">
-                <div class="toolbar" style="margin-bottom:0.85rem;">
-                    <div class="card-title" id="scenario-b-endpoint-title"><i data-lucide="monitor-dot"></i> Endpoint Investigation Workspace</div>
-                    <span class="status-badge yellow" id="scenario-b-investigation-phase">Triage</span>
-                </div>
-                <div class="grid-3">
-                    <div class="metric-tile">
-                        <div class="label">Primary Endpoint</div>
-                        <div class="value mono" style="font-size:1.35rem;">192.168.32.130</div>
-                        <div class="subtext" id="scenario-b-primary-note">Initial access and execution focus</div>
-                    </div>
-                    <div class="metric-tile">
-                        <div class="label">Secondary Endpoint</div>
-                        <div class="value mono" style="font-size:1.35rem;">192.168.32.129</div>
-                        <div class="subtext" id="scenario-b-secondary-note">Lateral movement validation target</div>
-                    </div>
-                    <div class="metric-tile">
-                        <div class="label">Containment Posture</div>
-                        <div class="value" id="scenario-b-containment-posture" style="font-size:1.35rem;">Monitoring</div>
-                        <div class="subtext">Remote access is reviewed before remediation.</div>
-                    </div>
-                </div>
-                <div class="key-value-list" style="margin-top:1rem;">
-                    <div class="key-value-item">
-                        <span class="key">Current Analyst Question</span>
-                        <span class="value" id="scenario-b-analyst-question">Which endpoint event created the first confirmed compromise signal?</span>
-                    </div>
-                    <div class="key-value-item">
-                        <span class="key">Validation Method</span>
-                        <span class="value">KQL pivot, alert review, event drilldown, then post-action telemetry check</span>
-                    </div>
-                </div>
-            </section>
-
-            <section class="card" aria-labelledby="scenario-b-timeline-title">
-                <div class="toolbar" style="margin-bottom:0.85rem;">
-                    <div class="card-title" id="scenario-b-timeline-title"><i data-lucide="git-commit-vertical"></i> Endpoint Timeline</div>
-                    <div class="surface-note" id="scenario-b-timeline-note">Built from the current KQL result set.</div>
-                </div>
-                <div class="timeline" id="scenario-b-timeline">
-                    <div class="timeline-item">
-                        <div class="time">Waiting</div>
-                        <div class="desc">Run a KQL search to build the incident sequence.</div>
-                    </div>
-                </div>
-            </section>
-        </div>
-
-        <div class="stack">
-            <section class="card" aria-labelledby="scenario-b-risk-title">
-                <div class="toolbar" style="margin-bottom:0.85rem;">
-                    <div class="card-title" id="scenario-b-risk-title"><i data-lucide="activity"></i> Incident Pressure</div>
-                    <span class="status-badge red" id="scenario-b-risk-label">Pending</span>
-                </div>
-                <div class="value" id="scenario-b-risk-score" style="font-size:2.25rem;color:var(--accent-red);">Hidden</div>
-                <div class="surface-note" id="scenario-b-risk-note">The trainee score is hidden while the exercise is active.</div>
-                <div class="progress-bar" aria-label="Scenario B risk score">
-                    <div class="progress-fill" id="scenario-b-risk-fill" style="width:0%;"></div>
-                </div>
-                <div class="key-value-list" style="margin-top:1rem;">
-                    <div class="key-value-item">
-                        <span class="key">Evidence Weight</span>
-                        <span class="value" id="scenario-b-risk-evidence">Alerts, severity, suspicious commands, and remote activity</span>
-                    </div>
-                    <div class="key-value-item">
-                        <span class="key">Decision</span>
-                        <span class="value" id="scenario-b-risk-decision">Collect evidence before containment.</span>
-                    </div>
-                </div>
-            </section>
-
-            <section class="card" aria-labelledby="scenario-b-remediation-title">
-                <div class="toolbar" style="margin-bottom:0.85rem;">
-                    <div class="card-title" id="scenario-b-remediation-title"><i data-lucide="shield-check"></i> Response Actions</div>
-                    <div class="surface-note">Blue-team cleanup actions with validation pivots from endpoint logs.</div>
-                </div>
-                <div class="action-stack" id="scenario-b-remediation-actions">
-                    <div class="surface-note">Loading response actions...</div>
-                </div>
-            </section>
-        </div>
-    </section>
-
-    <div class="grid-2-1">
+    <div class="grid-2-1 scenario-b-workspace">
         <div class="stack">
             <section class="card" aria-labelledby="scenario-b-alerts-title">
                 <div class="toolbar" style="margin-bottom:0.85rem;">
@@ -287,15 +162,15 @@
                     <div class="card-title" id="scenario-b-results-title"><i data-lucide="list-filter"></i> Telemetry Results</div>
                     <div class="surface-note" id="scenario-b-results-note">Run a query to populate matching events.</div>
                 </div>
-                <div class="table-wrap">
-                    <table class="dense-table" id="scenario-b-results-table">
+                <div class="scenario-b-log-pane">
+                    <table class="dense-table scenario-b-log-table" id="scenario-b-results-table">
                         <thead>
                         <tr>
-                            <th>_time</th>
-                            <th>host</th>
-                            <th>sourcetype</th>
-                            <th>event_id</th>
-                            <th>event</th>
+                            <th>Time</th>
+                            <th>Host</th>
+                            <th>Phase</th>
+                            <th>Event</th>
+                            <th>Signal</th>
                         </tr>
                         </thead>
                         <tbody id="scenario-b-results-body">
@@ -309,30 +184,25 @@
         </div>
 
         <div class="stack">
-            <section class="card">
+            <section class="card" aria-labelledby="scenario-b-remediation-title">
                 <div class="toolbar" style="margin-bottom:0.85rem;">
-                    <div class="card-title"><i data-lucide="terminal-square"></i> Search Console</div>
-                    <div class="surface-note">KQL-style pivots generated from Scenario B logs and alerts.</div>
+                    <div class="card-title" id="scenario-b-remediation-title"><i data-lucide="shield-check"></i> Response Actions</div>
+                    <div class="surface-note">Click Validate after finding the evidence for each step.</div>
                 </div>
-                <div class="shell-window" data-shell-group="scenario-b-search-shell">
-                    <div class="shell-header">
-                        <div class="shell-title">Scenario B Search Job</div>
-                        <div class="shell-tabs">
-                            <button class="shell-tab active" type="button" data-shell-panel="search">Search</button>
-                            <button class="shell-tab" type="button" data-shell-panel="statistics">Statistics</button>
-                            <button class="shell-tab" type="button" data-shell-panel="raw">Raw</button>
-                        </div>
-                    </div>
-                    <div class="shell-body">
-                        <div class="shell-panel" data-shell-panel="search">
-<pre class="shell-code" id="scenario-b-search-panel-search">Run a Scenario B query to view matching telemetry.</pre>
-                        </div>
-                        <div class="shell-panel" data-shell-panel="statistics" hidden>
-<pre class="shell-code" id="scenario-b-search-panel-stats">No statistics available yet.</pre>
-                        </div>
-                        <div class="shell-panel" data-shell-panel="raw" hidden>
-<pre class="shell-code" id="scenario-b-search-panel-raw">No raw events available yet.</pre>
-                        </div>
+                <div class="action-stack" id="scenario-b-remediation-actions">
+                    <div class="surface-note">Loading response actions...</div>
+                </div>
+            </section>
+
+            <section class="card" aria-labelledby="scenario-b-timeline-title">
+                <div class="toolbar" style="margin-bottom:0.85rem;">
+                    <div class="card-title" id="scenario-b-timeline-title"><i data-lucide="git-commit-vertical"></i> Attack Timeline</div>
+                    <div class="surface-note" id="scenario-b-timeline-note">Built from the current result set.</div>
+                </div>
+                <div class="timeline scenario-b-timeline" id="scenario-b-timeline">
+                    <div class="timeline-item">
+                        <div class="time">Waiting</div>
+                        <div class="desc">Click an alert or pivot chip to build the sequence.</div>
                     </div>
                 </div>
             </section>
@@ -391,6 +261,55 @@
                 </div>
             </section>
         </div>
+    </div>
+
+    <div class="scenario-b-completion-modal" id="scenario-b-completion-modal" hidden aria-hidden="true">
+        <section class="card scenario-b-completion-card" role="dialog" aria-modal="true" aria-labelledby="scenario-b-completion-title">
+            <div class="toolbar scenario-b-completion-header">
+                <div>
+                    <div class="card-title" id="scenario-b-completion-title"><i data-lucide="badge-check"></i> Lab Completed</div>
+                    <div class="surface-note" id="scenario-b-completion-subtitle">Scenario B incident response summary is ready.</div>
+                </div>
+                <button class="icon-btn" id="scenario-b-close-completion" type="button" aria-label="Close completion summary">
+                    <i data-lucide="x"></i>
+                </button>
+            </div>
+            <div class="scenario-b-completion-score">
+                <div>
+                    <span class="key">Final Score</span>
+                    <strong id="scenario-b-modal-score">--/100</strong>
+                </div>
+                <div>
+                    <span class="key">Time Remaining</span>
+                    <strong id="scenario-b-modal-time">--:--</strong>
+                </div>
+                <div>
+                    <span class="key">Checklist</span>
+                    <strong id="scenario-b-modal-checklist">0/8</strong>
+                </div>
+            </div>
+            <div class="scenario-b-completion-grid">
+                <div class="key-value-list" id="scenario-b-modal-metrics"></div>
+                <div class="scenario-b-completion-list">
+                    <h3>Attack Phases Observed</h3>
+                    <div id="scenario-b-modal-phases" class="command-chips"></div>
+                </div>
+            </div>
+            <div class="scenario-b-completion-grid">
+                <div class="scenario-b-completion-list">
+                    <h3>Validated Response Actions</h3>
+                    <ul id="scenario-b-modal-actions"></ul>
+                </div>
+                <div class="scenario-b-completion-list">
+                    <h3>Guided Feedback</h3>
+                    <ul id="scenario-b-modal-feedback"></ul>
+                </div>
+            </div>
+            <div class="scenario-b-completion-actions">
+                <a class="btn" href="reports.html"><i data-lucide="file-text"></i> View Report</a>
+                <button class="btn btn-secondary" id="scenario-b-modal-run-again" type="button"><i data-lucide="rotate-ccw"></i> Run Again</button>
+            </div>
+        </section>
     </div>
 </main>
 

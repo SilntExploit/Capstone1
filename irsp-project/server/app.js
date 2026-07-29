@@ -272,7 +272,7 @@ function createApp() {
                 sendJson(response, 200, {
                     count: logs.length,
                     items: logs,
-                    warning: 'Falling back to mock log data because MongoDB is unavailable'
+                    warning: 'Falling back to sample log data because telemetry storage is unavailable'
                 });
             }
             return;
@@ -291,7 +291,8 @@ function createApp() {
         if (requestUrl.pathname === '/api/search') {
             const query = requestUrl.searchParams.get('q') || '';
             try {
-                const logs = await getStoredLogs({ scenarioId, limit: 500 });
+                const searchLimit = scenarioId === 'scenario-b' ? 1500 : 500;
+                const logs = await getStoredLogs({ scenarioId, limit: searchLimit });
                 sendJson(response, 200, buildSearchResponse(logs.map(item => mapLogDocument(item, scenarioId)), query, scenarioId));
             } catch (error) {
                 sendJson(response, 200, buildSearchResponse(state.logs, query, scenarioId));

@@ -1030,6 +1030,349 @@ select.form-input {
     margin-bottom: 1rem;
 }
 
+.scenario-b-cockpit {
+    display: grid;
+    grid-template-columns: minmax(0, 1.15fr) minmax(320px, 0.85fr);
+    gap: 1rem;
+}
+
+.scenario-b-command {
+    border-color: rgba(249, 115, 22, 0.22);
+}
+
+.scenario-b-controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+    margin-bottom: 0.85rem;
+}
+
+.scenario-b-brief-list {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.scenario-b-brief-list .key-value-item:first-child,
+.scenario-b-brief-list .key-value-item:nth-child(2),
+.scenario-b-brief-list .key-value-item:last-child {
+    grid-column: 1 / -1;
+}
+
+.scenario-b-compact-checklist {
+    display: grid;
+    gap: 0.45rem;
+}
+
+.scenario-b-step-row,
+.scenario-b-action-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding: 0.62rem 0.7rem;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--card-bg-soft);
+}
+
+.scenario-b-step-row {
+    align-items: flex-start;
+    justify-content: flex-start;
+}
+
+.scenario-b-step-row strong,
+.scenario-b-action-row h4 {
+    display: block;
+    font-size: 0.86rem;
+    font-weight: 700;
+    margin-bottom: 0.15rem;
+}
+
+.scenario-b-step-row p,
+.scenario-b-action-row p {
+    color: var(--text-dim);
+    font-size: 0.78rem;
+    line-height: 1.35;
+    margin: 0;
+}
+
+.scenario-b-step-row.complete {
+    border-color: rgba(34, 197, 94, 0.24);
+}
+
+.scenario-b-action-controls {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-shrink: 0;
+}
+
+.scenario-b-report-summary {
+    margin-top: 0.75rem;
+}
+
+.scenario-b-query-card {
+    align-items: start;
+}
+
+.scenario-b-pivot-group {
+    grid-column: 1 / -1;
+    display: grid;
+    gap: 0.4rem;
+}
+
+.scenario-b-pivot-label {
+    color: var(--text-dim);
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.scenario-b-workspace {
+    align-items: start;
+}
+
+.scenario-b-log-pane {
+    max-height: min(58vh, 620px);
+    overflow: auto;
+    border: 1px solid rgba(132, 159, 197, 0.18);
+    border-radius: 8px;
+    background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(248, 250, 252, 0.96)),
+        radial-gradient(circle at top left, rgba(14, 165, 233, 0.08), transparent 32%);
+}
+
+.scenario-b-log-table {
+    min-width: 980px;
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+.scenario-b-log-table thead th {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    background: #f8fafc;
+    box-shadow: 0 1px 0 rgba(132, 159, 197, 0.2);
+}
+
+.scenario-b-log-table tbody tr {
+    background: rgba(255, 255, 255, 0.84);
+}
+
+.scenario-b-log-table tbody tr:nth-child(even) {
+    background: rgba(248, 250, 252, 0.9);
+}
+
+.scenario-b-log-table tbody tr:hover {
+    background: rgba(14, 165, 233, 0.07);
+}
+
+.scenario-b-log-table .selected {
+    background: rgba(249, 115, 22, 0.1);
+}
+
+.scenario-b-log-table td {
+    vertical-align: top;
+    padding-top: 0.64rem;
+    padding-bottom: 0.64rem;
+}
+
+.scenario-b-log-time {
+    white-space: nowrap;
+    color: var(--text-dim);
+    font-size: 0.78rem;
+}
+
+.scenario-b-host-chip,
+.scenario-b-event-id,
+.scenario-b-phase-pill {
+    display: inline-flex;
+    align-items: center;
+    min-height: 1.65rem;
+    border-radius: 999px;
+    font-size: 0.72rem;
+    font-weight: 800;
+    white-space: nowrap;
+}
+
+.scenario-b-host-chip {
+    padding: 0.28rem 0.5rem;
+    color: #075985;
+    background: rgba(14, 165, 233, 0.1);
+    border: 1px solid rgba(14, 165, 233, 0.18);
+}
+
+.scenario-b-event-id {
+    padding: 0.28rem 0.48rem;
+    margin-right: 0.35rem;
+    color: #334155;
+    background: #eef2f7;
+    border: 1px solid rgba(132, 159, 197, 0.22);
+}
+
+.scenario-b-phase-pill {
+    padding: 0.28rem 0.56rem;
+    color: #172033;
+    background: rgba(132, 159, 197, 0.12);
+    border: 1px solid rgba(132, 159, 197, 0.2);
+}
+
+.scenario-b-phase-pill.initial-access,
+.scenario-b-phase-pill.execution {
+    color: #7c2d12;
+    background: rgba(249, 115, 22, 0.12);
+    border-color: rgba(249, 115, 22, 0.24);
+}
+
+.scenario-b-phase-pill.persistence,
+.scenario-b-phase-pill.privilege-escalation {
+    color: #713f12;
+    background: rgba(245, 158, 11, 0.14);
+    border-color: rgba(245, 158, 11, 0.28);
+}
+
+.scenario-b-phase-pill.defense-evasion,
+.scenario-b-phase-pill.credential-access {
+    color: #7f1d1d;
+    background: rgba(239, 68, 68, 0.12);
+    border-color: rgba(239, 68, 68, 0.24);
+}
+
+.scenario-b-phase-pill.discovery,
+.scenario-b-phase-pill.lateral-movement {
+    color: #164e63;
+    background: rgba(6, 182, 212, 0.12);
+    border-color: rgba(6, 182, 212, 0.24);
+}
+
+.scenario-b-phase-pill.collection,
+.scenario-b-phase-pill.command-and-control,
+.scenario-b-phase-pill.exfiltration,
+.scenario-b-phase-pill.impact {
+    color: #581c87;
+    background: rgba(168, 85, 247, 0.12);
+    border-color: rgba(168, 85, 247, 0.24);
+}
+
+.scenario-b-signal {
+    max-width: 44rem;
+    color: var(--text-soft);
+    font-size: 0.83rem;
+    line-height: 1.38;
+}
+
+.scenario-b-source-line {
+    margin-top: 0.22rem;
+    color: var(--text-dim);
+    font-size: 0.72rem;
+}
+
+.scenario-b-timeline {
+    max-height: 360px;
+    overflow: auto;
+    padding-right: 0.15rem;
+}
+
+.scenario-b-completion-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 80;
+    display: grid;
+    place-items: center;
+    padding: 1rem;
+    background: rgba(15, 23, 42, 0.66);
+    backdrop-filter: blur(6px);
+}
+
+.scenario-b-completion-modal[hidden] {
+    display: none !important;
+}
+
+.scenario-b-completion-card {
+    width: min(880px, 100%);
+    max-height: 88vh;
+    overflow: auto;
+    border-color: rgba(34, 197, 94, 0.24);
+    box-shadow: 0 24px 80px rgba(15, 23, 42, 0.28);
+}
+
+.scenario-b-completion-header {
+    margin-bottom: 1rem;
+}
+
+.scenario-b-completion-score {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+}
+
+.scenario-b-completion-score > div {
+    padding: 0.9rem;
+    border: 1px solid rgba(132, 159, 197, 0.18);
+    border-radius: 8px;
+    background: linear-gradient(180deg, #ffffff, #f8fafc);
+}
+
+.scenario-b-completion-score .key {
+    display: block;
+    color: var(--text-dim);
+    font-size: 0.7rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.scenario-b-completion-score strong {
+    display: block;
+    margin-top: 0.32rem;
+    color: var(--text-strong);
+    font-size: 1.55rem;
+}
+
+.scenario-b-completion-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.85rem;
+    margin-bottom: 0.85rem;
+}
+
+.scenario-b-completion-list {
+    padding: 0.85rem;
+    border: 1px solid rgba(132, 159, 197, 0.16);
+    border-radius: 8px;
+    background: var(--card-bg-soft);
+}
+
+.scenario-b-completion-list h3 {
+    margin: 0 0 0.65rem;
+    color: var(--text-strong);
+    font-size: 0.9rem;
+}
+
+.scenario-b-completion-list ul {
+    display: grid;
+    gap: 0.45rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.scenario-b-completion-list li {
+    color: var(--text-soft);
+    font-size: 0.83rem;
+    line-height: 1.35;
+}
+
+.scenario-b-completion-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.65rem;
+    margin-top: 1rem;
+}
+
 .section-caption {
     color: var(--text-dim);
     font-size: 0.84rem;
@@ -1621,6 +1964,32 @@ select.form-input {
 }
 
 @media (max-width: 960px) {
+    .scenario-b-cockpit,
+    .scenario-b-brief-list {
+        grid-template-columns: 1fr;
+    }
+
+    .scenario-b-action-row,
+    .scenario-b-controls {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .scenario-b-action-controls {
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    .scenario-b-completion-score,
+    .scenario-b-completion-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .scenario-b-completion-actions {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
     .auth-layout {
         grid-template-columns: 1fr;
     }

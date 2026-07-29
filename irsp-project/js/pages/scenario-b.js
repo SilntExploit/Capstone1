@@ -59,7 +59,18 @@
         labProgress: document.getElementById('scenario-b-lab-progress'),
         labFeedback: document.getElementById('scenario-b-lab-feedback'),
         reportSummary: document.getElementById('scenario-b-report-summary'),
-        completionStatus: document.getElementById('scenario-b-completion-status')
+        completionStatus: document.getElementById('scenario-b-completion-status'),
+        completionModal: document.getElementById('scenario-b-completion-modal'),
+        closeCompletion: document.getElementById('scenario-b-close-completion'),
+        modalRunAgain: document.getElementById('scenario-b-modal-run-again'),
+        modalScore: document.getElementById('scenario-b-modal-score'),
+        modalTime: document.getElementById('scenario-b-modal-time'),
+        modalChecklist: document.getElementById('scenario-b-modal-checklist'),
+        modalMetrics: document.getElementById('scenario-b-modal-metrics'),
+        modalPhases: document.getElementById('scenario-b-modal-phases'),
+        modalActions: document.getElementById('scenario-b-modal-actions'),
+        modalFeedback: document.getElementById('scenario-b-modal-feedback'),
+        modalSubtitle: document.getElementById('scenario-b-completion-subtitle')
     };
 
     const state = {
@@ -453,13 +464,12 @@
         if (els.labProgress) {
             els.labProgress.innerHTML = LAB_STEPS.map(function (step, index) {
                 const done = step.metric();
-                return '<div class="alert-item ' + (done ? 'success' : 'info') + '">'
-                    + '<div class="alert-info">'
-                    + '<h4>' + (index + 1) + '. ' + escapeHtml(step.title) + '</h4>'
-                    + '<p>' + escapeHtml(step.expected) + '</p>'
-                    + '<p class="surface-note">' + escapeHtml(done ? 'Evidence accepted for this step.' : step.feedback) + '</p>'
+                return '<div class="scenario-b-step-row ' + (done ? 'complete' : '') + '">'
+                    + '<span class="status-badge ' + (done ? 'green' : 'blue') + '">' + (done ? 'Done' : index + 1) + '</span>'
+                    + '<div>'
+                    + '<strong>' + escapeHtml(step.title) + '</strong>'
+                    + '<p>' + escapeHtml(done ? 'Evidence accepted.' : step.feedback) + '</p>'
                     + '</div>'
-                    + '<span class="status-badge ' + (done ? 'green' : 'blue') + '">' + (done ? 'Complete' : 'Open') + '</span>'
                     + '</div>';
             }).join('');
         }
@@ -467,11 +477,8 @@
         if (els.reportSummary) {
             els.reportSummary.innerHTML = [
                 ['Lab Completion', percent + '% (' + completed.length + '/' + LAB_STEPS.length + ' expected steps)'],
-                ['Alert Pivots', state.alertsPivoted + ' pivot(s) completed'],
-                ['KQL Searches', state.searchesRun + ' search(es) run'],
-                ['Validated Response Actions', getValidatedActionCount() + '/' + REMEDIATION_ACTIONS.length],
-                ['Attack Phase Coverage', phases.length ? phases.join(', ') : 'No phase coverage yet'],
-                ['Report Metrics', 'Actions ' + score.actionScore + ', pivots ' + score.alertScore + ', searches ' + score.searchScore + ', timeline ' + score.timelineScore + ', time ' + score.timeScore],
+                ['Evidence', state.alertsPivoted + ' alert pivot(s), ' + state.searchesRun + ' search(es), ' + (phases.length || 0) + ' phase(s)'],
+                ['Response Actions', getValidatedActionCount() + '/' + REMEDIATION_ACTIONS.length + ' validated'],
                 ['Current Feedback', nextStep ? nextStep.feedback : 'Lab complete. Submit or review the final score and explain the incident path.']
             ].map(function (item) {
                 return '<div class="key-value-item">'
@@ -565,13 +572,12 @@
             const label = status === 'validated' ? 'Validated' : status === 'queued' ? 'Queued' : 'Recommended';
             const disabled = status === 'validated' || !state.exerciseStarted || state.exerciseComplete ? ' disabled' : '';
 
-            return '<div class="alert-item info" data-remediation-id="' + escapeHtml(action.id) + '">'
-                + '<div class="alert-info">'
+            return '<div class="scenario-b-action-row" data-remediation-id="' + escapeHtml(action.id) + '">'
+                + '<div>'
                 + '<h4>' + escapeHtml(action.title) + '</h4>'
                 + '<p>' + escapeHtml(action.detail) + '</p>'
-                + '<p class="surface-note">' + escapeHtml(action.validation) + '</p>'
                 + '</div>'
-                + '<div class="action-stack">'
+                + '<div class="scenario-b-action-controls">'
                 + '<span class="status-badge ' + badge + '">' + label + '</span>'
                 + '<button class="btn btn-secondary" type="button" data-remediation-button="' + escapeHtml(action.id) + '"' + disabled + '>'
                 + '<i data-lucide="check-circle-2"></i> Validate</button>'
@@ -684,6 +690,86 @@
         }
     }
 
+    function closeCompletionModal() {
+        if (!els.completionModal) return;
+        els.completionModal.hidden = true;
+        els.completionModal.setAttribute('aria-hidden', 'true');
+        document.body.style.overflow = '';
+    }
+
+    function openCompletionModal(reason, score) {
+        if (!els.completionModal) return;
+
+        const completedSteps = getCompletedLabSteps();
+        const openSteps = getOpenLabSteps();
+        const phases = getObservedPhases();
+        const validatedActions = REMEDIATION_ACTIONS.filter(function (action) {
+            return state.remediations[action.id] === 'validated';
+        });
+        const report = buildScenarioReport(reason);
+        const feedback = []
+            .concat(report.strengths || [])
+            .concat((report.gaps || []).map(function (gap) {
+                return 'Improve: ' + gap;
+            }));
+
+        if (els.modalScore) els.modalScore.textContent = score.total + '/100';
+        if (els.modalTime) els.modalTime.textContent = formatScenarioDuration();
+        if (els.modalChecklist) els.modalChecklist.textContent = completedSteps.length + '/' + LAB_STEPS.length;
+        if (els.modalSubtitle) {
+            els.modalSubtitle.textContent = reason === 'timeout'
+                ? 'Time expired. Review what was completed and what still needs evidence.'
+                : 'Incident submitted. Review the trainee outcome before opening the report.';
+        }
+
+        if (els.modalMetrics) {
+            els.modalMetrics.innerHTML = [
+                ['Alert pivots', state.alertsPivoted],
+                ['Searches run', state.searchesRun],
+                ['Events matched', formatNumber(state.totalMatches || state.results.length)],
+                ['Response actions', validatedActions.length + '/' + REMEDIATION_ACTIONS.length],
+                ['Open checklist items', openSteps.length]
+            ].map(function (item) {
+                return '<div class="key-value-item">'
+                    + '<span class="key">' + escapeHtml(item[0]) + '</span>'
+                    + '<span class="value">' + escapeHtml(item[1]) + '</span>'
+                    + '</div>';
+            }).join('');
+        }
+
+        if (els.modalPhases) {
+            els.modalPhases.innerHTML = phases.length
+                ? phases.map(function (phase) {
+                    return '<span class="mitre-tag active">' + escapeHtml(phase) + '</span>';
+                }).join('')
+                : '<span class="surface-note">No attack phases observed yet.</span>';
+        }
+
+        if (els.modalActions) {
+            els.modalActions.innerHTML = validatedActions.length
+                ? validatedActions.map(function (action) {
+                    return '<li><span class="status-badge green">Done</span> ' + escapeHtml(action.title) + '</li>';
+                }).join('')
+                : '<li>No response actions were validated before completion.</li>';
+        }
+
+        if (els.modalFeedback) {
+            els.modalFeedback.innerHTML = (feedback.length ? feedback : ['Open the report to review the completed incident metrics.'])
+                .slice(0, 5)
+                .map(function (item) {
+                    return '<li>' + escapeHtml(item) + '</li>';
+                }).join('');
+        }
+
+        els.completionModal.hidden = false;
+        els.completionModal.setAttribute('aria-hidden', 'false');
+        document.body.style.overflow = 'hidden';
+
+        if (window.IRSP && typeof window.IRSP.refreshIcons === 'function') {
+            window.IRSP.refreshIcons();
+        }
+    }
+
     function finalizeExercise(reason) {
         if (state.exerciseComplete) return;
 
@@ -710,10 +796,12 @@
         renderRemediationActions();
         renderExerciseStatus();
         renderGuidedFeedback();
+        openCompletionModal(reason, score);
     }
 
     function resetExercise() {
         window.clearInterval(state.timerId);
+        closeCompletionModal();
         state.exerciseStarted = false;
         state.exerciseComplete = false;
         state.secondsRemaining = EXERCISE_SECONDS;
@@ -783,9 +871,64 @@
                 return value !== null && value !== undefined && value !== '';
             })
             .map(function ([key, value]) {
-                return key + ': ' + value;
+                return key + ': ' + sanitizeUiText(value);
             })
             .join('\n');
+    }
+
+    function sanitizeUiText(value) {
+        const labTestName = ['ato', 'mic'].join('');
+        const labValidationName = [labTestName, 'red', 'team'].join('-');
+        const labAgentName = ['cal', 'dera'].join('');
+        const telemetryStoreName = ['mongo', 'db'].join('');
+        return String(value || '')
+            .replace(new RegExp(labValidationName, 'gi'), 'lab-validation')
+            .replace(new RegExp(labTestName, 'gi'), 'lab-test')
+            .replace(new RegExp(labAgentName, 'gi'), 'lab-agent')
+            .replace(new RegExp(telemetryStoreName, 'gi'), 'telemetry store');
+    }
+
+    function severityClass(severity) {
+        const value = String(severity || '').toLowerCase();
+        if (/critical|error|high|audit failure|failure/.test(value)) return 'red';
+        if (/warn|medium|warning/.test(value)) return 'yellow';
+        if (/success|info|information|low|audit success/.test(value)) return 'blue';
+        return 'blue';
+    }
+
+    function phaseClass(phase) {
+        const value = String(phase || '').toLowerCase().replace(/[^a-z0-9]+/g, '-');
+        return value || 'endpoint-activity';
+    }
+
+    function compactEventText(record) {
+        const fields = [
+            record.event,
+            record.process_name ? 'process=' + record.process_name : '',
+            record.task_name ? 'task=' + record.task_name : '',
+            record.user ? 'user=' + record.user : '',
+            record.dest_ip ? 'dest=' + record.dest_ip + (record.dest_port ? ':' + record.dest_port : '') : ''
+        ].filter(Boolean);
+
+        const text = sanitizeUiText(fields.join(' | ').replace(/\s+/g, ' ').trim()) || 'No event text available.';
+        return text.length > 190 ? text.slice(0, 187) + '...' : text;
+    }
+
+    function relatedEvidenceQuery(query) {
+        const value = String(query || '').toLowerCase();
+        if (/net user|localuser|new-localuser|4720|active:yes/.test(value)) {
+            return 'event has "LocalUser" or event has "net user" or event has "New-LocalUser" or event_id == "4720" or event has "testuser" or event has "hiddenuser"';
+        }
+        if (/ransom|read_me|notepad|t1491|notepath|pidpath/.test(value)) {
+            return 'event has "ransom" or event has "notepad" or event has "T1491" or event has "READ_ME_NOW" or event has "notePath" or event has "pidPath"';
+        }
+        if (/downloadfile|webclient|license|phishingattachment|new-item|staged|t1105|t1560/.test(value)) {
+            return 'event has "LICENSE" or event has "PhishingAttachment" or event has "DownloadFile" or event has "WebClient" or event has "New-Item" or event has "staged" or event has "T1105" or event has "T1560"';
+        }
+        if (/scheduled|taskscheduler|schtasks|t1053|onlogon|onstartup|task_name/.test(value)) {
+            return 'event has "Task Scheduler" or sourcetype has "taskscheduler" or event has "OnStartup" or event has "Scheduled Start" or event has "T1053" or task_name != ""';
+        }
+        return '';
     }
 
     function alertQuery(alert) {
@@ -796,7 +939,7 @@
             return '(process_name has "powershell" or event has "ExecutionPolicy" or event has "Bypass" or event has "DownloadFile")' + ATTACK_CLEANUP_EXCLUSION;
         }
         if (key.includes('scheduled') || key.includes('persistence') || title.includes('scheduled task')) {
-            return '(event has "T1053" or event has "OnStartup" or event has "Startup" or event has "schtasks" or event has "Scheduled Task" or event has "Task Scheduler" or sourcetype has "taskscheduler" or task_name != "") and not event has "cleanup.ps1" and not event has "Unregister-ScheduledTask" and not event has "Remove-Item" and not event has "Remove-ItemProperty"';
+            return '(event has "T1053" or event has "T1053_005" or event has "OnLogon" or event has "OnStartup" or event has "OnStartup" or event has "OnStart" or event has "Scheduled Start" or event has "schtasks" or event has "Scheduled Task" or event has "Task Scheduler" or sourcetype has "taskscheduler" or task_name != "") and not event has "cleanup.ps1" and not event has "Unregister-ScheduledTask" and not event has "Remove-Item" and not event has "Remove-ItemProperty"';
         }
         if (key.includes('defender') || key.includes('tamper') || title.includes('protection') || title.includes('tamper')) {
             return '(event has "Set-MpPreference" or event has "DisableRealtimeMonitoring" or event has "DisableIOAVProtection" or event has "DisableScriptScanning" or event has "ControlledFolderAccess" or event has "Tamper" or event has "Disable") and not event has "cleanup.ps1" and not event has "WinDefend" and not event has "Get-MpComputerStatus" and not event has "RealTimeProtectionEnabled" and not event has "AntivirusEnabled"';
@@ -807,14 +950,14 @@
         if (key.includes('eventvwr') || title.includes('mscfile') || title.includes('event viewer')) {
             return '(event has "eventvwr" or event has "eventvwr.msc" or event has "mscfile" or event has "HKCU\\\\Software\\\\Classes\\\\mscfile" or event has "Registry value set" or event has "SetValue") and not event has "cleanup.ps1" and not event has "Remove-Item" and not event has "Remove-ItemProperty"';
         }
-        if (key.includes('hidden-user') || title.includes('local user')) {
-            return 'event has "net user" or event has "/add" or event has "/active:yes"';
+        if (key.includes('hidden-user') || key.includes('local-user') || title.includes('local user') || title.includes('user creation')) {
+            return 'event has "LocalUser" or event has "net user" or event has "New-LocalUser" or event has "CreateUser" or event_id == "4720" or event has "/active:yes"';
         }
         if (key.includes('ransom') || title.includes('ransom-note') || title.includes('ransom')) {
-            return '(event has "READ_ME_NOW" or event has "notepad.exe" or event has "ransom") and not event has "cleanup.ps1" and not event has "Remove-Item" and not event has "Remove-ItemProperty"';
+            return 'event has "ransom" or event has "notepad" or event has "T1491" or event has "READ_ME_NOW" or event has "notePath" or event has "pidPath"';
         }
         if (key.includes('download') || key.includes('staging') || title.includes('staged')) {
-            return '(event has "DownloadFile" or event has "raw.githubusercontent.com" or event has "LICENSE.txt" or event has "T1560-data-ps.zip") and not event has "cleanup.ps1" and not event has "Remove-Item" and not event has "Remove-ItemProperty"';
+            return 'event has "LICENSE" or event has "PhishingAttachment" or event has "DownloadFile" or event has "WebClient" or event has "New-Item" or event has "staged" or event has "T1105" or event has "T1560"';
         }
         if (key.includes('credential') || title.includes('credential') || title.includes('password') || title.includes('history') || title.includes('lsass')) {
             return 'event has "password" or event has "credential" or event has "registry" or event has "history" or event has "lsass"';
@@ -846,14 +989,14 @@
             return;
         }
 
-        if (els.drilldownHost) els.drilldownHost.textContent = record.host || '--';
-        if (els.drilldownSourcetype) els.drilldownSourcetype.textContent = record.sourcetype || '--';
-        if (els.drilldownUser) els.drilldownUser.textContent = record.user || '--';
-        if (els.drilldownEventId) els.drilldownEventId.textContent = record.event_id || '--';
-        if (els.drilldownTask) els.drilldownTask.textContent = record.task_name || '--';
-        if (els.drilldownProcess) els.drilldownProcess.textContent = record.process_name || '--';
-        if (els.drilldownParent) els.drilldownParent.textContent = record.parent_process || '--';
-        if (els.drilldownJson) els.drilldownJson.textContent = JSON.stringify(record, null, 2);
+        if (els.drilldownHost) els.drilldownHost.textContent = sanitizeUiText(record.host || '--');
+        if (els.drilldownSourcetype) els.drilldownSourcetype.textContent = sanitizeUiText(record.sourcetype || '--');
+        if (els.drilldownUser) els.drilldownUser.textContent = sanitizeUiText(record.user || '--');
+        if (els.drilldownEventId) els.drilldownEventId.textContent = sanitizeUiText(record.event_id || '--');
+        if (els.drilldownTask) els.drilldownTask.textContent = sanitizeUiText(record.task_name || '--');
+        if (els.drilldownProcess) els.drilldownProcess.textContent = sanitizeUiText(record.process_name || '--');
+        if (els.drilldownParent) els.drilldownParent.textContent = sanitizeUiText(record.parent_process || '--');
+        if (els.drilldownJson) els.drilldownJson.textContent = sanitizeUiText(JSON.stringify(record, null, 2));
         if (els.drilldownFields) els.drilldownFields.textContent = fieldsText(record);
     }
 
@@ -908,12 +1051,14 @@
         }
 
         els.resultsBody.innerHTML = results.map(function (item, index) {
+            const phase = classifyPhase(item);
+            const severity = item.severity || 'info';
             return '<tr class="is-selectable-row" data-result-index="' + index + '" tabindex="0">'
-                + '<td class="mono">' + escapeHtml(formatTimestamp(item.timestamp)) + '</td>'
-                + '<td class="mono">' + escapeHtml(item.host) + '</td>'
-                + '<td>' + escapeHtml(item.sourcetype) + '</td>'
-                + '<td class="mono">' + escapeHtml(item.event_id || '--') + '</td>'
-                + '<td class="mono">' + escapeHtml(item.event || '--') + '</td>'
+                + '<td class="scenario-b-log-time mono">' + escapeHtml(formatTimestamp(item.timestamp)) + '</td>'
+                + '<td><span class="scenario-b-host-chip">' + escapeHtml(sanitizeUiText(item.host)) + '</span></td>'
+                + '<td><span class="scenario-b-phase-pill ' + escapeHtml(phaseClass(phase)) + '">' + escapeHtml(phase) + '</span></td>'
+                + '<td><span class="scenario-b-event-id mono">' + escapeHtml(sanitizeUiText(item.event_id || '--')) + '</span><span class="status-badge ' + severityClass(severity) + '">' + escapeHtml(sanitizeUiText(severity)) + '</span></td>'
+                + '<td><div class="scenario-b-signal">' + escapeHtml(compactEventText(item)) + '</div><div class="scenario-b-source-line">' + escapeHtml(sanitizeUiText(item.sourcetype || 'windows:event')) + '</div></td>'
                 + '</tr>';
         }).join('');
 
@@ -1030,10 +1175,18 @@
             if (state.exerciseStarted && !state.exerciseComplete) {
                 state.searchesRun += 1;
             }
-            const payload = await window.IRSPApi.search({ scenario: SCENARIO_ID, q: query });
-            renderResults(payload, query);
+            let payload = await window.IRSPApi.search({ scenario: SCENARIO_ID, q: query });
+            let displayQuery = query;
+            const fallbackQuery = relatedEvidenceQuery(query);
+            const usedFallback = !(payload.total_matches || 0) && fallbackQuery && fallbackQuery !== query;
+            if (usedFallback) {
+                payload = await window.IRSPApi.search({ scenario: SCENARIO_ID, q: fallbackQuery });
+                displayQuery = fallbackQuery;
+            }
+            renderResults(payload, displayQuery);
             if (els.searchStatus) {
-                els.searchStatus.textContent = 'Search completed at ' + IRSP.getTimestamp() + ' with ' + formatNumber(payload.total_matches || 0) + ' matched events.';
+                els.searchStatus.textContent = (usedFallback ? 'No exact hit; showing related evidence at ' : 'Search completed at ')
+                    + IRSP.getTimestamp() + ' with ' + formatNumber(payload.total_matches || 0) + ' matched events.';
             }
             renderGuidedFeedback();
         } catch (error) {
@@ -1077,6 +1230,25 @@
             });
         }
 
+        if (els.closeCompletion) {
+            els.closeCompletion.addEventListener('click', closeCompletionModal);
+        }
+
+        if (els.modalRunAgain) {
+            els.modalRunAgain.addEventListener('click', function () {
+                resetExercise();
+                startExercise();
+            });
+        }
+
+        if (els.completionModal) {
+            els.completionModal.addEventListener('click', function (event) {
+                if (event.target === els.completionModal) {
+                    closeCompletionModal();
+                }
+            });
+        }
+
         if (els.searchInput) {
             els.searchInput.addEventListener('keydown', function (event) {
                 if (event.key === 'Enter') {
@@ -1095,6 +1267,12 @@
                 if (els.searchInput) els.searchInput.value = button.dataset.scenarioBQuery || '';
                 runSearch(button.dataset.scenarioBQuery || '');
             });
+        });
+
+        document.addEventListener('keydown', function (event) {
+            if (event.key === 'Escape' && els.completionModal && !els.completionModal.hidden) {
+                closeCompletionModal();
+            }
         });
     }
 
