@@ -1,0 +1,44 @@
+/* Lab MITRE ATT&CK review page. Uses the shared theme variables so text is
+   readable in both the light (default) and dark themes. */
+
+.review-hero{align-items:center}
+.review-hero .hero-actions{display:flex;gap:.65rem;flex-wrap:wrap;justify-content:flex-end}
+
+.review-meta{display:flex;gap:.6rem;flex-wrap:wrap;margin-top:1rem}
+.review-meta .pill strong{color:var(--ink)}
+
+/* Legend / summary of tactics investigated */
+.coverage-summary{margin-top:1rem}
+.coverage-pills{display:flex;flex-wrap:wrap;gap:.5rem;margin-top:.75rem}
+.tactic-pill{display:inline-flex;align-items:center;gap:.35rem;border-radius:999px;
+  padding:.4rem .8rem;font-size:.82rem;font-weight:800;
+  background:rgba(37,99,235,.1);color:var(--blue);border:1px solid rgba(37,99,235,.25)}
+.tactic-pill.empty{background:var(--surface-2);color:var(--muted);border-color:var(--line)}
+
+/* Coverage progress bar */
+.coverage-bar{height:12px;border-radius:999px;background:var(--surface-2);
+  border:1px solid var(--line);overflow:hidden;display:flex;margin-top:1rem}
+.coverage-bar span{height:100%;display:block}
+.coverage-bar .seg-ok{background:linear-gradient(135deg,var(--green),#22c55e)}
+.coverage-bar .seg-bad{background:linear-gradient(135deg,var(--amber),#f97316)}
+.coverage-bar .seg-miss{background:var(--soft)}
+.coverage-legend{display:flex;gap:1.1rem;flex-wrap:wrap;margin-top:.7rem;font-size:.82rem;color:var(--muted);font-weight:700}
+.coverage-legend i{width:11px;height:11px;border-radius:3px;display:inline-block;margin-right:.35rem;vertical-align:middle}
+.dot-ok{background:var(--green)}.dot-bad{background:var(--amber)}.dot-miss{background:var(--soft)}
+
+/* Per-technique list */
+.mitre-list{display:flex;flex-direction:column;gap:.7rem;margin-top:.4rem}
+.mitre-item{border:1px solid var(--line);border-radius:16px;padding:1rem 1.1rem;
+  background:var(--surface-2);border-left-width:4px}
+.mitre-item.ok{border-left-color:var(--green)}
+.mitre-item.bad{border-left-color:var(--amber)}
+.mitre-item.miss{border-left-color:var(--soft)}
+.mitre-item .row1{display:flex;justify-content:space-between;align-items:center;gap:.9rem;flex-wrap:wrap}
+.mitre-item .q-title{font-weight:800;color:var(--ink)}
+.mitre-item .method{color:var(--muted);font-size:.9rem;margin-top:.5rem;line-height:1.55}
+.mitre-item .code{font-family:ui-monospace,Menlo,Consolas,monospace;color:var(--blue);font-weight:800}
+
+.section-heading{font-weight:900;color:var(--ink);margin:1.6rem 0 .3rem;display:flex;align-items:center;gap:.5rem}
+
+.review-empty,.review-error{padding:1.4rem;color:var(--muted);text-align:center;line-height:1.6}
+.review-error{color:var(--red)}

@@ -1,0 +1,18 @@
+/* Team page - avatar column + group pills */
+
+.team-avatar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    color: #fff;
+    font-weight: 800;
+    font-size: .78rem;
+    letter-spacing: -.02em;
+    box-shadow: 0 4px 10px rgba(15, 23, 42, .18);
+    flex-shrink: 0;
+}
+
+#team-table-body td:first-child { width: 46px; padding-right: 0; }

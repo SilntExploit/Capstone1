@@ -1,0 +1,143 @@
+/* Settings page - real visual hierarchy instead of two bare form cards. */
+
+.settings-identity {
+    display: flex;
+    align-items: center;
+    gap: 1.1rem;
+    margin-bottom: 1.1rem;
+    padding: 1.3rem 1.5rem;
+    background: linear-gradient(135deg, rgba(37, 99, 235, .07), rgba(6, 182, 212, .05));
+}
+
+.settings-avatar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 62px;
+    height: 62px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--blue), var(--cyan));
+    color: #fff;
+    box-shadow: 0 12px 26px rgba(37, 99, 235, .28);
+}
+.settings-avatar i { width: 28px; height: 28px; }
+
+.settings-identity-body { display: flex; flex-direction: column; gap: .4rem; min-width: 0; }
+.settings-identity-name { font-size: 1.3rem; font-weight: 900; letter-spacing: -.02em; color: var(--ink); }
+.settings-identity-meta { display: flex; align-items: center; gap: .6rem; flex-wrap: wrap; }
+.settings-identity-email { color: var(--muted); font-size: .88rem; font-weight: 600; }
+
+.settings-grid { gap: 1.1rem; }
+
+.settings-card { padding: 1.4rem; }
+
+.settings-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    border-radius: 10px;
+    flex-shrink: 0;
+}
+.settings-icon i { width: 16px; height: 16px; }
+.settings-icon-blue { background: rgba(37, 99, 235, .12); color: var(--blue); }
+.settings-icon-purple { background: rgba(124, 58, 237, .12); color: var(--purple); }
+
+.settings-field { margin-bottom: 1.15rem; }
+.settings-field:last-of-type { margin-bottom: 0; }
+.settings-field .form-label { display: flex; align-items: center; gap: .4rem; }
+.settings-field .form-label i { width: 13px; height: 13px; color: var(--muted); }
+
+.settings-field .form-input:disabled {
+    background: var(--surface-2);
+    color: var(--muted);
+    cursor: not-allowed;
+    opacity: .85;
+}
+
+.settings-status:empty { display: none; }
+.settings-status:not(:empty) {
+    margin-top: 1rem;
+    padding: .7rem .9rem;
+    border-radius: 12px;
+    background: rgba(22, 163, 74, .1);
+    color: var(--green);
+    font-weight: 700;
+    font-size: .85rem;
+}
+
+.theme-toggle-wrap { display: flex; align-items: center; gap: .9rem; }
+.theme-toggle-caption { font-size: .95rem; font-weight: 700; color: var(--muted); }
+
+.theme-toggle {
+    position: relative;
+    width: 128px;
+    height: 64px;
+    border-radius: 999px;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    overflow: hidden;
+    flex-shrink: 0;
+    background: linear-gradient(135deg, #7ec8f2 0%, #bfe3fa 55%, #eaf6ff 100%);
+    box-shadow: inset 0 3px 8px rgba(15, 23, 42, .2);
+    transition: background .45s ease;
+}
+.theme-toggle[data-theme="dark"] {
+    background: linear-gradient(135deg, #0b1224 0%, #131c35 55%, #1c2a4a 100%);
+}
+
+/* Clouds - visible in light mode, fade out in dark mode */
+.theme-toggle-clouds {
+    position: absolute;
+    top: 14px;
+    right: 12px;
+    width: 40px;
+    height: 16px;
+    background: #fff;
+    border-radius: 999px;
+    box-shadow: 14px 6px 0 -2px #fff, -12px 4px 0 -3px rgba(255,255,255,.85);
+    opacity: 1;
+    transition: opacity .3s ease;
+}
+.theme-toggle[data-theme="dark"] .theme-toggle-clouds { opacity: 0; }
+
+/* Stars - hidden in light mode, fade in for dark mode */
+.theme-toggle-stars {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    transition: opacity .35s ease;
+    background-image:
+        radial-gradient(2.6px 2.6px at 24px 14px, #fff, transparent),
+        radial-gradient(2.6px 2.6px at 44px 42px, #fff, transparent),
+        radial-gradient(2px 2px at 60px 18px, #fff, transparent),
+        radial-gradient(2px 2px at 30px 46px, #fff, transparent),
+        radial-gradient(2.3px 2.3px at 72px 36px, #fff, transparent);
+}
+.theme-toggle[data-theme="dark"] .theme-toggle-stars { opacity: 1; }
+
+/* Thumb - sun in light mode, slides right and becomes a cratered moon in dark mode */
+.theme-toggle-thumb {
+    position: absolute;
+    top: 6px;
+    left: 6px;
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 30%, #fff9c4, #ffd43b 55%, #f6a800 100%);
+    box-shadow: 0 4px 10px rgba(15, 23, 42, .3);
+    transition: transform .4s cubic-bezier(.4,0,.2,1), background .4s ease, box-shadow .4s ease;
+}
+.theme-toggle[data-theme="dark"] .theme-toggle-thumb {
+    transform: translateX(64px);
+    background: radial-gradient(circle at 35% 30%, #f4f4f6, #cfd3da 60%, #9aa0ab 100%);
+    box-shadow: 0 4px 10px rgba(0,0,0,.45), inset -8px -6px 0 -4px #b8bcc4, inset 8px 10px 0 -5px #b8bcc4, inset -16px 4px 0 -8px #b8bcc4;
+}
+
+@media (max-width: 720px) {
+    .settings-identity { flex-direction: column; text-align: center; }
+    .settings-identity-meta { justify-content: center; }
+}

@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IRSP - Labs</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/lucide/0.263.0/lucide.min.js"></script>
+  <link rel="stylesheet" href="../assets/css/shared.css">
+  <link rel="stylesheet" href="../assets/css/labs.css">
+</head>
+<body>
+<nav aria-label="Primary navigation">
+  <a href="dashboard.html" class="logo"><svg class="irsp-logo-mark" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><defs><linearGradient id="irspLogoGrad" x1="0" y1="0" x2="24" y2="24" gradientUnits="userSpaceOnUse"><stop stop-color="#2563eb"/><stop offset="1" stop-color="#06b6d4"/></linearGradient></defs><path d="M12 2 L20 5.5 V11 C20 16 16.5 20 12 22 C7.5 20 4 16 4 11 V5.5 Z" fill="url(#irspLogoGrad)"/><path d="M6.5 12.5 H9.3 L10.8 9.3 L13 15.7 L14.4 12.5 H17.5" stroke="#fff" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg> IRSP</a>
+  <a href="dashboard.html" class="nav-item" data-page="dashboard"><i data-lucide="layout-dashboard"></i> Dashboard</a>
+  <a href="labs.html" class="nav-item" data-page="labs"><i data-lucide="terminal-square"></i> Labs</a>
+  <a href="reports.html" class="nav-item" data-page="reports"><i data-lucide="file-text"></i> Reports</a>
+  <a href="team.html" class="nav-item" data-page="team"><i data-lucide="users"></i> Team</a>
+  <div class="nav-bottom"><a href="settings.html" class="nav-item" data-page="settings"><i data-lucide="settings"></i> Settings</a><a href="#" class="nav-item" id="logout-nav-btn"><i data-lucide="log-out"></i> Logout</a></div>
+</nav>
+<main>
+  <header>
+    <div>
+      <h1>Incident Response Labs</h1>
+      <p class="subtitle">Launch hands-on labs directly in your browser.</p>
+    </div>
+    <span class="status-badge green"><i data-lucide="check-circle"></i> 2 Available</span>
+  </header>
+
+  <section class="lab-cards" id="lab-grid">
+    <article class="card lab-card" data-title="Ransomware Containment" data-status="available" data-lab-id="lab-a">
+      <div class="lab-card-top">
+        <span class="status-badge red"><i data-lucide="siren"></i> Available</span>
+        <span class="pill">Lab 1</span>
+      </div>
+      <h3><i data-lucide="lock"></i> Ransomware Containment</h3>
+      <p class="subtitle">Investigate the incident, contain the affected host, and document response actions.</p>
+      <div class="lab-meta simple">
+        <span><i data-lucide="clock"></i> 45 min</span>
+        <span><i data-lucide="monitor"></i> Browser lab</span>
+        <span><i data-lucide="shield-check"></i> Containment</span>
+      </div>
+      <div class="lab-actions">
+        <a class="btn launch-btn" id="lab-a-launch" href="../lab/index.html?kiosk=1" data-lab-id="lab-a"><i data-lucide="rocket"></i> Launch Lab</a>
+      </div>
+    </article>
+
+    <article class="card lab-card" data-title="Endpoint Investigation" data-status="available" data-lab-id="lab-b">
+      <div class="lab-card-top">
+        <span class="status-badge red"><i data-lucide="siren"></i> Available</span>
+        <span class="pill">Lab 2</span>
+      </div>
+      <h3><i data-lucide="search-code"></i> Endpoint Investigation</h3>
+      <p class="subtitle">Analyze endpoint telemetry, trace attacker activity, and scope the compromise.</p>
+      <div class="lab-meta simple">
+        <span><i data-lucide="clock"></i> 30 min</span>
+        <span><i data-lucide="monitor"></i> Browser lab</span>
+        <span><i data-lucide="shield-check"></i> Forensics</span>
+      </div>
+      <div class="lab-actions">
+        <a class="btn launch-btn" id="lab-b-launch" href="../lab-b/index.html?kiosk=1" data-lab-id="lab-b"><i data-lucide="rocket"></i> Launch Lab</a>
+      </div>
+    </article>
+
+    <article class="card lab-card disabled-card coming-soon-card" data-status="coming-soon" data-lab-id="lab-c">
+      <span class="status-badge blue"><i data-lucide="calendar-clock"></i> Coming Soon</span>
+    </article>
+  </section>
+</main>
+<script src="../assets/js/config.js"></script>
+<script src="../assets/js/shared.js"></script>
+<script src="../assets/js/labs.js?v=labb-kiosk-2"></script>
+</body>
+</html>

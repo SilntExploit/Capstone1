@@ -1,0 +1,186 @@
+/* Landing / auth page styles for the integrated IRSP index.html.
+   Built on top of shared.css design tokens (--blue, --ink, --muted, etc.). */
+
+:root {
+  /* Aliases used by the integrated index.html inline styles. */
+  --accent-red: var(--red);
+  --text-dim: var(--muted);
+}
+
+body.auth-layout {
+  display: grid;
+  grid-template-columns: 1.15fr 0.85fr;
+  min-height: 100vh;
+  overflow: hidden;
+}
+
+/* ── Left hero panel ─────────────────────────────────── */
+.auth-hero {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 2rem;
+  padding: clamp(1.8rem, 4vw, 3.4rem);
+  color: #e2e8f0;
+  background:
+    radial-gradient(circle at 12% 12%, rgba(37, 99, 235, .35), transparent 38%),
+    radial-gradient(circle at 88% 0%, rgba(6, 182, 212, .28), transparent 34%),
+    linear-gradient(135deg, #07111f, #0f1b2d 60%, #13233a);
+  overflow-y: auto;
+}
+
+.auth-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: .6rem;
+  font-weight: 900;
+  letter-spacing: -.02em;
+  font-size: 1.5rem;
+}
+
+.auth-hero .auth-brand {
+  font-size: 5rem;
+}
+
+.auth-brand i { color: var(--cyan); }
+.auth-brand .irsp-logo-mark { width: 1em; height: 1em; flex-shrink: 0; }
+
+.auth-kicker {
+  display: inline-block;
+  font-size: .76rem;
+  font-weight: 800;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: #7dd3fc;
+  margin-bottom: 1rem;
+}
+
+.auth-hero h1 {
+  font-size: clamp(1.8rem, 3.2vw, 2.9rem);
+  line-height: 1.05;
+  letter-spacing: -.04em;
+  margin-bottom: 1rem;
+  color: #f8fafc;
+}
+
+.auth-hero > div > p {
+  color: rgba(226, 232, 240, .78);
+  line-height: 1.7;
+  max-width: 60ch;
+  margin-bottom: 1.8rem;
+}
+
+.auth-feature-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.auth-feature {
+  padding: 1.1rem;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, .05);
+  border: 1px solid rgba(255, 255, 255, .1);
+  backdrop-filter: blur(8px);
+}
+.auth-feature h3 {
+  font-size: .98rem;
+  margin-bottom: .4rem;
+  color: #f1f5f9;
+}
+.auth-feature p {
+  font-size: .85rem;
+  color: rgba(226, 232, 240, .68);
+  line-height: 1.55;
+}
+
+.surface-note { font-size: .82rem; }
+
+/* ── Right form panel ────────────────────────────────── */
+.auth-side {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: clamp(1.5rem, 3vw, 3rem);
+  background: linear-gradient(135deg, var(--bg), #eef5ff);
+  overflow-y: auto;
+}
+
+.auth-card {
+  width: min(440px, 100%);
+  background: rgba(255, 255, 255, .9);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: clamp(1.6rem, 3vw, 2.4rem);
+  backdrop-filter: blur(18px);
+}
+:root[data-theme='dark'] .auth-card { background: rgba(15, 27, 45, .9); }
+
+.auth-card h2 {
+  font-size: 1.5rem;
+  letter-spacing: -.03em;
+  margin: .9rem 0 .4rem;
+}
+.auth-card > p {
+  color: var(--muted);
+  line-height: 1.6;
+  margin-bottom: 1.4rem;
+  font-size: .92rem;
+}
+
+.auth-card .form-label { margin-top: .9rem; }
+.auth-card .form-input { margin-bottom: .2rem; }
+
+.auth-meta {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: .75rem;
+  margin: 1.2rem 0;
+}
+.metric-tile {
+  padding: .85rem;
+  border-radius: 14px;
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+}
+.metric-tile .label {
+  font-size: .7rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  color: var(--muted);
+}
+.metric-tile .value {
+  font-weight: 900;
+  letter-spacing: -.02em;
+  margin: .15rem 0;
+  color: var(--ink);
+}
+.metric-tile .subtext { font-size: .74rem; color: var(--muted); }
+
+.auth-links {
+  display: flex;
+  flex-direction: column;
+  gap: .65rem;
+  margin-top: 1.2rem;
+}
+.btn-lg { padding: .85rem 1.1rem; font-size: 1rem; }
+
+.auth-note {
+  margin-top: 1.3rem;
+  padding-top: 1.1rem;
+  border-top: 1px solid var(--line);
+  font-size: .78rem;
+  color: var(--muted);
+  line-height: 1.55;
+}
+
+/* ── Responsive ──────────────────────────────────────── */
+@media (max-width: 920px) {
+  body.auth-layout { grid-template-columns: 1fr; overflow: auto; }
+  .auth-hero { order: 2; }
+  .auth-side { order: 1; }
+  .auth-feature-grid { grid-template-columns: 1fr; }
+}
