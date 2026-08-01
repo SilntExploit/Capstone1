@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IRSP - Lab Review</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/lucide/0.263.0/lucide.min.js"></script>
+  <link rel="stylesheet" href="../assets/css/shared.css">
+  <link rel="stylesheet" href="../assets/css/dashboard.css">
+  <link rel="stylesheet" href="../assets/css/lab-review.css">
+</head>
+<body>
+<nav aria-label="Primary navigation">
+  <a href="dashboard.html" class="logo"><svg class="irsp-logo-mark" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><defs><linearGradient id="irspLogoGrad" x1="0" y1="0" x2="24" y2="24" gradientUnits="userSpaceOnUse"><stop stop-color="#2563eb"/><stop offset="1" stop-color="#06b6d4"/></linearGradient></defs><path d="M12 2 L20 5.5 V11 C20 16 16.5 20 12 22 C7.5 20 4 16 4 11 V5.5 Z" fill="url(#irspLogoGrad)"/><path d="M6.5 12.5 H9.3 L10.8 9.3 L13 15.7 L14.4 12.5 H17.5" stroke="#fff" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg> IRSP</a>
+  <a href="dashboard.html" class="nav-item" data-page="dashboard"><i data-lucide="layout-dashboard"></i> Dashboard</a>
+  <a href="labs.html" class="nav-item" data-page="labs"><i data-lucide="terminal-square"></i> Labs</a>
+  <a href="reports.html" class="nav-item" data-page="reports"><i data-lucide="file-text"></i> Reports</a>
+  <a href="team.html" class="nav-item" data-page="team"><i data-lucide="users"></i> Team</a>
+  <div class="nav-bottom"><a href="settings.html" class="nav-item" data-page="settings"><i data-lucide="settings"></i> Settings</a><a href="#" class="nav-item" id="logout-nav-btn"><i data-lucide="log-out"></i> Logout</a></div>
+</nav>
+
+<main>
+  <header class="dashboard-hero review-hero">
+    <div>
+      <span class="status-badge blue"><i data-lucide="crosshair"></i> MITRE ATT&amp;CK Review</span>
+      <h1>Lab Coverage</h1>
+    </div>
+    <div class="hero-actions">
+      <a class="btn btn-secondary" href="dashboard.html"><i data-lucide="arrow-left"></i> Back to Dashboard</a>
+    </div>
+  </header>
+
+  <section class="card coverage-summary">
+    <div class="card-title"><i data-lucide="clipboard-check"></i> <span id="review-title">Completed Lab</span></div>
+    <div class="review-meta" id="review-meta"></div>
+    <div class="coverage-pills" id="coverage-pills"></div>
+    <div class="coverage-bar" id="coverage-bar"></div>
+    <div class="coverage-legend" id="coverage-legend"></div>
+  </section>
+
+  <section class="card" style="margin-top:1rem">
+    <div class="card-title"><i data-lucide="list-checks"></i> Techniques by Question</div>
+    <div id="review-body"><div class="review-empty">Loading MITRE ATT&amp;CK coverage…</div></div>
+  </section>
+</main>
+
+<script src="../assets/js/config.js"></script>
+<script src="../assets/js/shared.js"></script>
+<script src="../assets/js/lab-review.js"></script>
+</body>
+</html>

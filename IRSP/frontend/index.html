@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IRSP - Incident Response Simulation Platform</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lucide/0.263.0/lucide.min.js"></script>
+    <link rel="stylesheet" href="assets/css/shared.css">
+    <link rel="stylesheet" href="assets/css/landing.css">
+    <style>
+        /* ── Auth-page enhancements ───────────────────────── */
+        .auth-form-error {
+            display: none;
+            font-size: 0.78rem;
+            color: var(--accent-red);
+            margin-top: -0.6rem;
+            margin-bottom: 0.8rem;
+            padding: 0.55rem 0.7rem;
+            background: rgba(239, 68, 68, 0.08);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            border-radius: 6px;
+        }
+        .auth-form-error.visible {
+            display: block;
+        }
+        .form-input.input-error {
+            border-color: var(--accent-red);
+            box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+        }
+        .auth-submit-btn {
+            width: 100%;
+            justify-content: center;
+        }
+        .auth-submit-btn[data-loading="true"] {
+            opacity: 0.7;
+            pointer-events: none;
+        }
+        .auth-submit-btn .btn-spinner {
+            display: none;
+            width: 14px;
+            height: 14px;
+            border: 2px solid rgba(255,255,255,0.4);
+            border-top-color: #fff;
+            border-radius: 50%;
+            animation: spin 0.7s linear infinite;
+        }
+        .auth-submit-btn[data-loading="true"] .btn-spinner {
+            display: inline-block;
+        }
+        .auth-submit-btn[data-loading="true"] .btn-icon-default {
+            display: none;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        /* Remove bottom margin from last form-input before auth-meta */
+        .auth-card form .form-input:last-of-type {
+            margin-bottom: 0;
+        }
+    </style>
+</head>
+<body class="auth-layout">
+
+<section class="auth-hero">
+    <div>
+        <div class="auth-brand"><svg class="irsp-logo-mark" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><defs><linearGradient id="irspLogoGrad" x1="0" y1="0" x2="24" y2="24" gradientUnits="userSpaceOnUse"><stop stop-color="#2563eb"/><stop offset="1" stop-color="#06b6d4"/></linearGradient></defs><path d="M12 2 L20 5.5 V11 C20 16 16.5 20 12 22 C7.5 20 4 16 4 11 V5.5 Z" fill="url(#irspLogoGrad)"/><path d="M6.5 12.5 H9.3 L10.8 9.3 L13 15.7 L14.4 12.5 H17.5" stroke="#fff" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg> IRSP</div>
+    </div>
+
+    <div>
+        <div class="auth-kicker">Incident Response Simulation Platform</div>
+        <h1>Train analysts with realistic, hands-on incident response labs.</h1>
+
+        <div class="auth-feature-grid">
+            <div class="auth-feature">
+                <h3>Search and Triage</h3>
+                <p>SPL-style searches, notable queues, raw event drilldowns, and analyst pivots.</p>
+            </div>
+            <div class="auth-feature">
+                <h3>Guided Simulations</h3>
+                <p>Scenario-specific host data, response shells, timelines, and containment objectives.</p>
+            </div>
+            <div class="auth-feature">
+                <h3>Team Operations</h3>
+                <p>Role-aware training flows with analyst notes, recent runs, and readiness context.</p>
+            </div>
+            <div class="auth-feature">
+                <h3>Post-Run Reporting</h3>
+                <p>Score summaries, coaching guidance, and benchmark-style analytics for program review.</p>
+            </div>
+        </div>
+    </div>
+
+</section>
+
+<section class="auth-side">
+    <div class="auth-card">
+        <div class="auth-brand"><svg class="irsp-logo-mark" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><defs><linearGradient id="irspLogoGrad" x1="0" y1="0" x2="24" y2="24" gradientUnits="userSpaceOnUse"><stop stop-color="#2563eb"/><stop offset="1" stop-color="#06b6d4"/></linearGradient></defs><path d="M12 2 L20 5.5 V11 C20 16 16.5 20 12 22 C7.5 20 4 16 4 11 V5.5 Z" fill="url(#irspLogoGrad)"/><path d="M6.5 12.5 H9.3 L10.8 9.3 L13 15.7 L14.4 12.5 H17.5" stroke="#fff" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg> IRSP</div>
+        <h2>Sign in</h2>
+        <p>Access the Incident Response Simulation Platform.</p>
+
+        <form id="login-form" novalidate>
+            <label class="form-label" for="email">Email</label>
+            <input
+                id="email"
+                class="form-input"
+                type="email"
+                placeholder="you@irsp.local"
+                autocomplete="username email"
+                required
+                aria-required="true"
+                aria-describedby="email-error"
+            >
+            <div id="email-error" class="auth-form-error" role="alert" aria-live="polite"></div>
+
+            <label class="form-label" for="password">Password</label>
+            <input
+                id="password"
+                class="form-input"
+                type="password"
+                placeholder="••••••••"
+                autocomplete="current-password"
+                required
+                aria-required="true"
+                aria-describedby="form-error"
+            >
+            <div id="form-error" class="auth-form-error" role="alert" aria-live="polite"></div>
+
+            <div class="auth-links">
+                <button
+                    type="submit"
+                    class="btn btn-lg auth-submit-btn"
+                    id="signin-btn"
+                    data-target="pages/dashboard.html"
+                >
+                    <span class="btn-spinner" aria-hidden="true"></span>
+                    <span class="btn-icon-default"><i data-lucide="log-in"></i> Sign in</span>
+                </button>
+                <a href="pages/labs.html" class="btn btn-secondary btn-lg"><i data-lucide="play-circle"></i> Browse labs</a>
+            </div>
+        </form>
+    </div>
+</section>
+
+<script src="assets/js/config.js"></script>
+<script src="assets/js/shared.js"></script>
+<script>
+(function () {
+    'use strict';
+
+    var form        = document.getElementById('login-form');
+    var emailEl     = document.getElementById('email');
+    var passwordEl  = document.getElementById('password');
+    var submitBtn   = document.getElementById('signin-btn');
+    var emailError  = document.getElementById('email-error');
+    var formError   = document.getElementById('form-error');
+
+    function apiBase() {
+        return (window.IRSP_CONFIG && window.IRSP_CONFIG.apiBaseUrl) || '/api';
+    }
+
+    /* Already signed in? Skip straight to the dashboard. */
+    if (window.localStorage.getItem('irsp-access-token')) {
+        window.location.href = submitBtn ? (submitBtn.dataset.target || 'pages/dashboard.html') : 'pages/dashboard.html';
+        return;
+    }
+
+    function clearErrors() {
+        emailError.textContent = '';
+        emailError.classList.remove('visible');
+        formError.textContent = '';
+        formError.classList.remove('visible');
+        [emailEl, passwordEl].forEach(function (el) {
+            el.classList.remove('input-error');
+        });
+    }
+
+    function showError(element, errorBox, message) {
+        element.classList.add('input-error');
+        errorBox.textContent = message;
+        errorBox.classList.add('visible');
+        element.focus();
+    }
+
+    function isValidEmail(value) {
+        return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(value || '').trim());
+    }
+
+    function validate() {
+        clearErrors();
+
+        var email     = (emailEl.value || '').trim();
+        var password  = (passwordEl.value || '').trim();
+
+        if (!email) {
+            showError(emailEl, emailError, 'Email address is required.');
+            return false;
+        }
+
+        if (!isValidEmail(email)) {
+            showError(emailEl, emailError, 'Enter a valid email address (e.g. user@domain.com).');
+            return false;
+        }
+
+        if (!password) {
+            showError(passwordEl, formError, 'Password is required.');
+            return false;
+        }
+
+        return true;
+    }
+
+    function setLoading(loading) {
+        submitBtn.dataset.loading = loading ? 'true' : 'false';
+        submitBtn.setAttribute('aria-busy', loading ? 'true' : 'false');
+        submitBtn.disabled = loading;
+    }
+
+    function persistSessionContext() {
+        try {
+            var ctx = {
+                email:   (emailEl.value || '').trim(),
+                loginAt: new Date().toISOString()
+            };
+            localStorage.setItem('irsp-session', JSON.stringify(ctx));
+        } catch (_) { /* Storage unavailable — proceed anyway */ }
+    }
+
+    /* Authenticate against the real backend (JWT) and store tokens. */
+    function doLogin(email, password) {
+        return fetch(apiBase() + '/auth/login/', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: email, password: password })
+        }).then(function (response) {
+            if (!response.ok) {
+                throw new Error(response.status === 401
+                    ? 'Invalid email or password.'
+                    : 'Unable to sign in. Please try again.');
+            }
+            return response.json();
+        }).then(function (tokens) {
+            window.localStorage.setItem('irsp-access-token', tokens.access || '');
+            window.localStorage.setItem('irsp-refresh-token', tokens.refresh || '');
+            persistSessionContext();
+            /* Fetch the profile so downstream pages have user context. */
+            return fetch(apiBase() + '/auth/me/', {
+                headers: { Authorization: 'Bearer ' + tokens.access }
+            }).then(function (meResponse) {
+                if (meResponse.ok) {
+                    return meResponse.json().then(function (user) {
+                        window.localStorage.setItem('irsp-current-user', JSON.stringify(user));
+                    });
+                }
+            }).catch(function () { /* non-fatal */ });
+        });
+    }
+
+    form.addEventListener('submit', function (event) {
+        event.preventDefault();
+
+        if (!validate()) return;
+
+        setLoading(true);
+
+        var email    = (emailEl.value || '').trim();
+        var password = (passwordEl.value || '').trim();
+        var target   = submitBtn.dataset.target || 'pages/dashboard.html';
+
+        doLogin(email, password).then(function () {
+            window.location.href = target;
+        }).catch(function (error) {
+            setLoading(false);
+            showError(passwordEl, formError, error.message || 'Unable to sign in.');
+        });
+    });
+
+    /* Clear inline errors on input so feedback is responsive */
+    [emailEl, passwordEl].forEach(function (el) {
+        el.addEventListener('input', function () {
+            el.classList.remove('input-error');
+            if (el === emailEl) {
+                emailError.textContent = '';
+                emailError.classList.remove('visible');
+            } else {
+                formError.textContent = '';
+                formError.classList.remove('visible');
+            }
+        });
+    });
+})();
+</script>
+</body>
+</html>

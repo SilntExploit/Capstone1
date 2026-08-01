@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IRSP - Dashboard</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/lucide/0.263.0/lucide.min.js"></script>
+  <link rel="stylesheet" href="../assets/css/shared.css">
+  <link rel="stylesheet" href="../assets/css/dashboard.css">
+</head>
+<body>
+<nav aria-label="Primary navigation">
+  <a href="dashboard.html" class="logo"><svg class="irsp-logo-mark" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><defs><linearGradient id="irspLogoGrad" x1="0" y1="0" x2="24" y2="24" gradientUnits="userSpaceOnUse"><stop stop-color="#2563eb"/><stop offset="1" stop-color="#06b6d4"/></linearGradient></defs><path d="M12 2 L20 5.5 V11 C20 16 16.5 20 12 22 C7.5 20 4 16 4 11 V5.5 Z" fill="url(#irspLogoGrad)"/><path d="M6.5 12.5 H9.3 L10.8 9.3 L13 15.7 L14.4 12.5 H17.5" stroke="#fff" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg> IRSP</a>
+  <a href="dashboard.html" class="nav-item" data-page="dashboard"><i data-lucide="layout-dashboard"></i> Dashboard</a>
+  <a href="labs.html" class="nav-item" data-page="labs"><i data-lucide="terminal-square"></i> Labs</a>
+  <a href="reports.html" class="nav-item" data-page="reports"><i data-lucide="file-text"></i> Reports</a>
+  <a href="team.html" class="nav-item" data-page="team"><i data-lucide="users"></i> Team</a>
+  <div class="nav-bottom"><a href="settings.html" class="nav-item" data-page="settings"><i data-lucide="settings"></i> Settings</a><a href="#" class="nav-item" id="logout-nav-btn"><i data-lucide="log-out"></i> Logout</a></div>
+</nav>
+
+<main>
+  <header class="dashboard-hero">
+    <div>
+      <span class="status-badge blue"><i data-lucide="activity"></i> Score summary</span>
+      <h1>Dashboard</h1>
+    </div>
+    <div class="hero-actions">
+      <button class="btn btn-secondary" id="refresh-dashboard-btn" type="button"><i data-lucide="refresh-cw"></i> Refresh</button>
+      <a class="btn" href="labs.html"><i data-lucide="rocket"></i> Launch Lab</a>
+    </div>
+  </header>
+
+  <section class="grid-3 dashboard-stats" aria-label="Dashboard score summary">
+    <article class="card metric-card">
+      <div class="metric-icon blue"><i data-lucide="check-circle"></i></div>
+      <p class="stat-label">Total Labs Completed</p>
+      <p class="stat-value" id="completed-count">0</p>
+    </article>
+
+    <article class="card metric-card score-card">
+      <div class="metric-icon green"><i data-lucide="trophy"></i></div>
+      <p class="stat-label">Labs Completion %</p>
+      <p class="stat-value" id="completion-rate">0%</p>
+    </article>
+
+    <article class="card metric-card">
+      <div class="metric-icon purple"><i data-lucide="bar-chart-3"></i></div>
+      <p class="stat-label">Average Score</p>
+      <p class="stat-value" id="average-score">0%</p>
+    </article>
+  </section>
+
+  <section class="dashboard-layout">
+    <article class="card performance-card">
+      <div class="card-title"><i data-lucide="line-chart"></i> Lab Progress Overview</div>
+      <p class="subtitle" id="dashboard-summary">Loading dashboard data.</p>
+
+      <div class="progress-panel">
+        <div class="progress-ring" aria-label="Average score visual">
+          <span id="score-ring-value">0%</span>
+        </div>
+        <div class="progress-copy">
+          <h3 id="performance-title">No completed labs yet</h3>
+          <p id="performance-copy">Once a lab is completed, your score and completion date appear here.</p>
+          <div class="pill-row">
+            <span class="pill"><i data-lucide="calendar-check"></i> Latest: <strong id="latest-date">-</strong></span>
+            <span class="pill"><i data-lucide="timer"></i> Avg Time: <strong id="avg-time">-</strong></span>
+            <span class="pill"><i data-lucide="award"></i> Standing: <strong id="latest-standing">-</strong></span>
+            <span class="pill"><i data-lucide="list-checks"></i> Progress: <strong id="latest-progress">-</strong></span>
+          </div>
+        </div>
+      </div>
+    </article>
+  </section>
+
+  <section class="card recent-card">
+    <div class="recent-card-header">
+      <div>
+        <div class="card-title"><i data-lucide="history"></i> Recent Completed Labs</div>
+      </div>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+        <tr>
+          <th>Date Completed</th>
+          <th>User</th>
+          <th>Lab</th>
+          <th>Time Taken</th>
+          <th>Progress</th>
+          <th>Score</th>
+          <th>Standing</th>
+        </tr>
+        </thead>
+        <tbody id="recent-labs-body">
+        <tr class="empty-row"><td colspan="7">No completed labs found.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+</main>
+
+<script src="../assets/js/config.js"></script>
+<script src="../assets/js/shared.js"></script>
+<script src="../assets/js/dashboard.js"></script>
+</body>
+</html>

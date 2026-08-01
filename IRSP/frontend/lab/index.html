@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IRSP Live Lab</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="../assets/js/config.js"></script>
+</head>
+<body>
+
+<!-- ══════════════ START / INCIDENT TICKET ══════════════ -->
+<div id="start-screen" class="full-overlay">
+    <div class="ticket-card">
+        <h2 class="ticket-title">🚨 SECURITY INCIDENT — TICKET #INC-2025-0847</h2>
+        <div class="ticket-meta">
+            <span>Priority: <strong class="crit">CRITICAL</strong></span>
+            <span>Assigned to: <strong id="ticket-assignee">You</strong></span>
+            <span>Time: <strong id="ticket-time"></strong></span>
+        </div>
+
+        <div class="ticket-section">
+            <h3>REPORTED BY:</h3>
+            <p>irspuser (End-user, Finance Department)</p>
+            <blockquote class="user-quote">
+                "My computer is showing a strange message. All my files look different — they have
+                a weird extension on them. I cannot open anything. There is a message on screen
+                demanding money."
+            </blockquote>
+        </div>
+
+        <div class="ticket-section">
+            <h3>YOUR ROLE: Incident Responder</h3>
+            <h3>YOUR OBJECTIVE:</h3>
+            <p>Investigate this system, determine what happened, contain the threat, and begin recovery. Document all findings.</p>
+            <div class="warning-box">
+                ⚠ Do not reboot the system. Do not pay anything without authorisation. Preserve all evidence before taking any action.
+            </div>
+        </div>
+
+        <button id="btn-begin" class="btn-primary">BEGIN INVESTIGATION</button>
+    </div>
+</div>
+
+<!-- ══════════════ INTERSTITIAL ══════════════ -->
+<div id="interstitial-screen" class="full-overlay hidden">
+    <div class="loader-card">
+        <h2>Connecting to incident environment...</h2>
+        <div class="progress-bar-container"><div id="progress-bar" class="progress-bar"></div></div>
+        <p id="loader-status">Connecting to affected workstation...</p>
+        <p class="timer">Time remaining: <span id="loader-timer">45</span>s</p>
+    </div>
+</div>
+
+<!-- ══════════════ MAIN LAYOUT ══════════════ -->
+<div id="main-layout" class="hidden">
+    <!-- TOP BAR -->
+    <header>
+        <div class="logo">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            </svg>
+            <span>IRSP</span>
+        </div>
+
+        <div class="header-center">
+            <span class="stage-pill active" id="pill-1">🔴 Stage 1 — Evidence</span>
+            <span class="stage-pill locked" id="pill-2">🟡 Stage 2 — Containment</span>
+            <span class="stage-pill locked" id="pill-3">🟢 Stage 3 — Recovery</span>
+        </div>
+
+        <div class="header-right">
+            <span class="timer-label">⏳ Time Left:</span>
+            <span id="global-timer">45:00</span>
+            <button id="end-lab-btn" class="end-lab-btn" type="button" title="End Lab">End Lab</button>
+            <span class="score-badge">Score: <span id="score-display">0</span> / 100</span>
+        </div>
+    </header>
+
+    <!-- SPLIT -->
+    <div class="split">
+        <!-- LEFT: VM -->
+        <div class="vm-panel">
+            <div class="vm-bar">
+                <div class="vm-dot red"></div>
+                <div class="vm-dot yellow"></div>
+                <div class="vm-dot green"></div>
+                <div class="vm-url" id="vm-url">http://20.151.96.46:8080/guacamole/</div>
+                <span id="vm-status-indicator" class="vm-status">🟢 VM Visible</span>
+            </div>
+
+            <div id="countdown-overlay">
+                <div class="skull">💀</div>
+                <h2>TIME'S UP!</h2>
+                <p>Your response window has expired.<br>Review your findings and try again.</p>
+                <button class="retry-btn" onclick="location.reload()">🔄 Restart Exercise</button>
+            </div>
+
+            <iframe
+                id="vm-frame"
+                src="http://20.151.96.46:8080/guacamole/#/client/MQBjAHBvc3RncmVzcWw="
+                title="IRSP Linux VM via Apache Guacamole"
+                allow="fullscreen; clipboard-read; clipboard-write"
+                allowfullscreen
+                frameborder="0"></iframe>
+        </div>
+
+        <!-- RIGHT: TASK PANEL -->
+        <div class="task-panel">
+            <!-- STAGE 1 -->
+            <div id="stage1-container" class="stage-container">
+                <p class="context-paragraph">
+                    Your first priority is to gather information WITHOUT disturbing the system state.
+                    Volatile data — like active network connections — disappears the moment a process is stopped.
+                    Collect this evidence now.
+                </p>
+
+                <div class="q-card" id="q1">
+                    <h4>Q1: Capture the active network connection (5 pts)</h4>
+                    <p>A file has been saved on this system capturing the network activity at the moment of detection. Read it and identify the external server the malware was communicating with.</p>
+                    <div class="cmd-hint">cat /home/irspuser/.local/ir_evidence/network_snapshot.txt</div>
+                    <label>What is the IP address and port number? Format: IP:PORT</label>
+                    <input type="text" class="q-input" id="q1-input" placeholder="e.g. 192.168.1.1:443">
+                    <button class="q-submit" onclick="checkAnswer(1)">Submit</button>
+                    <div class="feedback" id="q1-feedback"></div>
+                </div>
+
+                <div class="q-card" id="q2">
+                    <h4>Q2: Trace how the attacker got in (5 pts)</h4>
+                    <p>Check the system authentication logs to understand how the attacker initially gained access to this machine.</p>
+                    <div class="cmd-hint">grep -E 'Failed password|Accepted password' /var/log/auth.log | tail -20</div>
+                    <label>How many failed login attempts from the same external IP occurred before a successful login? Enter just the number.</label>
+                    <input type="text" class="q-input" id="q2-input" placeholder="e.g. 3">
+                    <button class="q-submit" onclick="checkAnswer(2)">Submit</button>
+                    <div class="feedback" id="q2-feedback"></div>
+                </div>
+
+                <div class="q-card" id="q3">
+                    <h4>Q3: Extract details from the ransom note (5 pts)</h4>
+                    <p>There is a ransom note in the Documents folder. Your legal and financial teams need three specific pieces of information. Extract all three.</p>
+                    <div class="cmd-hint">cat ~/Documents/RANSOM_NOTE.html</div>
+                    <div class="sub-field">
+                        <label>Contact email address:</label>
+                        <input type="text" class="q-input" id="q3a-input" placeholder="e.g. contact@example.onion">
+                    </div>
+                    <div class="sub-field">
+                        <label>Bitcoin wallet address:</label>
+                        <input type="text" class="q-input" id="q3b-input" placeholder="paste the full wallet address">
+                    </div>
+                    <div class="sub-field">
+                        <label>Ransom amount:</label>
+                        <input type="text" class="q-input" id="q3c-input" placeholder="e.g. 0.5 Bitcoin">
+                    </div>
+                    <button class="q-submit" onclick="checkAnswer(3)">Submit All</button>
+                    <div class="feedback" id="q3-feedback"></div>
+                </div>
+
+                <div class="q-card" id="q4">
+                    <h4>Q4: Establish the attack timeline (5 pts)</h4>
+                    <p>File modification timestamps on a compromised system can be altered. Use the system log instead — it records events in a tamper-resistant way. Find the earliest log entry showing the malicious process.</p>
+                    <div class="cmd-hint">grep 'sysupdate' /var/log/syslog | head -3</div>
+                    <label>What date and time does the first entry show? Format: YYYY-MM-DD HH:MM:SS</label>
+                    <input type="text" class="q-input" id="q4-input" placeholder="e.g. 2025-01-15 09:23:11">
+                    <button class="q-submit" onclick="checkAnswer(4)">Submit</button>
+                    <div class="feedback" id="q4-feedback"></div>
+                </div>
+
+                <div class="q-card" id="q5">
+                    <h4>Q5: Determine the scope of damage (5 pts)</h4>
+                    <p>Before containment, you need to know exactly how many files were affected. This number goes into your incident report and determines business impact.</p>
+                    <div class="cmd-hint">find /home/irspuser -name '*.locked' 2>/dev/null | wc -l</div>
+                    <label>How many files were encrypted? Enter just the number.</label>
+                    <input type="text" class="q-input" id="q5-input" placeholder="e.g. 12">
+                    <button class="q-submit" onclick="checkAnswer(5)">Submit</button>
+                    <div class="feedback" id="q5-feedback"></div>
+                </div>
+            </div>
+
+            <!-- DECISION POINT -->
+            <div id="decision-gateway" class="hidden">
+                <div class="decision-card">
+                    <div class="decision-icon">📞</div>
+                    <h3>Your manager calls: Should we pay the ransom?</h3>
+                    <p>Based on your findings so far:</p>
+                    <ul>
+                        <li>You have identified the contact email and wallet address</li>
+                        <li>You have confirmed backup files exist at /var/backups/user/</li>
+                    </ul>
+                    <label>Write your recommendation (Pay / Do Not Pay) and your single most important reason why.</label>
+                    <textarea id="decision-input" rows="4" placeholder="Enter your response..."></textarea>
+                    <button class="btn-primary" onclick="submitDecision()">Submit Recommendation</button>
+                    <div class="feedback" id="decision-feedback"></div>
+                </div>
+            </div>
+
+            <!-- STAGE 2 -->
+            <div id="stage2-container" class="stage-container hidden">
+                <p class="context-paragraph">
+                    With evidence secured, you can now take action to stop the attack. Work through each containment step in order.
+                </p>
+
+                <div class="q-card" id="q6">
+                    <h4>Q6: Stop the malicious process (5 pts)</h4>
+                    <p>A process named 'sysupdate' is running from /tmp — not a legitimate system process name. Now that you have captured its network activity, it is safe to stop it.</p>
+                    <div class="cmd-hint">kill -9 $(pgrep sysupdate) 2>/dev/null; sleep 1; pgrep sysupdate &amp;&amp; echo 'STILL RUNNING' || echo 'PROCESS STOPPED'</div>
+                    <label>What does the terminal output after running this command?</label>
+                    <input type="text" class="q-input" id="q6-input" placeholder="paste the output">
+                    <button class="q-submit" onclick="checkAnswer(6)">Submit</button>
+                    <div class="feedback" id="q6-feedback"></div>
+                </div>
+
+                <div class="q-card" id="q7">
+                    <h4>Q7: Block communication to the attacker's server (5 pts)</h4>
+                    <p>Using the external IP from Question 1, create a firewall rule to block all further communication to and from that address. Use a targeted rule so other monitoring tools stay online.</p>
+                    <div class="cmd-hint">sudo iptables -A OUTPUT -d 203.0.113.47 -j DROP<br>sudo iptables -A INPUT -s 203.0.113.47 -j DROP<br>sudo iptables -L OUTPUT --line-numbers | grep 203.0.113.47</div>
+                    <label>Paste the output line from the last command confirming the rule is in place.</label>
+                    <input type="text" class="q-input" id="q7-input" placeholder="paste the iptables output line">
+                    <button class="q-submit" onclick="checkAnswer(7)">Submit</button>
+                    <div class="feedback" id="q7-feedback"></div>
+                </div>
+
+                <div class="q-card" id="q8">
+                    <h4>Q8: Find all persistence mechanisms (5 pts)</h4>
+                    <p>Stopping the process is not enough — the attacker set up multiple ways to restart the malware after a reboot. Find all of them.</p>
+                    <ol class="cmd-list">
+                        <li><code>crontab -l</code></li>
+                        <li><code>grep -n 'sysupdate' ~/.bashrc</code></li>
+                        <li><code>find /etc/systemd/system -name '*.service' -newer /etc/passwd 2>/dev/null</code></li>
+                        <li><code>cat ~/.ssh/authorized_keys 2>/dev/null</code></li>
+                    </ol>
+                    <label>How many persistence locations did you find? List each type (e.g. crontab, bashrc, authorized_keys).</label>
+                    <input type="text" class="q-input" id="q8-input" placeholder="e.g. 3 — crontab, bashrc, authorized_keys">
+                    <button class="q-submit" onclick="checkAnswer(8)">Submit</button>
+                    <div class="feedback" id="q8-feedback"></div>
+                </div>
+
+                <div class="q-card" id="q9">
+                    <h4>Q9: Remove all persistence mechanisms (5 pts)</h4>
+                    <p>Remove each persistence mechanism you identified. Incomplete removal means the malware will restart at next reboot.</p>
+                    <ol class="cmd-list">
+                        <li><code>crontab -r</code></li>
+                        <li><code>sed -i '/sysupdate/d' ~/.bashrc</code></li>
+                        <li><code>&gt; ~/.ssh/authorized_keys</code></li>
+                        <li><code>rm -f /tmp/sysupdate</code></li>
+                    </ol>
+                    <p>Then verify the crontab is clear: <code>crontab -l 2>&amp;1</code></p>
+                    <label>What does the terminal output?</label>
+                    <input type="text" class="q-input" id="q9-input" placeholder="paste the output">
+                    <button class="q-submit" onclick="checkAnswer(9)">Submit</button>
+                    <div class="feedback" id="q9-feedback"></div>
+                </div>
+            </div>
+
+            <!-- STAGE 3 -->
+            <div id="stage3-container" class="stage-container hidden">
+                <p class="context-paragraph">
+                    With the threat contained, focus now on restoring affected files and documenting the full incident.
+                </p>
+
+                <div class="q-card" id="q10">
+                    <h4>Q10: Verify the backup is safe to use (5 pts)</h4>
+                    <p>Before restoring from backup, confirm the backup file itself was not modified during the attack.</p>
+                    <div class="cmd-hint">stat /var/backups/user/report.txt</div>
+                    <label>Is the 'Modify' timestamp BEFORE or AFTER the attack timestamp from Q4? Enter: BEFORE or AFTER</label>
+                    <input type="text" class="q-input" id="q10-input" placeholder="BEFORE or AFTER">
+                    <button class="q-submit" onclick="checkAnswer(10)">Submit</button>
+                    <div class="feedback" id="q10-feedback"></div>
+                </div>
+
+                <div class="q-card" id="q11">
+                    <h4>Q11: Restore the affected file (5 pts)</h4>
+                    <p>The backup has been verified clean. Restore the encrypted file to its original location.</p>
+                    <div class="cmd-hint">cp /var/backups/user/report.txt ~/Documents/report.txt</div>
+                    <p>Confirm: <code>ls ~/Documents/report.txt</code></p>
+                    <label>What is the full path shown in the output?</label>
+                    <input type="text" class="q-input" id="q11-input" placeholder="e.g. /home/irspuser/Documents/report.txt">
+                    <button class="q-submit" onclick="checkAnswer(11)">Submit</button>
+                    <div class="feedback" id="q11-feedback"></div>
+                </div>
+
+                <div class="q-card" id="q12">
+                    <h4>Q12: Lock the compromised account (5 pts)</h4>
+                    <p>The account used during this incident must be locked before the system is considered contained.</p>
+                    <div class="cmd-hint">sudo passwd -l irspuser<br>sudo passwd -S irspuser</div>
+                    <label>What is the second word in the output of the second command? (A single letter indicating account status.)</label>
+                    <input type="text" class="q-input" id="q12-input" placeholder="e.g. L">
+                    <button class="q-submit" onclick="checkAnswer(12)">Submit</button>
+                    <div class="feedback" id="q12-feedback"></div>
+                </div>
+
+                <div class="q-card report-card" id="q13">
+                    <h4>Q13: Complete the Incident Report (15 pts)</h4>
+                    <p>Every investigation ends with a formal written record. Complete the report below using your findings. Each field is scored independently. Use your own words.</p>
+                    <div class="report-template">
+                        <div class="report-header">
+                            <h2>INCIDENT REPORT — INC-2025-0847</h2>
+                            <div class="report-meta">
+                                <div><strong>System:</strong> irspuser workstation (Finance Dept.)</div>
+                                <div><strong>Responder:</strong> <span id="responder-name">Responder</span></div>
+                                <div><strong>Status:</strong> Contained — Pending Review</div>
+                            </div>
+                        </div>
+                        <div class="report-body">
+                            <div class="report-field">
+                                <label>[FIELD 1] Time of earliest attack evidence in system logs:</label>
+                                <input type="text" id="q13_1" class="report-input">
+                                <span class="field-feedback" id="fb-13-1"></span>
+                            </div>
+                            <div class="report-field">
+                                <label>[FIELD 2] External IP address and port the malware was communicating with:</label>
+                                <input type="text" id="q13_2" class="report-input">
+                                <span class="field-feedback" id="fb-13-2"></span>
+                            </div>
+                            <div class="report-field">
+                                <label>[FIELD 3] Number of files encrypted:</label>
+                                <input type="text" id="q13_3" class="report-input">
+                                <span class="field-feedback" id="fb-13-3"></span>
+                            </div>
+                            <div class="report-field">
+                                <label>[FIELD 4] Contact address from the ransom note:</label>
+                                <input type="text" id="q13_4" class="report-input">
+                                <span class="field-feedback" id="fb-13-4"></span>
+                            </div>
+                            <div class="report-field">
+                                <label>[FIELD 5] All persistence mechanisms found (list each one):</label>
+                                <input type="text" id="q13_5" class="report-input">
+                                <span class="field-feedback" id="fb-13-5"></span>
+                            </div>
+                            <div class="report-field">
+                                <label>[FIELD 6] Recommendation regarding ransom payment (include your reason):</label>
+                                <textarea id="q13_6" class="report-input" rows="2"></textarea>
+                                <span class="field-feedback" id="fb-13-6"></span>
+                            </div>
+                        </div>
+                        <button class="btn-primary btn-submit-report" onclick="submitReport()">Submit Final Report</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ══════════════ COMPLETION / MITRE REVIEW ══════════════ -->
+<div id="completion-screen" class="full-overlay hidden">
+    <div class="review-card">
+        <h2>Investigation Complete — INC-2025-0847</h2>
+        <div class="score-summary">
+            <div class="score-box"><div class="big" id="final-score">0</div><div class="lbl">Final Score</div></div>
+            <div class="score-box"><div class="big" id="final-standing">—</div><div class="lbl">Standing</div></div>
+            <div class="score-box"><div class="big" id="final-time">0:00</div><div class="lbl">Time Taken</div></div>
+            <div class="score-box"><div class="big" id="final-stages">0/3</div><div class="lbl">Stages</div></div>
+        </div>
+        <p class="review-intro">
+            Below is the MITRE ATT&amp;CK breakdown of the techniques behind this incident, mapped to each
+            investigation step. This educational view is shown only now that the investigation is over.
+        </p>
+        <div id="mitre-content"></div>
+        <div class="coverage-wrap">
+            <h3>MITRE ATT&amp;CK Coverage</h3>
+            <div id="mitre-coverage"></div>
+        </div>
+        <div class="save-status" id="save-status">Saving your results…</div>
+        <button class="btn-primary review-close" id="close-lab-btn">Save &amp; Close Lab</button>
+        <div class="close-note" id="close-lab-note"></div>
+    </div>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>

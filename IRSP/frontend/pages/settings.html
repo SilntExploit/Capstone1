@@ -1,0 +1,83 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>IRSP - Settings</title><script src="https://cdnjs.cloudflare.com/ajax/libs/lucide/0.263.0/lucide.min.js"></script><link rel="stylesheet" href="../assets/css/shared.css"><link rel="stylesheet" href="../assets/css/settings.css"></head><body><nav aria-label="Primary navigation">
+  <a href="dashboard.html" class="logo"><svg class="irsp-logo-mark" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><defs><linearGradient id="irspLogoGrad" x1="0" y1="0" x2="24" y2="24" gradientUnits="userSpaceOnUse"><stop stop-color="#2563eb"/><stop offset="1" stop-color="#06b6d4"/></linearGradient></defs><path d="M12 2 L20 5.5 V11 C20 16 16.5 20 12 22 C7.5 20 4 16 4 11 V5.5 Z" fill="url(#irspLogoGrad)"/><path d="M6.5 12.5 H9.3 L10.8 9.3 L13 15.7 L14.4 12.5 H17.5" stroke="#fff" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg> IRSP</a>
+  <a href="dashboard.html" class="nav-item" data-page="dashboard"><i data-lucide="layout-dashboard"></i> Dashboard</a>
+  <a href="labs.html" class="nav-item" data-page="labs"><i data-lucide="terminal-square"></i> Labs</a>
+  <a href="reports.html" class="nav-item" data-page="reports"><i data-lucide="file-text"></i> Reports</a>
+  <a href="team.html" class="nav-item" data-page="team"><i data-lucide="users"></i> Team</a>
+  <div class="nav-bottom"><a href="settings.html" class="nav-item" data-page="settings"><i data-lucide="settings"></i> Settings</a><a href="#" class="nav-item" id="logout-nav-btn"><i data-lucide="log-out"></i> Logout</a></div>
+</nav><main>
+
+<header><div><h1>Settings</h1><p class="subtitle">User profile and platform preferences.</p></div><div style="display:flex;gap:.55rem"><button class="btn btn-secondary" id="reset-settings-btn" type="button"><i data-lucide="rotate-ccw"></i> Reset</button><button class="btn" id="save-settings-btn" type="button"><i data-lucide="check"></i> Save Changes</button></div></header>
+
+<section class="settings-identity card">
+  <div class="settings-avatar"><i data-lucide="user-round"></i></div>
+  <div class="settings-identity-body">
+    <div class="settings-identity-name" id="settings-identity-name">Loading...</div>
+    <div class="settings-identity-meta"><span class="status-badge blue" id="settings-identity-role">-</span><span id="settings-identity-email" class="settings-identity-email">-</span></div>
+  </div>
+</section>
+
+<section class="grid-2 settings-grid">
+
+  <article class="card settings-card">
+    <div class="card-title"><span class="settings-icon settings-icon-blue"><i data-lucide="user"></i></span> Profile</div>
+
+    <div class="settings-field">
+      <label class="form-label" for="display-name"><i data-lucide="badge-check"></i> Display Name</label>
+      <input id="display-name" class="form-input">
+    </div>
+
+    <div class="settings-field">
+      <label class="form-label" for="email"><i data-lucide="mail"></i> Email</label>
+      <input id="email" class="form-input" disabled>
+    </div>
+
+    <div class="settings-field">
+      <label class="form-label" for="organization"><i data-lucide="building-2"></i> Organization</label>
+      <input id="organization" class="form-input" disabled>
+    </div>
+
+    <div class="settings-field">
+      <label class="form-label" for="role"><i data-lucide="shield"></i> Role</label>
+      <input id="role" class="form-input" disabled>
+    </div>
+
+    <p id="settings-status" class="subtitle settings-status"></p>
+  </article>
+
+  <article class="card settings-card">
+    <div class="card-title"><span class="settings-icon settings-icon-purple"><i data-lucide="sliders-horizontal"></i></span> Preferences</div>
+
+    <div class="settings-field">
+      <label class="form-label"><i data-lucide="sun-moon"></i> Theme</label>
+      <div class="theme-toggle-wrap">
+        <button type="button" id="theme-mode" class="theme-toggle" role="switch" aria-checked="false" aria-label="Toggle dark mode" data-theme="light"><span class="theme-toggle-clouds"></span><span class="theme-toggle-stars"></span><span class="theme-toggle-thumb"></span></button>
+        <span class="theme-toggle-caption" id="theme-toggle-caption">Light mode</span>
+      </div>
+    </div>
+  </article>
+
+</section>
+</main><script src="../assets/js/config.js"></script><script src="../assets/js/shared.js"></script><script src="../assets/js/settings.js"></script>
+<script>
+    // Presentation only - fills the new identity header from the same
+    // fields settings.js already populates, once they're set.
+    (function () {
+        function sync() {
+            var nameEl = document.getElementById('display-name');
+            var emailEl = document.getElementById('email');
+            var roleEl = document.getElementById('role');
+            var idName = document.getElementById('settings-identity-name');
+            var idEmail = document.getElementById('settings-identity-email');
+            var idRole = document.getElementById('settings-identity-role');
+            if (nameEl && idName) idName.textContent = nameEl.value || 'Trainee';
+            if (emailEl && idEmail) idEmail.textContent = emailEl.value || '';
+            if (roleEl && idRole) idRole.textContent = roleEl.value || 'trainee';
+        }
+        document.addEventListener('DOMContentLoaded', function () {
+            setTimeout(sync, 300);
+            setTimeout(sync, 900);
+        });
+    })();
+</script>
+</body></html>
